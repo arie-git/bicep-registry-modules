@@ -64,7 +64,7 @@ var expandedAppSettings = union(
   appInsightsValues
 )
 
-resource app 'Microsoft.Web/sites@2023-12-01' existing = {
+resource app 'Microsoft.Web/sites@2024-04-01' existing = {
   name: appName
 
   resource slot 'slots' existing = {

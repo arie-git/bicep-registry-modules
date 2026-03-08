@@ -1,0 +1,11 @@
+{
+  "version": "0.1",
+  "$schema": "https://aka.ms/bicep-registry-module-version-file-schema#",
+  "pathFilters": [
+    "./main.bicep",
+    "./main.json",
+    "./sql-database/**",
+    "./sql-role-assignment/**",
+    "./sql-role-definition/**"
+  ]
+}

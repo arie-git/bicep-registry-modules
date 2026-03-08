@@ -628,7 +628,7 @@ module app_appsettings 'config--appsettings/main.bicep' = if (!empty(appSettings
     storageAccountUseIdentityAuthentication: storageAccountUseIdentityAuthentication
     appInsightResourceId: appInsightResourceId
     appSettingsKeyValuePairs: appSettingsKeyValuePairs ?? {}
-    currentAppSettings: !empty(app.id) ? list('${app.id}/config/appsettings', '2023-12-01').properties : {}
+    currentAppSettings: !empty(app.id) ? list('${app.id}/config/appsettings', '2024-04-01').properties : {}
   }
 }
 

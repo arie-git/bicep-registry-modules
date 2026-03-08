@@ -146,12 +146,11 @@ param vnetSubnetId string?
 @description('Optional. Determines the type of workload a node can run.')
 param workloadRuntime string?
 
-#disable-next-line use-recent-api-versions
-resource managedCluster 'Microsoft.ContainerService/managedClusters@2024-04-02-preview' existing = {  //TODO: update version making sure all preview features remain functional
+resource managedCluster 'Microsoft.ContainerService/managedClusters@2024-08-01' existing = {
   name: managedClusterName
 }
 
-resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2024-02-01' = {
+resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2024-08-01' = {
   name: name
   parent: managedCluster
   properties: {

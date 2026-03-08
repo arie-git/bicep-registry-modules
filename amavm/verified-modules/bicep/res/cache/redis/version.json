@@ -1,0 +1,12 @@
+{
+  "version": "0.1",
+  "$schema": "https://aka.ms/bicep-registry-module-version-file-schema#",
+  "pathFilters": [
+    "./main.bicep",
+    "./main.json",
+    "./access-policy/**",
+    "./access-policy-assignment/**",
+    "./firewall-rule/**",
+    "./linked-servers/**"
+  ]
+}

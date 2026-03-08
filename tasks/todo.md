@@ -11,47 +11,63 @@
 
 ### GAP-1: Cosmos-DB (document-db/database-account)
 
-- [ ] Research upstream module (`microsoft-avm/avm/res/document-db/database-account/`, v0.19)
-  - 9 child modules: cassandra-keyspace, cassandra-role-assignment, cassandra-role-definition, gremlin-database, mongodb-database, sql-database, sql-role-assignment, sql-role-definition, table
-- [ ] Azure Policy Expert: identify Cosmos-DB policies from `policy/Generic/` and `policy/knowledge_base/Azure-Components/Cosmos-DB/Security-Baseline.rst`
-- [ ] Plan: decide which child modules to include (not all may be needed)
-- [ ] Fork upstream `main.bicep` → `amavm/verified-modules/bicep/res/document-db/database-account/`
-- [ ] Apply full Module Customization Checklist (metadata, evidenceOfNonCompliance, versionInfo, shared types, telemetry with take(64), role defs, finalTags, explicit diagnostic categories)
-- [ ] Create `upstream.json` (v0.19), `version.json` (v0.1)
-- [ ] Create `tests/e2e/defaults/`, `tests/e2e/max/`, `tests/e2e/waf-aligned/`
+- [x] Research upstream module (`microsoft-avm/avm/res/document-db/database-account/`, v0.19)
+  - 9 child modules, 994 lines, API `@2024-11-15`, CMK + PE support
+- [x] Azure Policy Expert: 15 Cosmos-DB policies found (drcp-cosmos-01 through -10)
+  - Deny: local auth, key-based metadata write, public network, TLS < 1.2, non-NoSQL, zone redundancy
+  - DeployIfNotExists: 5 private DNS zone policies (Sql, Cassandra, Gremlin, MongoDB, Table)
+  - AuditIfNotExists: Advanced Threat Protection, Defender
+- [x] Plan: only NoSQL (sql-database, sql-role-assignment, sql-role-definition) per policy
+  - MongoDB, Gremlin, Cassandra, Table commented out as future features
+- [x] Fork upstream `main.bicep` → `amavm/verified-modules/bicep/res/document-db/database-account/`
+- [x] Apply full Module Customization Checklist (18/18 items)
+- [x] Create `upstream.json` (v0.19), `version.json` (v0.1)
+- [x] Create `tests/e2e/defaults/`
+- [x] `bicep build` passes (only BCP192/BCP062 expected, BCP036 cosmetic warning on cors)
+- [ ] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
 - [ ] Create `README.md`
-- [ ] Karen: `bicep build` passes, all checklist items verified
+- [x] Karen: 18/18 PASS
 
 ### GAP-2: Event-Hubs (event-hub/namespace)
 
-- [ ] Research upstream (`microsoft-avm/avm/res/event-hub/namespace/`, v0.14)
-- [ ] Assess `ORPHANED.md` — determine if upstream is deprecated or just unmaintained
-- [ ] Azure Policy Expert: identify Event-Hub policies
-- [ ] Fork upstream `main.bicep` → `amavm/verified-modules/bicep/res/event-hub/namespace/`
-  - Child modules: authorization-rule, disaster-recovery-config, eventhub, network-rule-set
-- [ ] Apply full Module Customization Checklist
-- [ ] Create `upstream.json`, `version.json`, tests, `README.md`
-- [ ] Karen: validate
+- [x] Research upstream (`microsoft-avm/avm/res/event-hub/namespace/`, v0.14)
+  - ORPHANED (security/bug fixes only), 668 lines, 5 child modules
+- [x] Azure Policy Expert: 10 Event-Hub policies (drcp-evh-01 through -08, plus drcp-sub-07)
+  - Deny: public network, trusted services bypass, local auth, TLS, auth rules
+  - DeployIfNotExists: private DNS zones
+  - Audit: infrastructure encryption
+- [x] Fork upstream → `amavm/verified-modules/bicep/res/event-hub/namespace/`
+  - All 7 child module files copied and adapted
+- [x] Apply full Module Customization Checklist (18/18)
+- [x] Create `upstream.json` (v0.14, ORPHANED), `version.json` (v0.1), test
+- [x] `bicep build` passes (only BCP192/BCP062 expected)
+- [ ] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
+- [ ] Create `README.md`
+- [x] Karen: 18/18 PASS
 
 ### GAP-3: Redis (cache/redis)
 
-- [ ] Research upstream (`microsoft-avm/avm/res/cache/redis/`, v0.16)
-  - Child modules: access-policy, access-policy-assignment, firewall-rule, linked-servers
-- [ ] Azure Policy Expert: identify Redis policies
-- [ ] Fork upstream `main.bicep` → `amavm/verified-modules/bicep/res/cache/redis/`
-- [ ] Apply full Module Customization Checklist
-- [ ] Create `upstream.json`, `version.json`, tests, `README.md`
-- [ ] Karen: validate
+- [x] Research upstream (`microsoft-avm/avm/res/cache/redis/`, v0.16)
+  - Active module, 4 child modules + keyVaultExport helper
+- [x] Azure Policy Expert: 9 Redis policies (drcp-redis-01 through -09)
+  - Deny: Enterprise SKU blocked, public network, non-SSL, TLS < 1.2, zone redundancy
+  - Audit: Entra ID auth (disable access keys), managed keys
+  - DeployIfNotExists: private DNS zones
+- [x] Fork upstream → `amavm/verified-modules/bicep/res/cache/redis/`
+  - 4 child modules copied, keyVaultExport removed (uses br/public types)
+- [x] Apply full Module Customization Checklist (18/18)
+- [x] Create `upstream.json` (v0.16), `version.json` (v0.1), test
+- [x] `bicep build` passes (clean — no errors)
+- [ ] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
+- [ ] Create `README.md`
+- [x] Karen: 18/18 PASS
 
-### GAP-4: Notification-Hubs
+### GAP-4: Notification-Hubs — DEFERRED
 
-- [ ] No upstream AVM module exists — decision required: build custom or defer?
-- [ ] Azure Policy Expert: identify applicable policies from `policy/Generic/` and `policy/knowledge_base/Azure-Components/Notification-Hubs/Security-Baseline.rst`
-- [ ] If building: determine ARM resource type (`Microsoft.NotificationHubs/namespaces`), plan parameters
-- [ ] Implement at `amavm/verified-modules/bicep/res/notification-hubs/namespace/`
-- [ ] Apply full Module Customization Checklist
-- [ ] Create version files, tests, `README.md`
-- [ ] Karen: validate
+No upstream AVM module exists. Only 2 policies (drcp-ntf-01 default access policies, drcp-sub-07 cross-sub PE). Would require building from scratch. Recommend deferring until upstream support exists.
+
+- [x] Research: no upstream module, minimal policy coverage
+- [x] Decision: DEFER
 
 ---
 
@@ -234,7 +250,7 @@ All 9 modules share the same 2 issues: (10) telemetry name not wrapped with `tak
 - [x] Fix typo: `condtion` → `condition`
 - [x] Fix typo: double period in relay description
 - [x] `bicep build` passes (only BCP192 expected)
-- [ ] Align slot API versions
+- [x] Align slot API versions — all `Microsoft.Web/*` under `web/site/` now use `2024-04-01`
 - [x] Karen: re-audit — 18/18 PASS
 
 ### TD-16: container-service/managed-cluster — spelling, API versions, comment fixes
@@ -250,7 +266,7 @@ All 9 modules share the same 2 issues: (10) telemetry name not wrapped with `tak
 - [x] Fix spelling error (`additonalLogCategoryNames` → `additionalLogCategoryNames`)
 - [x] Fix incomplete error comment
 - [x] `bicep build` passes (only BCP192 expected)
-- [ ] Align agent-pool API versions
+- [x] Align agent-pool API versions — both resources now `2024-08-01` (matching parent)
 - [x] Karen: re-audit — 18/18 PASS
 
 ### TD-17: cognitive-services/account — API versions, SKU logic, typos
@@ -355,25 +371,43 @@ Commented-out: podIdentityProfile parameters (allowNetworkPluginKubenet, enable,
 
 ## POLICY: Compliance Audits
 
-Each whitelisted module audited by Azure Policy Expert against `policy/Generic/*.json` and `policy/knowledge_base/`. Not yet started.
+Each whitelisted module audited by Azure Policy Expert against `policy/Generic/*.json` and `policy/knowledge_base/`.
 
-- [ ] AI-Search (search/search-service)
-- [ ] AI-services (cognitive-services/account)
-- [ ] App-Configuration (app-configuration/configuration-store)
-- [ ] Application-Gateway (network/application-gateway)
-- [ ] Application-Insights (insights/component)
-- [ ] App-Service (web/site, web/serverfarm)
-- [ ] Container-Registry (container-registry/registry)
-- [ ] Databricks (databricks/*)
-- [ ] Data-Factory (data-factory/factory)
-- [ ] Key-Vault (key-vault/vault)
-- [ ] Kubernetes-Service (container-service/managed-cluster)
-- [ ] Log-Analytics-Workspace (operational-insights/workspace)
-- [ ] Monitor (insights/*)
-- [ ] PostgreSQL (db-for-postgre-sql/flexible-server)
-- [ ] Service-Bus (service-bus/namespace)
-- [ ] SQL-Database (sql/server)
-- [ ] Storage-Account (storage/storage-account)
+### Compliant (13 modules — defaults satisfy all policies)
+
+- [x] AI-Search (search/search-service) — 6 policies, all PASS
+- [x] Application-Insights (insights/component) — 4 policies, all PASS
+- [x] Container-Registry (container-registry/registry) — 10 policies, all PASS
+- [x] Databricks (databricks/workspace) — 8 policies, all PASS
+- [x] Data-Factory (data-factory/factory) — 10 policies, all PASS
+- [x] Key-Vault (key-vault/vault) — 9 policies, all PASS
+- [x] Kubernetes-Service (container-service/managed-cluster) — 12 policies, all PASS
+- [x] Log-Analytics-Workspace (operational-insights/workspace) — 4 policies, all PASS
+- [x] Monitor/Action-Group (insights/action-group) — 3 policies, all PASS
+- [x] Monitor/Data-Collection-Rule (insights/data-collection-rule) — 4 policies, all PASS
+- [x] Service-Bus (service-bus/namespace) — 3 policies, all PASS
+- [x] SQL-Database (sql/server) — 10 policies, all PASS
+- [x] Storage-Account (storage/storage-account) — 11 policies, all PASS
+
+### Non-compliant (4 modules — defaults may violate policies)
+
+- [x] AI-Services (cognitive-services/account) — 7 policies, 1 FAIL
+  - `kind` @allowed list includes 24 values; policy AIServicesAllowSupportedKinds only permits 3 (TextAnalytics, OpenAI, AIServices)
+  - Action: restrict @allowed list or add compliance documentation
+- [x] App-Configuration (app-configuration/configuration-store) — 4 policies, 1 FAIL
+  - `publicNetworkAccess` defaults to null → resolves to 'Enabled' without private endpoints
+  - Action: default publicNetworkAccess to 'Disabled'
+- [x] Application-Gateway (network/application-gateway) — 12 policies, 3 conditional FAIL
+  - Backend/listener HTTPS not enforced in required params (user must set protocol='Https')
+  - Public frontend IP not prevented (user must avoid public IPs)
+  - Action: add compliance documentation warnings on required params
+- [x] App-Service (web/site) — 14 policies, 1 conditional FAIL
+  - `virtualNetworkSubnetId` optional with no default → VNet injection policy fails without it
+  - Action: document as required for compliant deployments
+- [x] PostgreSQL (db-for-postgre-sql/flexible-server) — 11 policies, 2 FAIL
+  - `activeDirectoryAuth` defaults to 'disabled' when no `administrators` provided (drcp-psql-02 Deny)
+  - `delegatedSubnetResourceId` optional → VNet integration not guaranteed (drcp-psql-01 Deny)
+  - Action: make `administrators` required or always enable AD auth; make `delegatedSubnetResourceId` required
 
 ---
 
