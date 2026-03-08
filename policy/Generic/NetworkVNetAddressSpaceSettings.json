@@ -1,0 +1,69 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-04 - Network address space settings'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Network Address space settings",
+    "description": "This policy prevents users from changing the address space of the VNet that is set upon subscription creation.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "NetworkVNetAddressSpaceSettings",
+        "severity": 3,
+        "controlId": "drcp-sub-04",
+        "controlDesc": "Network address space settings",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-04"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "addressSpaceSettings": {
+        "type": "Array",
+        "metadata": {
+          "description": "Users will be unable to change the address space on a VNet from the values defined in this array."
+        }
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/virtualNetworks"
+          },
+          {
+            "anyOf": [
+              {
+                "value": "[if(empty(field('Microsoft.Network/virtualNetworks/addressSpace.addressPrefixes')), bool('false'), equals(length(intersection(parameters('addressSpaceSettings'), field('Microsoft.Network/virtualNetworks/addressSpace.addressPrefixes'))), length(parameters('addressSpaceSettings'))))]",
+                "equals": false
+              },
+              {
+                "value": "[if(empty(field('Microsoft.Network/virtualNetworks/addressSpace.addressPrefixes')), bool('false'), equals(length(field('Microsoft.Network/virtualNetworks/addressSpace.addressPrefixes')),length(parameters('addressSpaceSettings'))))]",
+                "equals": false
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

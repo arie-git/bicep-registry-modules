@@ -1,0 +1,88 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "Built-in management plance RBAC roles are only allowed for a given set of principals. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC Allowed operator roles",
+    "description": "This policy ensures that certain built-in management plane roles can only be deployed to the environment admin and production operator groups.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACAllowedOperatorRoles",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "allowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Allowed AAD principal Ids.",
+          "displayName": "Allowed AAD principal Ids"
+        },
+        "defaultValue": []
+      },
+      "notAllowedPrincipalType": {
+        "type": "Array",
+        "metadata": {
+          "description": "Which principal type to disallow, e.g. 'User, Group.'",
+          "displayName": "Disallowed Principal Types"
+        },
+        "allowedValues": [
+          "User",
+          "Group"
+        ],
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "anyOf": []
+          },
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "field": "Microsoft.Authorization/roleAssignments/principalId",
+                  "in": "[parameters('allowedPrincipalIds')]"
+                },
+                {
+                  "field": "Microsoft.Authorization/roleAssignments/principalType",
+                  "notIn": "[parameters('notAllowedPrincipalType')]"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

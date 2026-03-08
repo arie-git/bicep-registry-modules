@@ -1,0 +1,63 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-appi-05 - Javascript Source Map Blob Storage URL'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplicationInsights#drcp-appi-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Insights Disable Javascript Source Map",
+    "description": "This policy disables linking the Javacscript Source Map to a blob storage.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Insights",
+        "name": "ApplicationInsightsDisableJavascriptSourceMap",
+        "severity": 3,
+        "controlId": "drcp-appi-05",
+        "controlDesc": "Javascript Source Map Blob Storage URL",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Insights",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplication+Insights-drcp-appi-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Disabled or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled",
+          "Audit"
+        ],
+        "defaultValue": "Audit"
+      },
+      "tagName": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Tagname",
+          "description": "The name of the hidden tag which must be empty."
+        },
+        "defaultValue": "hidden-link:Insights.Sourcemap.Storage"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/components"
+          },
+          {
+            "field": "[concat('tags[',parameters('tagName'),']')]",
+            "exists": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

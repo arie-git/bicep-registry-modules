@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adb-r04 - Deny public IP for Azure Databricks Clusters'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks#drcp-adb-r04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Databricks Clusters should have public IP disabled",
+    "description": "Disabling public IP of clusters in Azure Databricks Workspaces improves security by ensuring that the clusters aren't exposed on the public internet.",
+    "mode": "All",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Databricks",
+        "name": "DatabricksPublicIPMustBeDisabled",
+        "severity": 3,
+        "controlId": "drcp-adb-r04",
+        "controlDesc": "Deny public IP for Azure Databricks Clusters",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Databricks",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks-drcp-adb-r04"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Databricks/workspaces"
+          },
+          {
+            "field": "Microsoft.DataBricks/workspaces/parameters.enableNoPublicIp.value",
+            "notEquals": "true"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

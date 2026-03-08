@@ -1,0 +1,48 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-18 - Resource type restriction'. Only resources types can be deployed that have been whitelisted as resource provider or component by DRCP. For a list of allowed components, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Azure+components ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic allowed resource providers",
+    "description": "This policy ensures that only resources types can be deployed that have been whitelisted as resource provider by DRCP.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericAllowedResourceProviders",
+        "severity": 3,
+        "controlId": "drcp-sub-18",
+        "controlDesc": "Resource type restriction",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-18"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "not": {
+          "anyOf": []
+        }
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

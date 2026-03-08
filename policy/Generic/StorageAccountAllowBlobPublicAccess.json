@@ -1,0 +1,78 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-st-02 - Anonymous Public Read Access to a Storage Account'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount#drcp-st-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP StorageAccount Allow blob public access",
+    "description": "This policy prevents anonymous public read access to containers and blobs located in Azure Storage Account resources.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Storage Account",
+        "name": "StorageAccountAllowBlobPublicAccess",
+        "severity": 3,
+        "controlId": "drcp-st-02",
+        "controlDesc": "Anonymous public read access to a Storage Account",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Storage+Account",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount-drcp-st-02"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "not": {
+              "allOf": [
+                {
+                  "field": "id",
+                  "contains": "/resourceGroups/aro-"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "field": "name",
+                      "like": "cluster*"
+                    },
+                    {
+                      "field": "name",
+                      "like": "imageregistry*"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "not": {
+              "field": "Microsoft.Storage/storageAccounts/allowBlobPublicAccess",
+              "equals": "false"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

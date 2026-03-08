@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-02 - Ensure that network endpoints are private'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS Private cluster enabled",
+    "description": "Enable the private cluster feature for your Azure Kubernetes Service cluster to ensure network traffic between your API server and your node pools remains on the private network only. This is a common requirement in many regulatory and industry compliance standards.",
+    "metadata": {
+      "version": "1.0.1",
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSEnablePrivateCluster",
+        "severity": 3,
+        "controlId": "drcp-aks-02",
+        "controlDesc": "Ensure that network endpoints are private",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-02"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled.",
+          "displayName": "Effect"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/apiServerAccessProfile.enablePrivateCluster",
+            "notEquals": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

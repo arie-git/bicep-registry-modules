@@ -1,0 +1,61 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-07 - Deny Cross-Origin Resource Sharing (CORS) from all domains'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site should not have CORS configured to allow every resource to access your apps",
+    "description": "This policy enforces that Cross-Origin Resource Sharing (CORS) should not allow all domains (wildcard) to access the app. Only allow required domains to interact with the app.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteCORSAllowAnyResource",
+        "severity": 3,
+        "controlId": "drcp-aps-07",
+        "controlDesc": "Deny Cross-Origin Resource Sharing (CORS) from all domains",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-07"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites/config"
+          },
+          {
+            "count": {
+              "field": "Microsoft.Web/sites/config/web.cors.allowedOrigins[*]",
+              "where": {
+                "field": "Microsoft.Web/sites/config/web.cors.allowedOrigins[*]",
+                "equals": "*"
+              }
+            },
+            "greater": 0
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

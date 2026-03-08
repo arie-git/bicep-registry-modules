@@ -1,0 +1,161 @@
+metadata name = 'Action Groups'
+metadata description = 'This module deploys an Action Group.'
+metadata owner = 'AMCCC'
+metadata complianceVersion = '20250328'
+metadata compliance = 'This is a utility module. No specific compliance requirements.'
+
+// TODO - Array to types
+
+@description('Required. The name of the action group.')
+param name string
+
+@description('Required. The short name of the action group.')
+param groupShortName string
+
+@description('Optional. Indicates whether this action group is enabled. If an action group is not enabled, then none of its receivers will receive communications.')
+param enabled bool = true
+
+@description('Optional. Array of role assignments to create.')
+param roleAssignments roleAssignmentType?
+
+@description('Optional. The list of email receivers that are part of this action group.')
+param emailReceivers array?
+
+@description('Optional. The list of Event Hub receivers that are part of this action group.')
+param eventHubReceivers array?
+
+@description('Optional. The list of SMS receivers that are part of this action group.')
+param smsReceivers array?
+
+@description('Optional. The list of webhook receivers that are part of this action group.')
+param webhookReceivers array?
+
+@description('Optional. The list of ITSM receivers that are part of this action group.')
+param itsmReceivers array?
+
+@description('Optional. The list of AzureAppPush receivers that are part of this action group.')
+param azureAppPushReceivers array?
+
+@description('Optional. The list of AutomationRunbook receivers that are part of this action group.')
+param automationRunbookReceivers array?
+
+@description('Optional. The list of voice receivers that are part of this action group.')
+param voiceReceivers array?
+
+@description('Optional. The list of logic app receivers that are part of this action group.')
+param logicAppReceivers array?
+
+@description('Optional. The list of function receivers that are part of this action group.')
+param azureFunctionReceivers array?
+
+@description('Optional. The list of ARM role receivers that are part of this action group. Roles are Azure RBAC roles and only built-in roles are supported.')
+param armRoleReceivers array?
+
+@description('Optional. Tags of the resource.')
+param tags object?
+
+@description('Optional. Enable/Disable usage telemetry for module.')
+param enableTelemetry bool = true
+
+@description('Optional. Location for all resources.')
+param location string = 'global'
+
+import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId as telemetryId } from '../../../../bicep-shared/environments.bicep'
+var specificBuiltInRoleNames = {}
+
+var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
+
+var versionInfo = loadJsonContent('version.json')
+var moduleVersion = versionInfo.version
+
+var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemetryAVMversion: moduleVersion},tags??{})
+
+var formattedRoleAssignments = [
+  for (roleAssignment, index) in (roleAssignments ?? []): union(roleAssignment, {
+    roleDefinitionId: builtInRoleNames[?roleAssignment.roleDefinitionIdOrName] ?? (contains(
+        roleAssignment.roleDefinitionIdOrName,
+        '/providers/Microsoft.Authorization/roleDefinitions/'
+      )
+      ? roleAssignment.roleDefinitionIdOrName
+      : subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAssignment.roleDefinitionIdOrName))
+  })
+]
+
+#disable-next-line no-deployments-resources
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+  name: take('${telemetryId}.res.insights-actiongroup.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+      outputs: {
+        telemetry: {
+          type: 'String'
+          value: 'For more information, see https://aka.ms/avm/TelemetryInfo'
+        }
+      }
+    }
+  }
+}
+
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+  name: name
+  location: location
+  tags: finalTags
+  properties: {
+    groupShortName: groupShortName
+    enabled: enabled
+    emailReceivers: emailReceivers
+    eventHubReceivers: eventHubReceivers
+    smsReceivers: smsReceivers
+    webhookReceivers: webhookReceivers
+    itsmReceivers: itsmReceivers
+    azureAppPushReceivers: azureAppPushReceivers
+    automationRunbookReceivers: automationRunbookReceivers
+    voiceReceivers: voiceReceivers
+    logicAppReceivers: logicAppReceivers
+    azureFunctionReceivers: azureFunctionReceivers
+    armRoleReceivers: armRoleReceivers
+  }
+}
+
+resource actionGroup_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
+    name: roleAssignment.?name ?? guid(actionGroup.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
+    properties: {
+      roleDefinitionId: roleAssignment.roleDefinitionId
+      principalId: roleAssignment.principalId
+      description: roleAssignment.?description
+      principalType: roleAssignment.?principalType
+      condition: roleAssignment.?condition
+      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condtion is set
+      delegatedManagedIdentityResourceId: roleAssignment.?delegatedManagedIdentityResourceId
+    }
+    scope: actionGroup
+  }
+]
+
+@description('The resource group the action group was deployed into.')
+output resourceGroupName string = resourceGroup().name
+
+@description('The name of the action group.')
+output name string = actionGroup.name
+
+@description('The resource ID of the action group.')
+output resourceId string = actionGroup.id
+
+@description('The location the resource was deployed into.')
+output location string = actionGroup.location
+
+@description('Is there evidence of usage in non-compliance with policies?')
+output evidenceOfNonCompliance bool = false
+
+// =============== //
+//   Definitions   //
+// =============== //
+
+import {
+  roleAssignmentType
+} from '../../../../bicep-shared/types.bicep'

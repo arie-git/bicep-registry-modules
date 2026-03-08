@@ -1,0 +1,97 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-03 - Deny next hop as internet'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Network Deny routes with next hop type Internet bypassing central firewalls",
+    "description": "This policy prevents 'Internet' as next hop in route tables except for given routes address prefixes.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "NetworkRTNextHopTypeInternetBGP",
+        "severity": 3,
+        "controlId": "drcp-sub-03",
+        "controlDesc": "Deny next hop as internet",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "listOfAllowedRoutesAddressPrefixes": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed AddressPrefixes",
+          "description": "The list of allowed addressPrefixes for Internet routing."
+        },
+        "defaultValue": [
+          "GatewayManager"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/routeTables/routes"
+          },
+          {
+            "field": "Microsoft.Network/routeTables/routes/nextHopType",
+            "equals": "Internet"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "value": "[resourceGroup().name]",
+                    "notLike": "*-agw-rg"
+                  },
+                  {
+                    "field": "Microsoft.Network/routeTables/routes/addressPrefix",
+                    "notIn": "[parameters('listOfAllowedRoutesAddressPrefixes')]"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "value": "[resourceGroup().name]",
+                    "like": "*-agw-rg"
+                  },
+                  {
+                    "field": "Microsoft.Network/routeTables/routes/addressPrefix",
+                    "notIn": "[parameters('listOfAllowedRoutesAddressPrefixes')]"
+                  },
+                  {
+                    "field": "Microsoft.Network/routeTables/routes/addressPrefix",
+                    "notEquals": "0.0.0.0/0"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

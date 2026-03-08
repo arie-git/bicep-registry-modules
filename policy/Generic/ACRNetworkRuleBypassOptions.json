@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cr-04 - Public network access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP ACR Trusted Microsoft services should be allowed",
+    "description": "This policy enforces that the option 'Allow trusted Microsoft services to access this container registry' is enabled for vulnerability scanning.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Container Registry",
+        "name": "ACRNetworkRuleBypassOptions",
+        "severity": 3,
+        "controlId": "drcp-cr-04",
+        "controlDesc": "Public network access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Container+Registry",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-04"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerRegistry/registries"
+          },
+          {
+            "field": "Microsoft.ContainerRegistry/registries/networkRuleBypassOptions",
+            "notEquals": "AzureServices"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

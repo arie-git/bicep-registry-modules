@@ -1,0 +1,73 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-14 - Deny weak TLS Cipher Suites in App Service'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-14 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Deny lower TLS Cipher Suite versions",
+    "description": "This policy requires App Service sites to use a recent TLS Cipher Suite version. The recommended minimal cipher suite of the Nationaal Cyber Security Centrum are rquired for App Service Environment to function correctly.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteMinimumTlsCipherSuite",
+        "severity": 3,
+        "controlId": "drcp-aps-14",
+        "controlDesc": "Deny weak TLS Cipher Suites in App Service",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-14"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      },
+      "allowedMinTlsCipherSuites": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Minimal TLS Cipher Suite",
+          "description": "The allowed minimale TLS Cipher Suite."
+        },
+        "defaultValue": [
+          "TLS_AES_256_GCM_SHA384",
+          "TLS_AES_128_GCM_SHA256"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "AllOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites"
+          },
+          {
+            "field": "Microsoft.Web/sites/hostingEnvironmentProfile.id",
+            "exists": "false"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Web/sites/config",
+          "name": "web",
+          "existenceCondition": {
+            "field": "Microsoft.Web/sites/config/minTlsCipherSuite",
+            "in": "[parameters('allowedMinTlsCipherSuites')]"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-redis-09 - Enforce Zone Redundancy'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#IncidentremediationRedis#drcp-redis-09 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Redis Enforce Zone Redundancy",
+    "description": "This policy enforces Zone Redundancy for Azure Managed Redis.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Redis",
+        "name": "RedisEnforceZoneRedundancy",
+        "severity": 3,
+        "controlId": "drcp-redis-09",
+        "controlDesc": "Enforce Zone Redundancy.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Redis",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#/IncidentremediationRedis-drcp-redis-09"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Cache/redisEnterprise"
+          },
+          {
+            "field": "Microsoft.Cache/redisEnterprise/highAvailability",
+            "notEquals": "Enabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

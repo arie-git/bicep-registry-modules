@@ -1,0 +1,9 @@
+{
+  "name": "DRCP-Policy",
+  "displayName": "APG DRCP Policy",
+  "description": "APG DRCP policies on subscription.",
+  "version": "1.0.0",
+  "category": "APG DRCP Policy",
+  "systemAssignedManagedIdentity": true,
+  "varName": "drcpPolicy"
+}

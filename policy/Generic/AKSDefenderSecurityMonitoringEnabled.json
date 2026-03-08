@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-18 - Use the Microsoft Defender for Cloud built-in threat detection capability and enable Microsoft Defender for your Azure Kubernetes Service'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-18 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS Defender security monitoring enabled",
+    "description": "Microsoft Defender for Containers provides cloud-native Kubernetes security capabilities including environment hardening, workload protection, and run-time protection. When you enable the SecurityProfile.AzureDefender on your Azure Kubernetes Service cluster, an agent is deployed to your cluster to collect security event data. Learn more about Microsoft Defender for Containers in https://docs.microsoft.com/azure/defender-for-cloud/defender-for-containers-introduction?tabs=defender-for-container-arch-aks.",
+    "metadata": {
+      "version": "2.0.0",
+      "category": "APG DRCP Policy",
+      "status": "Active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSDefenderSecurityMonitoringEnabled",
+        "severity": 3,
+        "controlId": "drcp-aks-18",
+        "controlDesc": "Defender for Cloud",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-18"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/securityProfile.defender.securityMonitoring.enabled",
+            "notEquals": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

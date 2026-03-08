@@ -1,0 +1,75 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cosmos-05 - Enforce TLS 1.2 or newer'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#IncidentremediationCosmosDB#drcp-cosmos-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP CosmosDB Minimum TLS version",
+    "mode": "All",
+    "description": "This policy denies enabling a TLS version on the CosmosDB implementations that is less then required.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Cosmos DB",
+        "name": "CosmosDBMinimumTlsVersion",
+        "severity": 3,
+        "controlId": "drcp-cosmos-05",
+        "controlDesc": "Enforce TLS 1.2 or newer",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Cosmos+DB",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#/IncidentremediationCosmosDB-drcp-cosmos-05"
+      }
+    },
+    "parameters": {
+      "minimumTlsVersion": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Minimum TLS Version",
+          "description": "Minimum version of TLS required to access data in the CosmosDB."
+        },
+        "allowedValues": [
+          "Tls12",
+          "Tls13"
+        ],
+        "defaultValue": "Tls12"
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Disabled or Deny."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DocumentDB/databaseAccounts"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.DocumentDB/databaseAccounts/minimalTlsVersion",
+                "exists": false
+              },
+              {
+                "field": "Microsoft.DocumentDB/databaseAccounts/minimalTlsVersion",
+                "less": "[parameters('minimumTlsVersion')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

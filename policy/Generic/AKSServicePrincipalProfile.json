@@ -1,0 +1,60 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-03 - Ensure that authorization and authentication use the AzureAD'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS Managed identity enabled",
+    "description": "Use managed identities to wrap around service principals, simplify cluster management and avoid the complexity required to managed service principals. Learn more at: https://aka.ms/aks-update-managed-identities.",
+    "metadata": {
+      "version": "1.0.1",
+      "category": "APG DRCP Policy",
+      "status": "Active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSServicePrincipalProfile",
+        "severity": 3,
+        "controlId": "drcp-aks-03",
+        "controlDesc": "Ensure that authorization and authentication use Microsoft Entra ID",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-03"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled.",
+          "portalReview": true
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/servicePrincipalProfile",
+            "exists": "True"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/servicePrincipalProfile.clientId",
+            "notEquals": "msi"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

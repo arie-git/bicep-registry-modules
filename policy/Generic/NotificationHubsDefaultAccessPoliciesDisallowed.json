@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ntf-01 - Disallow default access policies'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Notification+Hubs#IncidentremediationNotificationHubs-drcp-ntf-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Notification Hubs Disallow default access policies",
+    "description": "When an Azure Notification Hub instance is created, Azure generates two default policies, named 'DefaultFullSharedAccessSignature', which has full privileges to the Azure Notification Hub instance, and 'DefaultListenSharedAccessSignature' which only has 'listen' privileges to the Azure Notification Hub Instance. These two policies are meant to be used in the Azure back-end only and should not be exposed to client applications. Therefore, these should be removed and recreated using custom names.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Notification Hubs",
+        "name": "NotificationHubsDefaultAccessPoliciesDisallowed",
+        "severity": 3,
+        "controlId": "drcp-ntf-01",
+        "controlDesc": "Default Access policies",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Notification+Hubs",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Notification+Hubs#IncidentremediationNotificationHubs-drcp-ntf-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "auditIfNotExists",
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.NotificationHubs/namespaces/notificationHubs/authorizationRules"
+          },
+          {
+            "field": "name",
+            "In": [
+              "DefaultFullSharedAccessSignature",
+              "DefaultListenSharedAccessSignature"
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

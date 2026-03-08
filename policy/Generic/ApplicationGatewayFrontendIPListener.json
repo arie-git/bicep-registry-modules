@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-01 - Frontend IP configuration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway Frontend IP listener",
+    "description": "This policy denies whether a public frontend IP configuration in an Application Gateway has an associated listener.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayFrontendIPListener",
+        "severity": 3,
+        "controlId": "drcp-agw-01",
+        "controlDesc": "Frontend IP configuration",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGateways"
+          },
+          {
+            "field": "Microsoft.Network/applicationGateways/frontendIPConfigurations[*].publicIPAddress",
+            "exists": "true"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

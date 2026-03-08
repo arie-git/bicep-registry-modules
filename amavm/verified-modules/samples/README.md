@@ -1,0 +1,1 @@
+This folder will contains sample application deployments showcasing use of verified modules in creating IaC deployments.

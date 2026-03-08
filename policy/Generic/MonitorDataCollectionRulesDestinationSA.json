@@ -1,0 +1,117 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amo-04 - Restrict destination Storage Account'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Data Collection Rule Destination Storage Account",
+    "mode": "All",
+    "description": "This policy denies the use of destination Storage Accounts that reside outside of the current subscription.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorDataCollectionRulesDestinationSA",
+        "severity": 3,
+        "controlId": "drcp-amo-04",
+        "controlDesc": "Azure Monitor Data Collection Rules: Restrict destination Storage Account",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-04"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedSubscriptionIds": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed subscription IDs",
+          "description": "Array of subscriptions IDs that are allowed access."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/dataCollectionRules"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "count": {
+                      "field": "Microsoft.Insights/dataCollectionRules/destinations.storageAccounts[*]",
+                      "where": {
+                        "value": "[split(current('Microsoft.Insights/dataCollectionRules/destinations.storageAccounts[*].storageAccountResourceId'), '/')[2]]",
+                        "notIn": "[parameters('allowedSubscriptionIds')]"
+                      }
+                    },
+                    "greater": 0
+                  },
+                  {
+                    "value": "[length(field('Microsoft.Insights/dataCollectionRules/destinations.storageAccounts'))]",
+                    "greater": 0
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "count": {
+                      "field": "Microsoft.Insights/dataCollectionRules/destinations.storageBlobsDirect[*]",
+                      "where": {
+                        "value": "[split(current('Microsoft.Insights/dataCollectionRules/destinations.storageBlobsDirect[*].storageAccountResourceId'), '/')[2]]",
+                        "notIn": "[parameters('allowedSubscriptionIds')]"
+                      }
+                    },
+                    "greater": 0
+                  },
+                  {
+                    "value": "[length(field('Microsoft.Insights/dataCollectionRules/destinations.storageBlobsDirect'))]",
+                    "greater": 0
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "count": {
+                      "field": "Microsoft.Insights/dataCollectionRules/destinations.storageTablesDirect[*]",
+                      "where": {
+                        "value": "[split(current('Microsoft.Insights/dataCollectionRules/destinations.storageTablesDirect[*].storageAccountResourceId'), '/')[2]]",
+                        "notIn": "[parameters('allowedSubscriptionIds')]"
+                      }
+                    },
+                    "greater": 0
+                  },
+                  {
+                    "value": "[length(field('Microsoft.Insights/dataCollectionRules/destinations.storageTablesDirect'))]",
+                    "greater": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

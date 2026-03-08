@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-appi-01 - Authentication'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplicationInsights#drcp-appi-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Insights disable local authentication",
+    "description": "This policy prevents the API Keys from being used to access Application Insights Logs.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Insights",
+        "name": "ApplicationInsightsDisableLocalAuth",
+        "severity": 3,
+        "controlId": "drcp-appi-01",
+        "controlDesc": "Authentication",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Insights",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplication+Insights-drcp-appi-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled or Audit."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/components"
+          },
+          {
+            "field": "Microsoft.Insights/components/DisableLocalAuth",
+            "notEquals": true
+          },
+          {
+            "field": "tags['usedBy']",
+            "notEquals": "PublicSource"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-appi-04 - Diagnostic settings'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplicationInsights#drcp-appi-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Insights Diagnostic Settings exclusions",
+    "description": "This policy disables specific exports in Application Insights.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Insights",
+        "name": "ApplicationInsightsDiagnosticSettings",
+        "severity": 3,
+        "controlId": "drcp-appi-04",
+        "controlDesc": "Diagnostic settings",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Insights",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplication+Insights-drcp-appi-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Disabled or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled",
+          "Audit"
+        ],
+        "defaultValue": "Audit"
+      },
+      "disallowedExportCategories": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Disallowed Categories",
+          "description": "List of disallowed Diagnostic Settings categories ."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "count": {
+              "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                    "in": "[parameters('disallowedExportCategories')]"
+                  },
+                  {
+                    "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                    "notEquals": "false"
+                  }
+                ]
+              }
+            },
+            "greaterOrEquals": 1
+          },
+          {
+            "count": {
+              "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+              "where": {
+                "anyOf": [
+                  {
+                    "allOf": [
+                      {
+                        "field": "microsoft.insights/diagnosticSettings/logs[*].categoryGroup",
+                        "equals": "allLogs"
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                        "notEquals": "false"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "greaterOrEquals": 1
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

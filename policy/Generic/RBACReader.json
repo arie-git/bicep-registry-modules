@@ -1,0 +1,94 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The Reader RBAC role is only allowed to be assigned to a given set of principals. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC Reader role",
+    "description": "This policy ensures that the Reader RBAC role is only assigned to a given set of principals.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACReader",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "roleDefinitionId": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of Reader Role.",
+          "displayName": "Role Definition Id of Reader Role"
+        },
+        "defaultValue": "acdd72a7-3385-48ef-bd42-f606fba81ae7"
+      },
+      "notAllowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Not allowed AAD principal Ids.",
+          "displayName": "Not allowed AAD principal Ids"
+        },
+        "defaultValue": []
+      },
+      "notAllowedPrincipalType": {
+        "type": "Array",
+        "metadata": {
+          "description": "Which principal type to disallow, e.g. 'User, Group.'",
+          "displayName": "Disallowed Principal Types"
+        },
+        "allowedValues": [
+          "User"
+        ],
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+            "contains": "[parameters('roleDefinitionId')]"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Authorization/roleAssignments/principalId",
+                "in": "[parameters('notAllowedPrincipalIds')]"
+              },
+              {
+                "field": "Microsoft.Authorization/roleAssignments/principalType",
+                "in": "[parameters('notAllowedPrincipalType')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cosmos-01 - Disabled Public network access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#IncidentremediationCosmosDB#drcp-cosmos-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP CosmosDB Public Network Access restricted to selected Azure data center IPs",
+    "mode": "Indexed",
+    "description": "This policy restricts public network access to CosmosDB unless the added IP address is from the Azure data centers (not China or US gov). See IP list at https://aka.ms/cosmosdb-firewall.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Cosmos DB",
+        "name": "CosmosDBPublicNetworkDisabledOrSelectedIPs",
+        "severity": 3,
+        "controlId": "drcp-cosmos-01",
+        "controlDesc": "Disable public network access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Cosmos+DB",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#/IncidentremediationCosmosDB-drcp-cosmos-01"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Policy Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedIPs": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed IP Addresses",
+          "description": "The list of allowed public IP addresses."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DocumentDB/databaseAccounts"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.DocumentDB/databaseAccounts/publicNetworkAccess",
+                    "equals": "Enabled"
+                  },
+                  {
+                    "value": "[length(parameters('allowedIPs'))]",
+                    "equals": 0
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.DocumentDB/databaseAccounts/publicNetworkAccess",
+                    "equals": "Enabled"
+                  },
+                  {
+                    "not": {
+                      "field": "Microsoft.DocumentDB/databaseAccounts/ipRules[*].ipAddressOrRange",
+                      "in": "[parameters('allowedIPs')]"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

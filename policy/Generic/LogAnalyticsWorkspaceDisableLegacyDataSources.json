@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-log-04 - Legacy Features'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Log+Analytics+Workspace#IncidentremediationLogAnalyticsWorkspace#drcp-log-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Log Analytics Workspace Disable legacy data sources",
+    "description": "This policy disables data sources from legacy features such as System center, Legacy Agents, Legacy Storage Account Logs and Legacy Activity Logs Connectors.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Log Analytics Workspace",
+        "name": "LogAnalyticsWorkspaceDisableLegacyDataSources",
+        "severity": 3,
+        "controlId": "drcp-log-04",
+        "controlDesc": "Legacy features",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Log+Analytics+Workspace",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Log+Analytics#IncidentremediationLogAnalytics-drcp-log-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Disabled or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled",
+          "Audit"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.OperationalInsights/workspaces/dataSources"
+          },
+          {
+            "field": "type",
+            "equals": "Microsoft.OperationalInsights/workspaces/storageinsightconfigs"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-17 - Location restriction'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-17 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic allowed locations for Cosmos DB",
+    "description": "This policy restricts the locations for Azure Cosmos DB.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericAllowedLocationsCosmosDB",
+        "severity": 3,
+        "controlId": "drcp-sub-17",
+        "controlDesc": "Location restriction (Azure data center regions)",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-17"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "listOfAllowedLocations": {
+        "type": "Array",
+        "metadata": {
+          "description": "The list of locations that can be specified when deploying Azure Cosmos DB resources.",
+          "strongType": "location",
+          "displayName": "Allowed locations"
+        },
+        "allowedValues": [
+          "global",
+          "westeurope",
+          "northeurope",
+          "swedencentral"
+        ],
+        "defaultValue": [
+          "global"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DocumentDB/databaseAccounts"
+          },
+          {
+            "count": {
+              "field": "Microsoft.DocumentDB/databaseAccounts/Locations[*]",
+              "where": {
+                "value": "[replace(toLower(first(field('Microsoft.DocumentDB/databaseAccounts/Locations[*].locationName'))), ' ', '')]",
+                "in": "[parameters('listOfAllowedLocations')]"
+              }
+            },
+            "notEquals": "[length(field('Microsoft.DocumentDB/databaseAccounts/Locations[*]'))]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

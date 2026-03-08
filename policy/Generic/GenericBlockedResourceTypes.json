@@ -1,0 +1,167 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-18 - Resource type restriction'. Only resources types can be deployed that have been whitelisted as resource provider or component by DRCP. For a list of allowed components, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Azure+components ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic blocked resource types",
+    "description": "This policy ensures that resource types that have been blacklisted by DRCP cannot be provisioned or altered.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericBlockedResourceTypes",
+        "severity": 3,
+        "controlId": "drcp-sub-18",
+        "controlDesc": "Resource type restriction",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-18"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "field": "type",
+            "like": "Microsoft.Databricks/workspaces/virtualNetworkPeerings*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.DocumentDB/cassandraClusters*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.DocumentDB/mongoClusters*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.EventGrid/locations*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.EventGrid/partner*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.EventGrid/domain*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.EventGrid/operation*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.EventGrid/topic*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/azureFirewalls*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/bastionHosts*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/ddosProtectionPlans*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/expressRouteCircuits*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/frontdoors*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/networkManagers*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/p2sVpnGateways*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/virtualHubs*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Network/virtualWans*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.OperationalInsights/clusters*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/servers/jobAgents*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/managedInstances*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/servers/databases/syncGroups*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/servers/dnsAliases*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Web/freeTrialStaticWebApps*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/encryptionScopes*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/networkSecurityPerimeterAssociationProxies*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/privateEndpointConnectionProxies*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/privateLinkResources*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/attestation*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/locations*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/operations*"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

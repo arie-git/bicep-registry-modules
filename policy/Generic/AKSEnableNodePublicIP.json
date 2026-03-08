@@ -1,0 +1,69 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-02 - Ensure that network endpoints are private'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS Enable node public IP",
+    "description": "This policy prevents node public IP address for AKS.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSEnableNodePublicIP",
+        "severity": 3,
+        "controlId": "drcp-aks-02",
+        "controlDesc": "Ensure that network endpoints are private",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-02"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled.",
+          "displayName": "Effect"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "equals": "Microsoft.ContainerService/managedClusters",
+            "field": "type"
+          },
+          {
+            "count": {
+              "field": "Microsoft.ContainerService/managedClusters/agentPoolProfiles[*]",
+              "where": {
+                "anyOf": [
+                  {
+                    "exists": "False",
+                    "field": "Microsoft.ContainerService/managedClusters/agentPoolProfiles[*].enableNodePublicIP"
+                  },
+                  {
+                    "equals": "true",
+                    "field": "Microsoft.ContainerService/managedClusters/agentPoolProfiles[*].enableNodePublicIP"
+                  }
+                ]
+              }
+            },
+            "greater": 0
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

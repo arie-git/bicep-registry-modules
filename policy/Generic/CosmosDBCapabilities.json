@@ -1,0 +1,79 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cosmos-06 - Only NoSQL databases'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#IncidentremediationCosmosDB#drcp-cosmos-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP CosmosDB Capabilities disabled",
+    "description": "This policy allows only NoSQL as capability with Cosmos DB.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Cosmos DB",
+        "name": "CosmosDBCapabilities",
+        "severity": 3,
+        "controlId": "drcp-cosmos-06",
+        "controlDesc": "Only NoSQL databases",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Cosmos+DB",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#/IncidentremediationCosmosDB-drcp-cosmos-06"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "listOfCapabilities": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Disabled capabilities",
+          "description": "The list of disabled capabilities."
+        },
+        "allowedValues": [
+          "EnableMongo",
+          "EnableCassandra",
+          "EnableTable",
+          "EnableGremlin"
+        ],
+        "defaultValue": [
+          "EnableMongo",
+          "EnableCassandra",
+          "EnableTable",
+          "EnableGremlin"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DocumentDB/databaseAccounts"
+          },
+          {
+            "count": {
+              "field": "Microsoft.DocumentDB/databaseAccounts/capabilities[*]",
+              "where": {
+                "field": "Microsoft.DocumentDB/databaseAccounts/capabilities[*].name",
+                "in": "[parameters('listOfCapabilities')]"
+              }
+            },
+            "greater": 0
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

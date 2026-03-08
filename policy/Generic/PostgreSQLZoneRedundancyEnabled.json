@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-10 - Enforce Zone Redundancy'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-10 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Flexible server should have Zone Redundancy enabled",
+    "mode": "All",
+    "description": "This policy checks if zone redundancy is enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLZoneRedundancyEnabled",
+        "severity": 3,
+        "controlId": "drcp-psql-10",
+        "controlDesc": "Enforce Zone Redundancy",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-10"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Disabled or Deny."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DBForPostgreSql/flexibleServers"
+          },
+          {
+            "field": "Microsoft.DBForPostgreSql/flexibleServers/highAvailability.mode",
+            "notEquals": "ZoneRedundant"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

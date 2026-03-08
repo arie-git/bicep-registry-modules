@@ -1,0 +1,4 @@
+Incident remediation Log Analytics
+==================================
+
+.. note:: This article is now part of :doc:`Incident remediation Azure Monitor <../Monitor/Incident-remediation>`

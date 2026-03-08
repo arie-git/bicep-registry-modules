@@ -1,0 +1,71 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-evh-01 - Disable Public Network Access to Azure Event Hub'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP EventHub Public network access enabled",
+    "mode": "All",
+    "description": "This policy denies the enablement of public access on Event Hubs.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Event Hubs",
+        "name": "EventHubPublicNetworkAccessEnabled",
+        "severity": 3,
+        "controlId": "drcp-evh-01",
+        "controlDesc": "Disable public network access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Event+Hubs",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs-drcp-evh-01"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "equals": "Microsoft.EventHub/namespaces/networkRuleSets",
+                "field": "type"
+              },
+              {
+                "notEquals": "Disabled",
+                "field": "Microsoft.EventHub/namespaces/networkRuleSets/publicNetworkAccess"
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "equals": "Microsoft.EventHub/namespaces",
+                "field": "type"
+              },
+              {
+                "notEquals": "Disabled",
+                "field": "Microsoft.EventHub/namespaces/publicNetworkAccess"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

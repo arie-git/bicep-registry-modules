@@ -1,0 +1,71 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sbns-03 - Disabled Public Network Access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Service+Bus#IncidentremediationServiceBus#drcp-sbns-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Service Bus Public network access enabled",
+    "description": "This policy prevents public network access to Azure Service Bus resources.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Service Bus",
+        "name": "ServiceBusPublicNetworkAccessEnabled",
+        "severity": 3,
+        "controlId": "drcp-sbns-03",
+        "controlDesc": "Disable Public Network Access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Service+Bus",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Service+Bus#Incident+remediation+Service+Bus-drcp-sbns-03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "equals": "Microsoft.ServiceBus/namespaces/networkRuleSets",
+                "field": "type"
+              },
+              {
+                "notEquals": "Disabled",
+                "field": "Microsoft.ServiceBus/namespaces/networkRuleSets/publicNetworkAccess"
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "equals": "Microsoft.ServiceBus/namespaces",
+                "field": "type"
+              },
+              {
+                "notEquals": "Disabled",
+                "field": "Microsoft.ServiceBus/namespaces/publicNetworkAccess"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

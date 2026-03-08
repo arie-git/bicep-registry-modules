@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-evh-04 - Trusted Services'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP EventHub Bypass Azure services",
+    "description": "This policy prevents Event Hub access to trusted services.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Event Hubs",
+        "name": "EventHubBypassAzureServices",
+        "severity": 3,
+        "controlId": "drcp-evh-04",
+        "controlDesc": "Trusted services",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Event+Hubs",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs-drcp-evh-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.EventHub/namespaces/networkRuleSets"
+              },
+              {
+                "field": "Microsoft.EventHub/namespaces/networkRuleSets/trustedServiceAccessEnabled",
+                "notEquals": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

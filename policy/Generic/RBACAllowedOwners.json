@@ -1,0 +1,116 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The Owner RBAC role is only allowed to be assigned to a given set of principals. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC Owner role",
+    "description": "This policy ensures that the Owner RBAC role is only assigned to a given set of principals.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACAllowedOwners",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "roleDefinitionId": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of Owner Role.",
+          "displayName": "Role Definition Id of Owner Role"
+        },
+        "defaultValue": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+      },
+      "allowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Allowed AAD principal Ids.",
+          "displayName": "Allowed AAD principal Ids"
+        },
+        "defaultValue": [
+          "acb7577f-b917-41e8-85f5-c2a4722d268f",
+          "40d92bab-507a-43d3-9a53-30a16c0a3966",
+          "1bc73905-64fe-44c2-89df-1493881ddaa2",
+          "751f319e-cec8-4b7a-91a0-24daf0e0f99c",
+          "1a83ed0a-5ee2-4084-922c-3c73f9ec20ad",
+          "166e81a5-751e-4d3d-be2c-02cf8eae8065"
+        ]
+      },
+      "databricksResourceProviderId": {
+        "type": "Array",
+        "metadata": {
+          "description": "Application Object Id of Databricks Resource Provider",
+          "displayName": "Application Object Id of Databricks Resource Provider"
+        },
+        "defaultValue": [
+          "81e997ed-bf74-46a4-8f7d-f205e8e23048"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+            "contains": "[parameters('roleDefinitionId')]"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "value": "[resourceGroup().name]",
+                    "notLike": "*-adbmanaged-rg"
+                  },
+                  {
+                    "field": "Microsoft.Authorization/roleAssignments/principalId",
+                    "notIn": "[parameters('allowedPrincipalIds')]"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "value": "[resourceGroup().name]",
+                    "like": "*-adbmanaged-rg"
+                  },
+                  {
+                    "field": "Microsoft.Authorization/roleAssignments/principalId",
+                    "notIn": "[union(parameters('allowedPrincipalIds'), parameters('databricksResourceProviderId'))]"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-06 - WAF mode'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway Web Application Firewall should use the specified mode",
+    "description": "This policy enforces the mode ('Prevention' and/or 'Detection') for Web Application Firewalls. 'Prevention' is required for production usage.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayWAFMode",
+        "severity": 3,
+        "controlId": "drcp-agw-06",
+        "controlDesc": "WAF mode",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-06"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "modeRequirement": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed WAF modes",
+          "description": "Allowed modes for the WAF."
+        },
+        "allowedValues": [
+          "Prevention",
+          "Detection"
+        ],
+        "defaultValue": [
+          "Prevention"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies"
+          },
+          {
+            "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/policySettings.mode",
+            "notIn": "[parameters('modeRequirement')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

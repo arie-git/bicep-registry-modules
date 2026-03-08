@@ -1,0 +1,125 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-20 - DRCP platform critical configuration protection'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Alerts+and+incidents ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP LMA Ensure Action Group properties",
+    "description": "This policy ensures that the Action Group provided by DRCP has its specific values in place.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "LMAActionGroupEnsureProperties",
+        "severity": 3,
+        "controlId": "drcp-sub-20",
+        "controlDesc": "DRCP platform critical configuration protection",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-20"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "customerActionGroupName": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Customer Action Group name",
+          "description": "The name of the Action Group deployed by DRCP in the customer environment."
+        }
+      },
+      "webhookIdentifierUri": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Webhook identifier uri",
+          "description": "The identifier uri of the webhook."
+        }
+      },
+      "webhookAppObjectId": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Webhook application object Id",
+          "description": "The object id of the App Registration which is used on the webhook for authentication."
+        }
+      },
+      "webhookAppServiceUri": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Webhook service uri",
+          "description": "The service uri of the webhook."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/ActionGroups"
+          },
+          {
+            "field": "name",
+            "equals": "[parameters('customerActionGroupName')]"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Insights/actiongroups/enabled",
+                "notEquals": true
+              },
+              {
+                "count": {
+                  "field": "Microsoft.Insights/actiongroups/webhookReceivers[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/actiongroups/webhookReceivers[*].identifierUri",
+                        "equals": "[parameters('webhookIdentifierUri')]"
+                      },
+                      {
+                        "field": "Microsoft.Insights/actiongroups/webhookReceivers[*].objectId",
+                        "equals": "[parameters('webhookAppObjectId')]"
+                      },
+                      {
+                        "field": "Microsoft.Insights/actiongroups/webhookReceivers[*].serviceUri",
+                        "equals": "[parameters('webhookAppServiceUri')]"
+                      },
+                      {
+                        "field": "Microsoft.Insights/actiongroups/webhookReceivers[*].useAadAuth",
+                        "equals": true
+                      },
+                      {
+                        "field": "Microsoft.Insights/actiongroups/webhookReceivers[*].tenantId",
+                        "equals": "c1f94f0d-9a3d-4854-9288-bb90dcf2a90d"
+                      },
+                      {
+                        "field": "Microsoft.Insights/actiongroups/webhookReceivers[*].useCommonAlertSchema",
+                        "equals": true
+                      }
+                    ]
+                  }
+                },
+                "notEquals": 1
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

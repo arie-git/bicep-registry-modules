@@ -1,0 +1,75 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-12 - Ensure that clusters are running a supported version'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService#drcp-aks-12 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Kubernetes Services should be upgraded to a non-vulnerable Kubernetes version",
+    "description": "Upgrade your Kubernetes service cluster to a later Kubernetes version to protect against known vulnerabilities in your current Kubernetes version.",
+    "metadata": {
+      "version": "1.0",
+      "category": "APG DRCP Policy",
+      "status": "Active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSClusterVersion",
+        "severity": 3,
+        "controlId": "drcp-aks-12",
+        "controlDesc": "Ensure that clusters are running a supported version",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-12"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.ContainerService/managedClusters/kubernetesVersion",
+                "Like": "1.0*"
+              },
+              {
+                "field": "Microsoft.ContainerService/managedClusters/kubernetesVersion",
+                "Like": "1.1*"
+              },
+              {
+                "field": "Microsoft.ContainerService/managedClusters/kubernetesVersion",
+                "Like": "1.2*"
+              },
+              {
+                "field": "Microsoft.ContainerService/managedClusters/kubernetesVersion",
+                "Like": "1.30*"
+              },
+              {
+                "field": "Microsoft.ContainerService/managedClusters/kubernetesVersion",
+                "Like": "1.31*"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

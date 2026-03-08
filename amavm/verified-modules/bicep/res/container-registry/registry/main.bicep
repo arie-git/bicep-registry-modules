@@ -1,0 +1,568 @@
+metadata name = 'Azure Container Registry'
+metadata description = 'This module deploys Azure Container Registry.'
+metadata owner = 'AMCCC'
+metadata complianceVersion = '20240805'
+metadata compliance = '''Compliant usage of Azure Container Registry requires:
+- sku: 'premium'
+- acrAdminUserEnabled: false
+- publicNetworkAccess: 'Disabled'
+- azureADAuthenticationAsArmPolicyStatus: 'enabled'
+- anonymousPullEnabled: false
+'''
+
+@description('Required. Name of your Azure Container Registry.')
+@minLength(5)
+@maxLength(50)
+param name string
+
+@description('''Optional. Enable admin user that have push / pull permission to the registry.
+
+Setting this parameter to any other than false, will make the Container Registry resource non-compliant.''')
+param acrAdminUserEnabled bool = false
+
+@description('Optional. Location for all resources.')
+param location string = resourceGroup().location
+
+@description('Optional. Array of role assignments to create.')
+param roleAssignments roleAssignmentType
+
+@description('''Optional. Tier of your Azure container registry.
+
+Setting this parameter to any other than 'Premium', won't allow to apply the configurations to make this resource compliant.''')
+@allowed([
+  'Basic'
+  'Premium'
+  'Standard'
+])
+param sku string = 'Premium'
+
+@allowed([
+  'disabled'
+  'enabled'
+])
+@description('Optional. The value that indicates whether the export policy is enabled or not.')
+param exportPolicyStatus string = 'disabled'
+
+@allowed([
+  'disabled'
+  'enabled'
+])
+@description('Optional. The value that indicates whether the quarantine policy is enabled or not. Note, requires the \'sku\' to be \'Premium\'.')
+param quarantinePolicyStatus string = 'disabled'
+
+@allowed([
+  'disabled'
+  'enabled'
+])
+@description('Optional. The value that indicates whether the trust policy is enabled or not. Note, requires the \'sku\' to be \'Premium\'.')
+param trustPolicyStatus string = 'disabled'
+
+@allowed([
+  'disabled'
+  'enabled'
+])
+@description('Optional. The value that indicates whether the retention policy is enabled or not.')
+param retentionPolicyStatus string = 'enabled'
+
+@description('Optional. The number of days to retain an untagged manifest after which it gets purged.')
+param retentionPolicyDays int = 15
+
+@allowed([
+  'disabled'
+  'enabled'
+])
+@description('''Optional. The value that indicates whether the policy for using ARM audience token for a container registr is enabled or not.
+
+Setting this parameter to any other than 'Disabled' i.e. without Entra ID (Azure AD) authentication, will make the Container Registry resource non-compliant.''')
+param azureADAuthenticationAsArmPolicyStatus string = 'enabled'
+
+@allowed([
+  'disabled'
+  'enabled'
+])
+@description('''Optional. Soft Delete policy status. Default is disabled.
+
+Disable Zone redundancy and Remove geo-replications in order to use soft delete.''')
+param softDeletePolicyStatus string = 'disabled'
+
+@description('Optional. The number of days after which a soft-deleted item is permanently deleted.')
+param softDeletePolicyDays int = 7
+
+@description('Optional. Enable a single data endpoint per region for serving data. Not relevant in case of disabled public access. Note, requires the \'sku\' to be \'Premium\'.')
+param dataEndpointEnabled bool = false
+
+@description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled.
+If not specified, it will be disabled by default if private endpoints are set and networkRuleSetIpRules are not set.  Note, requires the \'sku\' to be \'Premium\'.
+
+Setting this parameter to any other than 'Disabled', will make the Container Registry resource non-compliant.''')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param publicNetworkAccess string = 'Disabled'
+
+@description('Optional. The IP ACL rules. Note, requires the \'sku\' to be \'Premium\'.')
+param networkAcls networkAclsType = {
+  bypass: 'AzureServices'
+  defaultAction: 'Deny'
+}
+
+@description('''Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.
+Note, requires the \'sku\' to be \'Premium\'.
+
+Configuring Container Registry without private endpoint, will make the Container Registry resource non-compliant.''')
+param privateEndpoints privateEndpointType
+
+@allowed([
+  'Disabled'
+  'Enabled'
+])
+@description('Optional. Whether or not zone redundancy is enabled for this container registry.')
+param zoneRedundancy string = 'Enabled'
+
+@description('Optional. All replications to create.')
+param replications replicationType
+
+@description('Optional. All webhooks to create.')
+param webhooks webhookType
+
+@description('Optional. The lock settings of the service.')
+param lock lockType
+
+@description('Optional. The managed identity definition for this resource.')
+param managedIdentities managedIdentitiesType = {
+  systemAssigned: true
+}
+
+@description('Optional. The diagnostic settings of the service.')
+param diagnosticSettings diagnosticSettingType
+
+@description('''Optional. Enables registry-wide pull from unauthenticated clients. It's in preview and available in the Standard and Premium service tiers.
+
+Setting this parameter to any other than 'false', will make the Container Registry resource non-compliant.''')
+param anonymousPullEnabled bool = false
+
+@description('Optional. The customer managed key definition.')
+param customerManagedKey customerManagedKeyType
+
+@description('Optional. Array of Cache Rules. Note: This is a preview feature ([ref](https://learn.microsoft.com/en-us/azure/container-registry/tutorial-registry-cache#cache-for-acr-preview)).')
+param cacheRules cacheRuleType[]?
+
+@description('Optional. Credential object containing details to let you authenticate with public or private repository.')
+param credential credentialType?
+
+@description('Optional. Scope maps setting.')
+param scopeMaps scopeMapsType
+
+@description('Optional. Tags of the resource.')
+param tags object?
+
+@description('Optional. Enable/Disable usage telemetry for module.')
+param enableTelemetry bool = true
+
+// =========== //
+// Variables   //
+// =========== //
+
+import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'
+
+var formattedUserAssignedIdentities = reduce(
+  map((managedIdentities.?userAssignedResourceIds ?? []), (id) => { '${id}': {} }),
+  {},
+  (cur, next) => union(cur, next)
+) // Converts the flat array to an object like { '${id1}': {}, '${id2}': {} }
+
+var identity = !empty(managedIdentities)
+  ? {
+      type: (managedIdentities.?systemAssigned ?? false)
+        ? (!empty(managedIdentities.?userAssignedResourceIds ?? {}) ? 'SystemAssigned, UserAssigned' : 'SystemAssigned')
+        : (!empty(managedIdentities.?userAssignedResourceIds ?? {}) ? 'UserAssigned' : 'None')
+      userAssignedIdentities: !empty(formattedUserAssignedIdentities) ? formattedUserAssignedIdentities : null
+    }
+  : null
+
+var specificBuiltInRoleNames = {
+  AcrDelete: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'c2f4ef07-c644-48eb-af81-4b1b4947fb11')
+  AcrImageSigner: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','6cef56e8-d556-48e5-a04f-b8e64114680f')
+  AcrPull: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+  AcrPush: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8311e382-0749-4cb8-b61a-304f252e45ec')
+  AcrQuarantineReader: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','cdda3590-29a3-44f6-95f2-9f980659eb04')
+  AcrQuarantineWriter: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','c8d4ff99-41c3-41a8-9f60-21dfdad59608')
+}
+// Load version from version.json
+var versionInfo = loadJsonContent('version.json')
+var moduleVersion = versionInfo.version
+
+var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
+var finalTags = union(tags ?? {}, {telemetryAVM: telemetryId, telemetryType: 'res', telemetryAVMversion: moduleVersion})
+
+var defaultLogCategoryNames = [
+  'ContainerRegistryRepositoryEvents'
+  'ContainerRegistryLoginEvents'
+]
+var defaultLogCategories = [
+  for category in defaultLogCategoryNames ?? []: {
+    category: category
+  }
+]
+
+// ============ //
+// Dependencies //
+// ============ //
+#disable-next-line no-deployments-resources
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+  name: take(
+    '${telemetryId}.res.containerregistry-registry.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
+    64
+  )
+  properties: {
+    mode: 'Incremental'
+    template: {
+      '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#'
+      contentVersion: '1.0.0.0'
+      resources: []
+      outputs: {
+        telemetry: {
+          type: 'String'
+          value: 'For more information, see https://aka.ms/avm/TelemetryInfo'
+        }
+      }
+    }
+  }
+}
+
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+  name: last(split((customerManagedKey.?keyVaultResourceId ?? 'dummyVault'), '/'))
+  scope: resourceGroup(
+    split((customerManagedKey.?keyVaultResourceId ?? '//'), '/')[2],
+    split((customerManagedKey.?keyVaultResourceId ?? '////'), '/')[4]
+  )
+
+  resource cMKKey 'keys@2023-02-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
+    name: customerManagedKey.?keyName ?? 'dummyKey'
+  }
+}
+
+resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
+  name: last(split(customerManagedKey.?userAssignedIdentityResourceId ?? 'dummyMsi', '/'))
+  scope: resourceGroup(
+    split((customerManagedKey.?userAssignedIdentityResourceId ?? '//'), '/')[2],
+    split((customerManagedKey.?userAssignedIdentityResourceId ?? '////'), '/')[4]
+  )
+}
+
+#disable-next-line use-recent-api-versions
+resource registry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
+  name: name
+  location: location
+  identity: identity
+  tags: finalTags
+  sku: {
+    name: sku
+  }
+  properties: {
+    anonymousPullEnabled: anonymousPullEnabled
+    adminUserEnabled: acrAdminUserEnabled
+    encryption: !empty(customerManagedKey)
+      ? {
+          status: 'enabled'
+          keyVaultProperties: {
+            identity: !empty(customerManagedKey.?userAssignedIdentityResourceId ?? '')
+              ? cMKUserAssignedIdentity.properties.clientId
+              : null
+            keyIdentifier: !empty(customerManagedKey.?keyVersion ?? '')
+              ? '${cMKKeyVault::cMKKey.properties.keyUri}/${customerManagedKey!.keyVersion}'
+              : cMKKeyVault::cMKKey.properties.keyUriWithVersion
+          }
+        }
+      : null
+    policies: {
+      azureADAuthenticationAsArmPolicy: {
+        status: azureADAuthenticationAsArmPolicyStatus
+      }
+      exportPolicy: sku == 'Premium'
+        ? {
+            status: exportPolicyStatus
+          }
+        : null
+      quarantinePolicy: sku == 'Premium'
+        ? {
+            status: quarantinePolicyStatus
+          }
+        : null
+      trustPolicy: sku == 'Premium'
+        ? {
+            type: 'Notary'
+            status: trustPolicyStatus
+          }
+        : null
+      retentionPolicy: sku == 'Premium'
+        ? {
+            days: retentionPolicyDays
+            status: retentionPolicyStatus
+          }
+        : null
+      softDeletePolicy: {
+        retentionDays: softDeletePolicyDays
+        status: softDeletePolicyStatus
+      }
+    }
+    dataEndpointEnabled: dataEndpointEnabled
+    publicNetworkAccess: !empty(publicNetworkAccess)
+      ? any(publicNetworkAccess)
+      : (!empty(privateEndpoints) && empty(networkAcls) ? 'Disabled' : null)
+    networkRuleSet: !empty(networkAcls)
+      ? {
+          defaultAction: networkAcls.?defaultAction ?? 'Deny'
+          ipRules: networkAcls.?ipRules
+        }
+      : null
+    zoneRedundancy: sku == 'Premium' ? zoneRedundancy : null
+  }
+}
+
+module registry_scopeMaps 'scope-map/main.bicep' = [
+  for (scopeMap, index) in (scopeMaps ?? []): {
+    name: take(
+      '${uniqueString(deployment().name, name, location)}-registry-scope-map-${index}-${scopeMap.?name ?? ''}',
+      64
+    )
+    params: {
+      name: scopeMap.?name
+      actions: scopeMap.actions
+      description: scopeMap.?description
+      registryName: registry.name
+    }
+  }
+]
+
+module registry_replications 'replication/main.bicep' = [
+  for (replication, index) in (replications ?? []): {
+    name: take(
+      '${uniqueString(deployment().name, name, location)}-registry-replication-${index}-${replication.?name ?? ''}',
+      64
+    )
+    params: {
+      name: replication.name
+      registryName: registry.name
+      location: replication.location
+      regionEndpointEnabled: replication.?regionEndpointEnabled
+      zoneRedundancy: replication.?zoneRedundancy
+      tags: replication.?tags ?? finalTags
+    }
+  }
+]
+
+module registry_credentialSet 'credential/main.bicep' = if(!empty(credential)){
+  name: take('${uniqueString(deployment().name, registry.name)}-registry-credentials', 64)
+  params: {
+    name: credential.?name!
+    kvPwdSecretUri: credential.?passwordSecretIdentifier!
+    kvUserNameSecretUri: credential.?usernameSecretIdentifier!
+    loginServer: credential.?loginServer!
+    registryName: registry.name
+  }
+}
+
+module registry_cacheRules 'cache-rule/main.bicep' = [for (cacheRule, index) in (cacheRules ?? []): {
+  name: take(
+    '${uniqueString(deployment().name, name, location)}-registry-cache-${index}-${cacheRule.?name ?? ''}',
+    64
+  )
+  params: {
+    registryName: registry.name
+    name: cacheRule.?name ?? replace(replace(cacheRule.sourceRepository, '/', '-'), '.', '-')
+    sourceRepository: cacheRule.sourceRepository
+    targetRepository: cacheRule.targetRepository
+    credentialSetResourceId: !empty(credential) ? registry_credentialSet.outputs.resourceId : null
+    enableTelemetry: false // main module telemetry is used
+  }
+}]
+
+module registry_webhooks 'webhook/main.bicep' = [for (webhook, index) in (webhooks ?? []): {
+    name: take(
+      '${uniqueString(deployment().name, name, location)}-registry-webhook-${index}-${webhook.?name ?? ''}',
+      64
+    )
+    params: {
+      name: webhook.name
+      registryName: registry.name
+      location: webhook.?location ?? location
+      action: webhook.?action
+      customHeaders: webhook.?customHeaders
+      scope: webhook.?scope
+      status: webhook.?status
+      serviceUri: webhook.serviceUri
+      tags: webhook.?tags ?? tags
+    }
+  }
+]
+
+resource registry_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock ?? {}) && lock.?kind != 'None') {
+  name: lock.?name ?? 'lock-${name}'
+  properties: {
+    level: lock.?kind ?? ''
+    notes: lock.?kind == 'CanNotDelete'
+      ? 'Cannot delete resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.'
+  }
+  scope: registry
+}
+
+#disable-next-line use-recent-api-versions
+resource registry_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [
+  for (diagnosticSetting, index) in (diagnosticSettings ?? []): {
+    name: diagnosticSetting.?name ?? '${name}-diagnosticsettings'
+    properties: {
+      storageAccountId: diagnosticSetting.?storageAccountResourceId
+      workspaceId: diagnosticSetting.?workspaceResourceId
+      eventHubAuthorizationRuleId: diagnosticSetting.?eventHubAuthorizationRuleResourceId
+      eventHubName: diagnosticSetting.?eventHubName
+      metrics: [
+        for group in (diagnosticSetting.?metricCategories ?? [{ category: 'AllMetrics' }]): {
+          category: group.category
+          enabled: group.?enabled ?? true
+          timeGrain: null
+        }
+      ]
+      logs: [
+        for group in (diagnosticSetting.?logCategoriesAndGroups ?? defaultLogCategories): {
+          categoryGroup: group.?categoryGroup
+          category: group.?category
+          enabled: group.?enabled ?? true
+        }
+      ]
+      marketplacePartnerId: diagnosticSetting.?marketplacePartnerResourceId
+      logAnalyticsDestinationType: diagnosticSetting.?logAnalyticsDestinationType
+    }
+    scope: registry
+  }
+]
+
+resource registry_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for (roleAssignment, index) in (roleAssignments ?? []): {
+    name: guid(registry.id, roleAssignment.principalId, roleAssignment.roleDefinitionIdOrName)
+    properties: {
+      #disable-next-line use-safe-access
+      roleDefinitionId: contains(builtInRoleNames, roleAssignment.roleDefinitionIdOrName)
+        ? builtInRoleNames[roleAssignment.roleDefinitionIdOrName]
+        : contains(roleAssignment.roleDefinitionIdOrName, '/providers/Microsoft.Authorization/roleDefinitions/')
+            ? roleAssignment.roleDefinitionIdOrName
+            : subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAssignment.roleDefinitionIdOrName)
+      principalId: roleAssignment.principalId
+      description: roleAssignment.?description
+      principalType: roleAssignment.?principalType
+      condition: roleAssignment.?condition
+      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condition is set
+      delegatedManagedIdentityResourceId: roleAssignment.?delegatedManagedIdentityResourceId
+    }
+    scope: registry
+  }
+]
+
+module registry_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0' = [
+  for (privateEndpoint, index) in (privateEndpoints ?? []): {
+    name: '${uniqueString(deployment().name, location)}-registry-privateendpoint-${index}'
+    scope: resourceGroup(privateEndpoint.?resourceGroupName ?? '')
+    params: {
+      name: privateEndpoint.?name ?? '${last(split(registry.id, '/'))}-pep-${privateEndpoint.?service ?? 'registry'}-${index}'
+      privateLinkServiceConnections: privateEndpoint.?isManualConnection != true
+        ? [
+            {
+              name: privateEndpoint.?privateLinkServiceConnectionName ?? '${last(split(registry.id, '/'))}-${privateEndpoint.?service ?? 'registry'}-${index}'
+              properties: {
+                privateLinkServiceId: registry.id
+                groupIds: [
+                  privateEndpoint.?service ?? 'registry'
+                ]
+              }
+            }
+          ]
+        : null
+      manualPrivateLinkServiceConnections: privateEndpoint.?isManualConnection == true
+        ? [
+            {
+              name: privateEndpoint.?privateLinkServiceConnectionName ?? '${last(split(registry.id, '/'))}-${privateEndpoint.?service ?? 'registry'}-${index}'
+              properties: {
+                privateLinkServiceId: registry.id
+                groupIds: [
+                  privateEndpoint.?service ?? 'registry'
+                ]
+                requestMessage: privateEndpoint.?manualConnectionRequestMessage ?? 'Manual approval required.'
+              }
+            }
+          ]
+        : null
+      subnetResourceId: privateEndpoint.subnetResourceId
+      enableTelemetry: privateEndpoint.?enableTelemetry ?? enableTelemetry
+      location: privateEndpoint.?location ?? reference(
+        split(privateEndpoint.subnetResourceId, '/subnets/')[0],
+        '2020-06-01',
+        'Full'
+      ).location
+      lock: privateEndpoint.?lock ?? lock
+      roleAssignments: privateEndpoint.?roleAssignments
+      tags: privateEndpoint.?tags ?? tags
+      customDnsConfigs: privateEndpoint.?customDnsConfigs
+      ipConfigurations: privateEndpoint.?ipConfigurations
+      applicationSecurityGroupResourceIds: privateEndpoint.?applicationSecurityGroupResourceIds
+      customNetworkInterfaceName: privateEndpoint.?customNetworkInterfaceName
+    }
+  }
+]
+
+@description('The Name of the Azure container registry.')
+output name string = registry.name
+
+@description('The reference to the Azure container registry.')
+#disable-next-line use-recent-api-versions
+output loginServer string = reference(registry.id, '2019-05-01').loginServer
+
+@description('The name of the Azure container registry.')
+output resourceGroupName string = resourceGroup().name
+
+@description('The resource ID of the Azure container registry.')
+output resourceId string = registry.id
+
+@description('The principal ID of the system assigned identity.')
+output systemAssignedMIPrincipalId string = registry.?identity.?principalId ?? ''
+
+@description('The location the resource was deployed into.')
+output location string = registry.location
+
+@description('Is there evidence of usage in non-compliance with policies?')
+output evidenceOfNonCompliance bool = (sku != 'premium' || publicNetworkAccess != 'Disabled' || acrAdminUserEnabled || azureADAuthenticationAsArmPolicyStatus != 'enabled' || anonymousPullEnabled)
+
+// ================ //
+// Definitions      //
+// ================ //
+
+import {
+  diagnosticSettingType
+  lockType
+  managedIdentitiesType
+  networkAclsType
+  privateEndpointType
+  roleAssignmentType
+  customerManagedKeyType
+} from '../../../../bicep-shared/types.bicep'
+
+import {
+  cacheRuleType
+} from 'cache-rule/main.bicep'
+
+import {
+  replicationType
+} from 'replication/main.bicep'
+
+import {
+  webhookType
+} from 'webhook/main.bicep'
+
+import {
+  scopeMapsType
+} from 'scope-map/main.bicep'
+
+import {
+  credentialType
+} from 'credential/main.bicep'

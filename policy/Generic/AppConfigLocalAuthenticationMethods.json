@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-appcs-02 - Disallow local authentication'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Configuration#IncidentremediationAppConfiguration-drcp-appcs-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Configuration Deny local authentication methods",
+    "description": "This policy prevents App Configuration instances from using local authentication methods. Disabling local authentication methods improves security by ensuring that App Configuration stores require Microsoft Entra identities exclusively for authentication.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Configuration",
+        "name": "AppConfigLocalAuthenticationMethods",
+        "severity": 3,
+        "controlId": "drcp-appcs-02",
+        "controlDesc": "Disallow local authentication",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Configuration",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Configuration#IncidentremediationAppConfiguration-drcp-appcs-02"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.AppConfiguration/configurationStores"
+          },
+          {
+            "field": "Microsoft.AppConfiguration/configurationStores/disableLocalAuth",
+            "notEquals": "true"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

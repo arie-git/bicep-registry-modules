@@ -1,0 +1,73 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-08 - Enforce TLS 1.2 or newer'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Minimum TLS version",
+    "mode": "All",
+    "description": "This policy denies enabling a TLS version on the PostgreSQL implementations that is less then required.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLMinimumTlsVersionV2",
+        "severity": 3,
+        "controlId": "drcp-psql-08",
+        "controlDesc": "Enforce TLS 1.2 or newer",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-08"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      },
+      "minimumTlsVersion": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Minimum TLS Version",
+          "description": "Minimum version of TLS required to access data in the PostgreSQL database."
+        },
+        "allowedValues": [
+          "TLSV1.2",
+          "TLSV1.3",
+          "TLSv1.2",
+          "TLSv1.3"
+        ],
+        "defaultValue": [
+          "TLSV1.2",
+          "TLSV1.3",
+          "TLSv1.2",
+          "TLSv1.3"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.DBforPostgreSQL/flexibleServers"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.DBforPostgreSQL/flexibleServers/configurations",
+          "name": "ssl_min_protocol_version",
+          "existenceCondition": {
+            "field": "Microsoft.DBforPostgreSQL/flexibleServers/configurations/value",
+            "in": "[parameters('minimumTlsVersion')]"
+          }
+        }
+      }
+    }
+  }
+}

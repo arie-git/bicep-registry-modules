@@ -1,0 +1,217 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(environmentSnowId)_$(environmentType)_$(locationShort)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+- name: 'environmentType'
+  type: string
+  default: 'dev'
+  values:
+  - 'dev'
+  - 'tst'
+  - 'acc'
+  - 'prd'
+- name: 'location'
+  type: string
+  default: 'swedencentral'
+  values:
+  - 'swedencentral'
+  - 'westeurope'
+  - 'northeurope'
+- name: 'environmentSnowId'
+  displayName: 'ServiceNow environment Id'
+  type: string
+  default: 'ENV23944'
+- name: 'bcrPaths'
+  displayName: "List of module paths to process (in order)"
+  type: object
+  default:
+  - res/
+  - ptn/
+  - utl/
+
+variables:
+- name: applicationSnowId
+  value: 'AMAVM'
+- name: environmentSnowId
+  value: ${{parameters.environmentSnowId}}
+- name: serviceConnectionName
+  value: 'SC-${{variables.applicationSnowId}}-${{variables.environmentSnowId}}'
+- name: organizationCode
+  value: 's2'
+- name: purpose
+  value: 'amavm'
+- name: environmentType
+  value: ${{parameters.environmentType}}
+- name: location
+  value: '${{parameters.location}}'
+- name: locationShort
+  ${{ if eq(parameters.location,'westeurope') }}:
+    value: 'we'
+  ${{ if eq(parameters.location,'northeurope') }}:
+    value: 'ne'
+  ${{ if eq(parameters.location,'swedencentral') }}:
+    value: 'sec'
+- name: acrName
+  value: ${{variables.organizationCode}}${{variables.purpose}}${{variables.environmentType}}${{variables.locationShort}}acr
+- name: staName
+  value: ${{variables.organizationCode}}${{variables.purpose}}${{variables.environmentType}}${{variables.locationShort}}sta
+
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DRCP-Templates/templates
+      ref: 'refs/heads/main'
+
+pool: CPP-Ubuntu2204-Latest-A
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+    - ${{ each path in parameters.bcrPaths }}:
+      - stage: "buildAndPublish_${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}"
+        displayName: 'Build and Publish ${{path}}'
+        jobs:
+        - job: buildBicep
+          displayName: 'Build and Test'
+          steps:
+          - checkout: self
+            clean: true
+          - task: AzureCLI@2
+            displayName: 'Prepare Azure CLI'
+            timeoutInMinutes: 60
+            inputs:
+              azureSubscription: '${{variables.serviceConnectionName}}'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az bicep uninstall
+                az config set bicep.use_binary_from_path=false
+                az bicep install
+              useGlobalConfig: true
+          - task: AzurePowerShell@5
+            displayName: 'Set used BCR'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/setBCRinLinter.ps1
+              azurePowerShellVersion: latestVersion
+              ScriptArguments:
+                -acrName "${{variables.acrName}}"
+              pwsh: true
+          - task: AzurePowerShell@5
+            displayName: 'Build bicep modules'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/buildBicepFiles.ps1
+              azurePowerShellVersion: latestVersion
+              ScriptArguments:
+                -modulesSubpath "${{path}}"
+              pwsh: true
+          - task: UsePythonVersion@0
+            displayName: 'Set python version'
+            inputs:
+              versionSpec: '3.10'
+              architecture: 'x64'
+          - task: AzurePowerShell@5
+            displayName: 'Merge TOC from the website'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/mergeDocumentationTocs.ps1
+              ScriptArguments:
+                -sourcesTocPath "$(Build.SourcesDirectory)/utils/html-assets/readmePublisher/menu/toc.json" -additionalTocPath "https://${{variables.staName}}.z1.web.core.windows.net/menu/toc.json" -resultsPath "$(Build.SourcesDirectory)/utils/html-assets/readmePublisher/menu/toc.json"
+              azurePowerShellVersion: latestVersion
+              pwsh: true
+          - task: AzureCLI@2
+            displayName: 'Build HTML files'
+            timeoutInMinutes: 60
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              scriptType: 'bash'
+              useGlobalConfig: false
+              scriptLocation: inlineScript
+              inlineScript: |
+                cd utils/readmePublisher
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+                python convertreadmetohtml.py --generate-toc --sources-subpath "${{path}}"
+                if [ $? != 0 ];
+                then
+                  exit 1
+                fi
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish HTML artifacts'
+            inputs:
+              targetPath: '$(Build.SourcesDirectory)/utils/html-assets'
+              artifact: "html-${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}"
+              publishLocation: 'pipeline'
+        - job: publishBicep
+          displayName: 'Publish'
+          dependsOn: buildBicep
+          steps:
+          - checkout: self
+            clean: true
+          - task: AzureCLI@2
+            displayName: 'Prepare Azure CLI'
+            timeoutInMinutes: 60
+            inputs:
+              azureSubscription: '${{variables.serviceConnectionName}}'
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az bicep uninstall
+                az config set bicep.use_binary_from_path=false
+                az bicep install
+              useGlobalConfig: true
+          - task: AzurePowerShell@5
+            displayName: 'Set used BCR'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/setBCRinLinter.ps1
+              azurePowerShellVersion: latestVersion
+              ScriptArguments:
+                -acrName "${{variables.acrName}}"
+              pwsh: true
+          - task: AzurePowerShell@5
+            displayName: 'Publish bicep modules'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/publishToBCR.ps1
+              ScriptArguments:
+                -acrName ${{variables.acrName}} -modulesSubpath "${{path}}" -documentationUri "https://${{variables.staName}}.z1.web.core.windows.net/docs"
+              azurePowerShellVersion: latestVersion
+              pwsh: true
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download HTML artifact'
+            inputs:
+              artifact: "html-${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}"
+              path: "/agent/_work/_temp/readmeWeb/${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}"
+          - task: AzureCLI@2
+            displayName: 'Publish HTML to the website'
+            timeoutInMinutes: 60
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              scriptType: 'bash'
+              useGlobalConfig: false
+              scriptLocation: inlineScript
+              inlineScript: |
+                az storage blob upload-batch --account-name ${{variables.staName}} --source "/agent/_work/_temp/readmeWeb/${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}/readmePublisher/" --destination '$web' --auth-mode login --overwrite
+                if [ $? != 0 ];
+                then
+                    exit 1
+                fi
+                echo "Files were uploaded to the static website in ${{variables.staName}}."

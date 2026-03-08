@@ -1,0 +1,72 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amo-01 - Only allow APG-owned email domains as receivers'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Action Group Only allow APG email domains in alert receivers",
+    "description": "This policy ensures that only APG email domains are allowed as email receivers in Action Group alerts.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorActionGroupRestrictEmailReceivers",
+        "severity": 3,
+        "controlId": "drcp-amo-01",
+        "controlDesc": "Azure Monitor Action Groups: Only allow APG-owned email domains as receivers.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-01"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedEmailDomains": {
+        "type": "array",
+        "metadata": {
+          "displayName": "Allowed email domains",
+          "description": "List of allowed email domains for receiving email notifications."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/actiongroups"
+          },
+          {
+            "count": {
+              "field": "Microsoft.Insights/actiongroups/emailReceivers[*]",
+              "where": {
+                "anyOf": [
+                  {
+                    "value": "[last(split(first(field('Microsoft.Insights/actiongroups/emailReceivers[*].emailAddress')), '@'))]",
+                    "notIn": "[parameters('allowedEmailDomains')]"
+                  }
+                ]
+              }
+            },
+            "greater": 0
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

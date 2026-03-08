@@ -1,0 +1,150 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-20 - DRCP platform critical configuration protection'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-20 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic tag inheritance from subscription",
+    "description": "This policy automates the inheritance of the DRCP subscription tags to underlying resources, such as 'ApplicationSystem' and 'BusinessUnit'.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericSubscriptionTagInheritance",
+        "severity": 3,
+        "controlId": "drcp-sub-20",
+        "controlDesc": "DRCP platform critical configuration protection",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-20"
+      },
+      "dynamic": "true"
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Modify or Disabled."
+        },
+        "allowedValues": [
+          "Modify",
+          "Disabled"
+        ],
+        "defaultValue": "Modify"
+      },
+      "tagNameAS": {
+        "type": "String",
+        "metadata": {
+          "displayName": "AS tag",
+          "description": "Full name of the AS tag."
+        }
+      },
+      "tagNameBU": {
+        "type": "String",
+        "metadata": {
+          "displayName": "BU tag",
+          "description": "Full name of the BU tag."
+        }
+      },
+      "tagNameENV": {
+        "type": "String",
+        "metadata": {
+          "displayName": "ENV tag",
+          "description": "Full name of the ENV tag."
+        }
+      },
+      "tagNameUSG": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Usage tag",
+          "description": "Full name of the Usage tag."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "field": "[concat('tags[', parameters('tagNameAS'), ']')]",
+                "notEquals": "[subscription().tags[parameters('tagNameAS')]]"
+              },
+              {
+                "value": "[subscription().tags[parameters('tagNameAS')]]",
+                "notEquals": ""
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "field": "[concat('tags[', parameters('tagNameBU'), ']')]",
+                "notEquals": "[subscription().tags[parameters('tagNameBU')]]"
+              },
+              {
+                "value": "[subscription().tags[parameters('tagNameBU')]]",
+                "notEquals": ""
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "field": "[concat('tags[', parameters('tagNameENV'), ']')]",
+                "notEquals": "[subscription().tags[parameters('tagNameENV')]]"
+              },
+              {
+                "value": "[subscription().tags[parameters('tagNameENV')]]",
+                "notEquals": ""
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "field": "[concat('tags[', parameters('tagNameUSG'), ']')]",
+                "notEquals": "[subscription().tags[parameters('tagNameUSG')]]"
+              },
+              {
+                "value": "[subscription().tags[parameters('tagNameUSG')]]",
+                "notEquals": ""
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "roleDefinitionIds": [
+            "/providers/microsoft.authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+          ],
+          "operations": [
+            {
+              "operation": "addOrReplace",
+              "field": "[concat('tags[', parameters('tagNameAS'), ']')]",
+              "value": "[subscription().tags[parameters('tagNameAS')]]"
+            },
+            {
+              "operation": "addOrReplace",
+              "field": "[concat('tags[', parameters('tagNameBU'), ']')]",
+              "value": "[subscription().tags[parameters('tagNameBU')]]"
+            },
+            {
+              "operation": "addOrReplace",
+              "field": "[concat('tags[', parameters('tagNameENV'), ']')]",
+              "value": "[subscription().tags[parameters('tagNameENV')]]"
+            },
+            {
+              "operation": "addOrReplace",
+              "field": "[concat('tags[', parameters('tagNameUSG'), ']')]",
+              "value": "[subscription().tags[parameters('tagNameUSG')]]"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

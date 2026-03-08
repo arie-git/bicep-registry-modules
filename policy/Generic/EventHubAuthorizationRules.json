@@ -1,0 +1,47 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-evh-06 - Authorization for the Event Hub Namespace'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP EventHub Authorization rules",
+    "mode": "All",
+    "description": "This policy audits whether or not Event Hub entities have authorization in place.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Event Hubs",
+        "name": "EventHubAuthorizationRules",
+        "severity": 3,
+        "controlId": "drcp-evh-06",
+        "controlDesc": "Authorization for the Event Hub Namespace",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Event+Hubs",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs-drcp-evh-06"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.EventHub/namespaces/eventhubs/authorizationrules"
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

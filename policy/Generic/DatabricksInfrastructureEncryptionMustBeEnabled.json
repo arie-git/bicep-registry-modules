@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adb-w10 - Automated private link DNS integration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks#drcp-adb-w10 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Databricks should use secondary layer of infrastructure encryption for DBFS",
+    "description": "The DBFS root file system must have a secondary layer of encryption with platform managed keys for data at rest.",
+    "mode": "All",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Databricks",
+        "name": "DatabricksInfrastructureEncryptionMustBeEnabled",
+        "severity": 3,
+        "controlId": "drcp-adb-w10",
+        "controlDesc": "Disable DBFS file browser in non-Dev environment",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Databricks",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks-drcp-adb-w10"
+      },
+      "dynamic": "true"
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Databricks/workspaces"
+          },
+          {
+            "field": "Microsoft.DataBricks/workspaces/parameters.requireInfrastructureEncryption.value",
+            "notEquals": "true"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

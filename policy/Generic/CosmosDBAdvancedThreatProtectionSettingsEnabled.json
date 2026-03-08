@@ -1,0 +1,54 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cosmos-04 - Deploy Advanced Threat Protection for Cosmos DB accounts'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#IncidentremediationCosmosDB#drcp-cosmos-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP CosmosDB Advanced Threat Protection settings enabled",
+    "description": "This policy audits for Azure Cosmos DB resources that should have Advanced Threat Protection enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Cosmos DB",
+        "name": "CosmosDBAdvancedThreatProtectionSettingsEnabled",
+        "severity": 3,
+        "controlId": "drcp-cosmos-04",
+        "controlDesc": "Deploy Advanced Threat Protection for Cosmos DB accounts",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Cosmos+DB",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Cosmos+DB#/IncidentremediationCosmosDB-drcp-cosmos-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.DocumentDB/databaseAccounts"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/advancedThreatProtectionSettings",
+          "name": "current",
+          "existenceCondition": {
+            "field": "Microsoft.Security/advancedThreatProtectionSettings/isEnabled",
+            "equals": "true"
+          }
+        }
+      }
+    }
+  }
+}

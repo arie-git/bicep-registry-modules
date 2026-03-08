@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ai-01 - Disable local authentication methods'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI services Disable local authentication methods",
+    "description": "This policy prevents AI services instances from using local authentication methods. Disabling local authentication methods improves security by ensuring that Azure AI services require Entra ID identities for authentication.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "AIServicesLocalAuthenticationDisabled",
+        "severity": 3,
+        "controlId": "drcp-ai-01",
+        "controlDesc": "Disable local authentication methods",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+services",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-01"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.CognitiveServices/accounts"
+          },
+          {
+            "field": "Microsoft.CognitiveServices/accounts/disableLocalAuth",
+            "notEquals": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

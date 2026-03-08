@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adb-r01 - Deny public network access for Azure Databricks workspaces'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks#drcp-adb-r01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Databricks Workspaces cannot use public network access",
+    "description": "This policy prevents public network access to Azure Databricks Workspaces.",
+    "mode": "All",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Databricks",
+        "name": "DatabricksPublicNetworkMustBeDisabled",
+        "severity": 3,
+        "controlId": "drcp-adb-r01",
+        "controlDesc": "Deny public network access for Azure Databricks workspaces",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Databricks",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks-drcp-adb-r01"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Databricks/workspaces"
+          },
+          {
+            "field": "Microsoft.Databricks/workspaces/publicNetworkAccess",
+            "notEquals": "Disabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

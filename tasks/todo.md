@@ -69,9 +69,9 @@ Findings from full audit of all existing whitelisted modules. Modules are ordere
 | 14 | Uses `tags` directly instead of `finalTags` | Add `var finalTags = union(tags ?? {}, {...})` and replace `tags` usage |
 | 15 | Has `{ categoryGroup: 'allLogs' }` | Replace with explicit list of supported log categories |
 
-- [ ] Fix all 5 issues
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit all 18 checklist items
+- [x] Fix all 5 issues (versionInfo, moduleVersion, take(64), finalTags, explicit log categories)
+- [x] `bicep build` — only BCP192 (expected ACR auth), no syntax errors
+- [x] Karen: re-audit — 18/18 PASS
 
 ### TD-02: service-bus/namespace — 5 failures
 
@@ -81,45 +81,29 @@ Findings from full audit of all existing whitelisted modules. Modules are ordere
 | 7 | `moduleVersion` variable missing | Add `var moduleVersion = versionInfo.version` |
 | 10 | Telemetry name not truncated to 64 chars | Wrap with `take(..., 64)` |
 | 14 | Uses `tags` directly instead of `finalTags` | Add `finalTags` variable and replace usage |
-| 15 | Has `{ categoryGroup: 'allLogs' }` | Replace with explicit log categories |
+| 15 | Has `{ categoryGroup: 'allLogs' }` | Replace with explicit log categories: DiagnosticErrorLogs, OperationalLogs, VNetAndIPFilteringLogs, RuntimeAuditLogs, ApplicationMetricsLogs |
 
-- [ ] Fix all 5 issues
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Fix all 5 issues
+- [x] `bicep build` — only BCP192 (expected ACR auth), no syntax errors
+- [x] Karen: re-audit — 18/18 PASS
 
-### TD-03: container-service/managed-cluster — 3 failures
+### TD-03: container-service/managed-cluster — FALSE POSITIVE
 
-| # | Issue | Fix |
-|---|---|---|
-| 6 | `versionInfo` variable missing | Add variable |
-| 7 | `moduleVersion` variable missing | Add variable |
-| 16 | Non-standard test folder names (`1defaults`, `2priv`, `3azure`, `4waf-aligned`, `5automatic`) | Ensure `defaults/`, `max/`, `waf-aligned/` exist (may be aliased by numbered prefixes — verify if build tooling handles this) |
+Initial audit was incorrect. Module already has `versionInfo`, `moduleVersion`, `finalTags`, and `take(64)`. Test folder naming with numbered prefixes is a project convention.
 
-- [ ] Fix issues (test folder naming may be intentional — confirm before changing)
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Re-audited — all 18 checklist items PASS
 
-### TD-04: web/site — 2 failures
+### TD-04: web/site — FALSE POSITIVE
 
-| # | Issue | Fix |
-|---|---|---|
-| 4 | Some `@description()` decorators don't start with `Required.`/`Optional.`/`Conditional.`/`Generated.` | Audit all parameter descriptions and fix prefixes |
-| 16 | Non-standard test folder names (`1webAppLinux.defaults`, `5waf-aligned`, etc.) | Ensure standard `defaults/`, `max/`, `waf-aligned/` naming (or confirm build tooling handles prefixed names) |
+Initial audit was incorrect. All `@description()` decorators use correct prefixes (multi-line `'''` format confused the audit). Test folders contain `defaults`, `max`, and `waf-aligned` variants with numbered/named prefixes — project convention.
 
-- [ ] Fix description prefixes
-- [ ] Resolve test folder naming
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Re-audited — all 18 checklist items PASS
 
-### TD-05: storage/storage-account — 1 failure
+### TD-05: storage/storage-account — FALSE POSITIVE
 
-| # | Issue | Fix |
-|---|---|---|
-| 4 | 13 output descriptions lack `Required.`/`Optional.` etc. prefix | Add appropriate prefix to all output `@description()` decorators |
+Output descriptions don't require `Required.`/`Optional.` prefixes per the amavm README — only parameter descriptions do. All parameter descriptions are correctly prefixed.
 
-- [ ] Fix output description prefixes
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Re-audited — all 18 checklist items PASS
 
 ### TD-06: search/search-service — 1 failure
 
@@ -127,9 +111,9 @@ Findings from full audit of all existing whitelisted modules. Modules are ordere
 |---|---|---|
 | 10 | Telemetry name not truncated to 64 chars | Wrap with `take(..., 64)` |
 
-- [ ] Fix telemetry truncation
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Fix telemetry truncation — wrapped with `take(..., 64)`
+- [x] `bicep build` — only BCP192 (expected), no syntax errors
+- [x] Karen: re-audit — 18/18 PASS
 
 ### TD-07: network/application-gateway — 1 failure
 
@@ -137,9 +121,8 @@ Findings from full audit of all existing whitelisted modules. Modules are ordere
 |---|---|---|
 | 10 | Telemetry name not truncated to 64 chars | Wrap with `take(..., 64)` |
 
-- [ ] Fix telemetry truncation
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Fix telemetry truncation — already had `take(64)` (was false positive, agent confirmed)
+- [x] No action needed
 
 ### TD-08: insights/component (Application-Insights) — 1 failure
 
@@ -147,9 +130,9 @@ Findings from full audit of all existing whitelisted modules. Modules are ordere
 |---|---|---|
 | 5 | `evidenceOfNonCompliance` output is commented out | Uncomment or re-implement the output |
 
-- [ ] Fix commented-out output
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Fixed — uncommented and implemented: `!disableLocalAuth`
+- [x] `bicep build` — only BCP192 (expected), no syntax errors
+- [x] Karen: re-audit — 18/18 PASS
 
 ### TD-09: db-for-postgre-sql/flexible-server — 1 failure
 
@@ -159,10 +142,10 @@ Findings from full audit of all existing whitelisted modules. Modules are ordere
 
 Note: `evidenceOfNonCompliance` output exists but is hardcoded to `false` — review if this should check actual compliance state.
 
-- [ ] Fix telemetry truncation
-- [ ] Review `evidenceOfNonCompliance` logic
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Fix telemetry truncation — wrapped with `take(..., 64)`
+- [x] Reviewed `evidenceOfNonCompliance` — updated with compliance checks
+- [x] `bicep build` — only BCP192 (expected), no syntax errors
+- [x] Karen: re-audit — 18/18 PASS
 
 ### TD-10: sql/server — 1 failure
 
@@ -170,9 +153,9 @@ Note: `evidenceOfNonCompliance` output exists but is hardcoded to `false` — re
 |---|---|---|
 | 4 | One description has typo "Deafult:" instead of proper prefix | Fix typo and add correct `Optional.` prefix |
 
-- [ ] Fix description typo
-- [ ] `bicep build` passes
-- [ ] Karen: re-audit
+- [x] Fixed "Deafult:" typo → "Default:" with proper `Optional.` prefix
+- [x] `bicep build` — only BCP192 (expected), no syntax errors
+- [x] Karen: re-audit — 18/18 PASS
 
 ### TD-11: Fully Compliant Modules (no fixes needed)
 
@@ -185,27 +168,188 @@ These modules passed all 18 checklist items. No action required unless upstream 
 - [x] operational-insights/workspace — 18/18 PASS
 - [x] web/serverfarm — 18/18 PASS
 
-### TD-12: Remaining Module Audits (not yet analyzed)
+### TD-12: Fully Compliant Support Modules (no fixes needed)
 
-These modules need their first audit by the Bicep Tech Debt Analyst:
+- [x] databricks/access-connector — 6/6 PASS
+- [x] web/static-site — 6/6 PASS
+- [x] managed-identity/user-assigned-identity — 6/6 PASS
+- [x] network/network-security-group — 6/6 PASS
+- [x] network/private-endpoint — 6/6 PASS
+- [x] network/route-table — 6/6 PASS
+- [x] network/virtual-network — 6/6 PASS
 
-- [ ] databricks/access-connector
-- [ ] web/static-site
-- [ ] managed-identity/user-assigned-identity
-- [ ] insights/action-group
-- [ ] insights/activity-log-alert
-- [ ] insights/data-collection-endpoint
-- [ ] insights/data-collection-rule
-- [ ] insights/diagnostic-setting
-- [ ] insights/metric-alert
-- [ ] insights/private-link-scope
-- [ ] insights/scheduled-query-rule
-- [ ] insights/webtest
-- [ ] network/application-gateway-web-application-firewall-policy
-- [ ] network/network-security-group
-- [ ] network/private-endpoint
-- [ ] network/route-table
-- [ ] network/virtual-network
+### TD-13: Batch fix — 9 modules missing telemetry take(64) + evidenceOfNonCompliance
+
+All 9 modules share the same 2 issues: (10) telemetry name not wrapped with `take(..., 64)` and (5) no `evidenceOfNonCompliance` output.
+
+| Module | (10) take(64) | (5) evidenceOfNonCompliance |
+|---|---|---|
+| insights/action-group | FAIL | FAIL |
+| insights/activity-log-alert | FAIL | FAIL |
+| insights/data-collection-endpoint | FAIL | FAIL |
+| insights/data-collection-rule | FAIL | FAIL |
+| insights/metric-alert | FAIL | FAIL |
+| insights/private-link-scope | FAIL | FAIL |
+| insights/scheduled-query-rule | FAIL | FAIL |
+| insights/webtest | FAIL | FAIL |
+| network/application-gateway-web-application-firewall-policy | FAIL | FAIL |
+
+- [x] Fix telemetry truncation in all 9 modules
+- [x] Add `evidenceOfNonCompliance` output to all 9 modules
+- [x] `bicep build` each module (2 needed `@sys.description` fix — data-collection-endpoint, webtest)
+- [x] Karen: re-audit — 18/18 PASS (8 modules needed `metadata compliance` added, now fixed)
+
+### TD-14: insights/diagnostic-setting — 6 failures (0/6)
+
+| # | Issue | Fix |
+|---|---|---|
+| 6 | `versionInfo` variable missing | Add `var versionInfo = loadJsonContent('version.json')` |
+| 7 | `moduleVersion` variable missing | Add `var moduleVersion = versionInfo.version` |
+| 10 | Telemetry name not truncated | Wrap with `take(..., 64)` |
+| 14 | `finalTags` not used | Add `finalTags` variable and replace `tags` usage |
+| 15 | Has `{ categoryGroup: 'allLogs' }` | Replace with explicit log categories |
+| 5 | No `evidenceOfNonCompliance` output | Add output |
+
+- [x] Added metadata (owner, compliance, complianceVersion)
+- [x] Added versionInfo + moduleVersion (with no-unused-vars suppression — subscription-scoped, no finalTags)
+- [x] Wrapped telemetry with take(64)
+- [x] finalTags N/A — subscription-scoped module, no tags support
+- [x] `{ categoryGroup: 'allLogs' }` is CORRECT for this module — it's the diagnostic settings module itself
+- [x] Added evidenceOfNonCompliance output (= false, utility module)
+- [x] `bicep build` passes — no errors
+- [x] Karen: re-audit — 18/18 PASS
+
+### TD-15: web/site — typos, API versions, VNet reference
+
+| # | Issue | Fix | Status |
+|---|---|---|---|
+| 1 | `reference()` uses `'2020-06-01'` for VNet lookup | Updated to `2024-05-01` | DONE |
+| 2 | Typo: `condtion` → `condition` in slot/main.bicep | Fixed | DONE |
+| 3 | Typo: double period in hybrid-connection relay output | Fixed in both main and slot | DONE |
+| 4 | API version inconsistency: main site `2024-04-01`, slot `2023-12-01` | Align slot to `2024-04-01` | TODO |
+| 5 | `locks@2020-05-01`, `diagnosticSettings@2021-05-01-preview`, `roleAssignments@2022-04-01` | N/A — matches upstream AVM standard | WONTFIX |
+| 6 | Identity/role-assignment formatting duplicated between main and slot | Consider refactoring | TODO |
+
+- [x] Fix VNet reference API version (`2020-06-01` → `2024-05-01`)
+- [x] Fix typo: `condtion` → `condition`
+- [x] Fix typo: double period in relay description
+- [x] `bicep build` passes (only BCP192 expected)
+- [ ] Align slot API versions
+- [x] Karen: re-audit — 18/18 PASS
+
+### TD-16: container-service/managed-cluster — spelling, API versions, comment fixes
+
+| # | Issue | Fix | Status |
+|---|---|---|---|
+| 1 | Spelling error: `additonalLogCategoryNames` | Fixed to `additionalLogCategoryNames` | DONE |
+| 2 | Incomplete error comment (line 810): `// giver error` | Reworded to proper note | DONE |
+| 3 | `locks@2020-05-01`, `diagnosticSettings@2021-05-01-preview`, `roleAssignments@2022-04-01` | N/A — matches upstream AVM standard | WONTFIX |
+| 4 | agent-pool/main.bicep uses preview API `2024-04-02-preview` | Update to stable and verify | TODO |
+| 5 | agent-pool/main.bicep uses `2024-02-01` while main uses `2024-08-01` | Align API versions | TODO |
+
+- [x] Fix spelling error (`additonalLogCategoryNames` → `additionalLogCategoryNames`)
+- [x] Fix incomplete error comment
+- [x] `bicep build` passes (only BCP192 expected)
+- [ ] Align agent-pool API versions
+- [x] Karen: re-audit — 18/18 PASS
+
+### TD-17: cognitive-services/account — API versions, SKU logic, typos
+
+| # | Issue | Fix | Status |
+|---|---|---|---|
+| 1 | `ManagedIdentity@2023-01-31` outdated | Updated to `2024-11-30` | DONE |
+| 2 | `KeyVault/vaults@2023-02-01` outdated | Updated to `2024-11-01` | DONE |
+| 3 | `CognitiveServices/accounts/deployments@2023-05-01` misaligned | Updated to `2024-10-01` | DONE |
+| 4 | `Resources/deployments@2023-07-01` outdated | Updated to `2024-03-01` | DONE |
+| 5 | SKU fallback accesses `.capacity`/`.tier` on string param | Simplified to `{ name: sku }` | DONE |
+| 6 | Typo: `condtion` → `condition` | Fixed | DONE |
+| 7 | Typo: missing space `null\`is` | Fixed | DONE |
+| 8 | `roleAssignments@2022-04-01` | N/A — matches upstream AVM standard | WONTFIX |
+
+- [x] Update 4 outdated API versions
+- [x] Fix SKU fallback logic (removed invalid property access on string)
+- [x] Fix both typos
+- [x] `bicep build` passes (only BCP192 expected)
+- [x] Karen: re-audit — 18/18 PASS
+
+### TD-18: search/search-service — API versions, test dependencies, simplification
+
+| # | Issue | Fix | Status |
+|---|---|---|---|
+| 1 | `ManagedIdentity@2018-11-30` in test deps — 8 years old | Updated to `2024-11-30` | DONE |
+| 2 | `reference()` uses `'2020-06-01'` for VNet lookup | Updated to `2024-05-01` | DONE |
+| 3 | `privateDnsZones@2020-06-01` in test deps | Updated to `2024-06-01` | DONE |
+| 4 | `resourceGroups@2021-04-01` in 3 test files | Updated to `2024-03-01` | DONE |
+| 5 | `defaultLogCategoryNames` intermediate variable | Inlined into `defaultLogCategories` | DONE |
+| 6 | `diagnosticSettings@2021-05-01-preview`, `roleAssignments@2022-04-01` | N/A — matches upstream AVM standard | WONTFIX |
+
+- [x] Update 4 outdated API versions (test deps + VNet reference)
+- [x] Simplify redundant `defaultLogCategoryNames` variable
+- [x] `bicep build` passes (only BCP192 expected)
+- [x] Karen: re-audit — 18/18 PASS
+
+---
+
+## FEATURE: Implement Commented-Out Upstream Functionality
+
+These are features from upstream AVM modules that are currently commented out in the amavm fork. Each should be evaluated, implemented, tested, and enabled.
+
+### FEAT-1: web/site — Deployment Slots
+
+Commented-out code: `slots` parameter, `app_slots` module loop, slot outputs (slots, slotResourceIds, slotSystemAssignedMIPrincipalIds, slotPrivateEndpoints).
+
+- [ ] Uncomment and implement `slots` parameter
+- [ ] Uncomment and implement `app_slots` module loop
+- [ ] Uncomment and implement slot-related outputs
+- [ ] Implement `reserved: contains(kind,'linux')` property
+- [ ] Implement TODO properties: `endToEndEncryptionEnabled`, `vnetBackupRestoreEnabled`, `customDomainVerificationId`, `dnsConfiguration`, `daprConfig`
+- [ ] Resolve `functionAppConfiguration` and `storageAccountResourceId` TODO markers
+- [ ] Update tests to cover slots
+- [ ] `bicep build` passes
+- [ ] Karen: validate
+
+### FEAT-2: container-service/managed-cluster — AutoScaler Profile
+
+~56 lines of commented-out autoscaler parameters (scanInterval, scaleDown delays, utilization threshold, etc.) and ~28 lines of commented autoScalerProfile resource block.
+
+- [ ] Uncomment and implement autoScaler profile parameters
+- [ ] Uncomment and implement autoScalerProfile in managedCluster properties
+- [ ] Update tests to cover autoscaler configuration
+- [ ] `bicep build` passes
+- [ ] Karen: validate
+
+### FEAT-3: container-service/managed-cluster — Agent Pools Module
+
+~43 lines of commented-out agentPools module loop.
+
+- [ ] Uncomment and implement agentPools module loop
+- [ ] Update agent-pool/main.bicep API version from preview to stable
+- [ ] Align agent-pool API version with main cluster (`2024-08-01`)
+- [ ] Update tests to cover additional agent pools
+- [ ] `bicep build` passes
+- [ ] Karen: validate
+
+### FEAT-4: container-service/managed-cluster — Ingress, DNS, and Add-ons
+
+Commented-out: httpApplicationRouting, webApplicationRouting, AGIC, ACI connector, DNS zone, flux extension.
+
+- [ ] Evaluate which add-ons are needed for amavm scope
+- [ ] Uncomment and implement selected add-on parameters
+- [ ] Uncomment and implement DNS zone role assignment (if webApplicationRouting enabled)
+- [ ] Uncomment and implement flux extension module (if GitOps required)
+- [ ] Update tests
+- [ ] `bicep build` passes
+- [ ] Karen: validate
+
+### FEAT-5: container-service/managed-cluster — Pod Identity and Security
+
+Commented-out: podIdentityProfile parameters (allowNetworkPluginKubenet, enable, userAssignedIdentities, exceptions), identityProfile, diskEncryptionSetID, httpProxyConfig.
+
+- [ ] Evaluate which security features are needed
+- [ ] Uncomment and implement selected parameters
+- [ ] Update tests
+- [ ] `bicep build` passes
+- [ ] Karen: validate
 
 ---
 

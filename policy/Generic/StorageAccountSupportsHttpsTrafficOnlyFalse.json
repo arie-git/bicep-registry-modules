@@ -1,0 +1,70 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-st-03 - Secure transfer of data to a Storage Account'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount#drcp-st-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP StorageAccount Deny insecure HTTP transfer",
+    "description": "This policy prevents insecure HTTP-based transfers to Azure Storage Account resources. HTTPS is required.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Storage Account",
+        "name": "StorageAccountSupportsHttpsTrafficOnlyFalse",
+        "severity": 3,
+        "controlId": "drcp-st-03",
+        "controlDesc": "Secure transfer of data to a Storage Account",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Storage+Account",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount-drcp-st-03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "value": "[requestContext().apiVersion]",
+                    "less": "2019-04-01"
+                  },
+                  {
+                    "field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly",
+                    "exists": "false"
+                  }
+                ]
+              },
+              {
+                "field": "Microsoft.Storage/storageAccounts/supportsHttpsTrafficOnly",
+                "equals": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

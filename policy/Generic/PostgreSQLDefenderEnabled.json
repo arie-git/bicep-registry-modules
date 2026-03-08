@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-09 - Microsoft Defender for open source relational databases'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-09 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Defender for open source relational databases",
+    "mode": "All",
+    "description": "This policy checks if Microsoft Defender for open source relational databases is enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLDefenderEnabled",
+        "severity": 3,
+        "controlId": "drcp-psql-09",
+        "controlDesc": "Microsoft Defender for open source relational databases",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-09"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/pricings",
+          "name": "OpenSourceRelationalDatabases",
+          "evaluationDelay": "AfterProvisioning",
+          "existenceScope": "subscription",
+          "existenceCondition": {
+            "field": "Microsoft.Security/pricings/pricingTier",
+            "equals": "Standard"
+          }
+        }
+      }
+    }
+  }
+}

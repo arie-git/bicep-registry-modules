@@ -1,0 +1,54 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amg-05 - Disable plugins'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amg-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Managed Grafana Restrict plugins",
+    "description": "This policy ensures that there are no plugins installed in Managed Grafana.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorManagedGrafanaRestrictPlugins",
+        "severity": 3,
+        "controlId": "drcp-amg-05",
+        "controlDesc": "Disable plugins.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amg-05"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Dashboard/grafana"
+          },
+          {
+            "field": "Microsoft.Dashboard/grafana/grafanaPlugins",
+            "exists": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

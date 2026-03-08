@@ -1,0 +1,66 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-19 - Audit for managed identity'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-19 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Slot Managed identity",
+    "description": "This policy audits deployment slots of app services (such as an Web App or Function App) that don't have a managed identity enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteSlotManagedIdentity",
+        "severity": 3,
+        "controlId": "drcp-aps-19",
+        "controlDesc": "Audit for managed identity",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-19"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites/slots"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Web/sites/slots/config",
+          "name": "web",
+          "existenceCondition": {
+            "anyOf": [
+              {
+                "field": "Microsoft.Web/sites/slots/config/managedServiceIdentityId",
+                "exists": "true"
+              },
+              {
+                "field": "Microsoft.Web/sites/slots/config/xmanagedServiceIdentityId",
+                "exists": "true"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

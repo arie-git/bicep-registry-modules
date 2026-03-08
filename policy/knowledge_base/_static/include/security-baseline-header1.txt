@@ -1,0 +1,14 @@
+.. contents::
+   Contents:
+   :local:
+   :depth: 2
+
+Motivation
+----------
+The organization has a need for a security configuration baseline specific to |AzureComponent|. It serves as reference and reference work, as a standard when deploying new systems and as a standard for testing the security level.
+
+Scope and owner
+---------------
+.. warning:: DRCP (specifically LZ3 and LZ5) manages this baseline, which limits to the APG Landing zone. The related hubs and other Azure Landing zones are explicitly out-of-scope.
+
+The scope of the document relates to |AzureComponent|.

@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-kv-10 - Enable treat detection capabilities with Microsoft Defender for Key Vaults'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-10 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS Key Management Service (KMS) enabled",
+    "description": "Use Key Management Service (KMS) to encrypt secret data at rest in etcd for Kubernetes cluster security. Learn more at: https://aka.ms/aks/kmsetcdencryption.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Key Vault",
+        "name": "KeyVaultKMSEnabled",
+        "severity": 3,
+        "controlId": "drcp-kv-10",
+        "controlDesc": "Enable treat detection capabilities with Microsoft Defender for Key Vaults",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault-drcp-kv-10"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled.",
+          "portalReview": true
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "field": "identity.type",
+            "notEquals": "SystemAssigned"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/securityProfile.azureKeyVaultKms.enabled",
+            "notEquals": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

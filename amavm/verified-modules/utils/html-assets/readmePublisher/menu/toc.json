@@ -1,0 +1,647 @@
+[
+    {
+        "text": "Index",
+        "url": "/index.html",
+        "id": "index"
+    },
+    {
+        "text": "Data Ingestion pattern",
+        "url": "/docs/ptn-data-ingestion/0-6-0.html",
+        "id": "ptn-data-ingestion",
+        "category": "Patterns",
+        "versions": [
+            {
+                "version": "0.6.0",
+                "page": "0-6-0.html"
+            }
+        ]
+    },
+    {
+        "text": "N tier application pattern",
+        "url": "/docs/ptn-ntier-sql/0-1-0.html",
+        "id": "ptn-ntier-sql",
+        "category": "Patterns",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Data Factory",
+        "url": "/docs/res-data-factory-factory/0-2-0.html",
+        "id": "res-data-factory-factory",
+        "category": "Analytics",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Data Factory Integration Runtime",
+        "url": "/docs/res-data-factory-factory-integration-runtime/0-1-0.html",
+        "id": "res-data-factory-factory-integration-runtime",
+        "category": "Analytics",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Data Factory Linked Service",
+        "url": "/docs/res-data-factory-factory-linked-service/0-2-0.html",
+        "id": "res-data-factory-factory-linked-service",
+        "category": "Analytics",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Databricks Access Connector",
+        "url": "/docs/res-databricks-access-connector/0-2-0.html",
+        "id": "res-databricks-access-connector",
+        "category": "Analytics",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Databricks Workspace",
+        "url": "/docs/res-databricks-workspace/0-3-0.html",
+        "id": "res-databricks-workspace",
+        "category": "Analytics",
+        "versions": [
+            {
+                "version": "0.3.0",
+                "page": "0-3-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Log Analytics Workspace",
+        "url": "/docs/res-operational-insights-workspace/0-1-0.html",
+        "id": "res-operational-insights-workspace",
+        "category": "Analytics",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Container Registry",
+        "url": "/docs/res-container-registry-registry/0-2-0.html",
+        "id": "res-container-registry-registry",
+        "category": "Containers",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Container Registry Cache",
+        "url": "/docs/res-container-registry-registry-cache-rule/0-2-0.html",
+        "id": "res-container-registry-registry-cache-rule",
+        "category": "Containers",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Kubernetes Service (AKS) Managed Cluster",
+        "url": "/docs/res-container-service-managed-cluster/0-2-0.html",
+        "id": "res-container-service-managed-cluster",
+        "category": "Containers",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure SQL Server",
+        "url": "/docs/res-sql-server/0-2-0.html",
+        "id": "res-sql-server",
+        "category": "Databases",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "DBforPostgreSQL Flexible Servers",
+        "url": "/docs/res-db-for-postgre-sql-flexible-server/0-1-0.html",
+        "id": "res-db-for-postgre-sql-flexible-server",
+        "category": "Databases",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure SQL Server Database",
+        "url": "/docs/res-sql-server-database/0-1-0.html",
+        "id": "res-sql-server-database",
+        "category": "Databases",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "User Assigned Identity",
+        "url": "/docs/res-managed-identity-user-assigned-identity/0-1-0.html",
+        "id": "res-managed-identity-user-assigned-identity",
+        "category": "Identity",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Service Bus Namespaces",
+        "url": "/docs/res-service-bus-namespace/0-1-0.html",
+        "id": "res-service-bus-namespace",
+        "category": "Messaging",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Service Bus Namespace Topic",
+        "url": "/docs/res-service-bus-namespace-topic/0-1-0.html",
+        "id": "res-service-bus-namespace-topic",
+        "category": "Messaging",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Service Bus Namespace Topic Subscription",
+        "url": "/docs/res-service-bus-namespace-topic-subscription/0-1-0.html",
+        "id": "res-service-bus-namespace-topic-subscription",
+        "category": "Messaging",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Service Bus Namespace Queue",
+        "url": "/docs/res-service-bus-namespace-queue/0-1-0.html",
+        "id": "res-service-bus-namespace-queue",
+        "category": "Messaging",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Application Insights",
+        "url": "/docs/res-insights-component/0-1-0.html",
+        "id": "res-insights-component",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Action Groups",
+        "url": "/docs/res-insights-action-group/0-1-0.html",
+        "id": "res-insights-action-group",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Activity Log Alerts",
+        "url": "/docs/res-insights-activity-log-alert/0-1-0.html",
+        "id": "res-insights-activity-log-alert",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Data Collection Endpoints",
+        "url": "/docs/res-insights-data-collection-endpoint/0-1-0.html",
+        "id": "res-insights-data-collection-endpoint",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Data Collection Rules",
+        "url": "/docs/res-insights-data-collection-rule/0-1-0.html",
+        "id": "res-insights-data-collection-rule",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Diagnostic Settings (Activity Logs) for Azure Subscriptions",
+        "url": "/docs/res-insights-diagnostic-setting/0-1-0.html",
+        "id": "res-insights-diagnostic-setting",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Metric Alerts",
+        "url": "/docs/res-insights-metric-alert/0-1-0.html",
+        "id": "res-insights-metric-alert",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Scheduled Query Rules",
+        "url": "/docs/res-insights-scheduled-query-rule/0-1-0.html",
+        "id": "res-insights-scheduled-query-rule",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Web Tests",
+        "url": "/docs/res-insights-webtest/0-1-0.html",
+        "id": "res-insights-webtest",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Monitor Private Link Scopes",
+        "url": "/docs/res-insights-private-link-scope/0-1-0.html",
+        "id": "res-insights-private-link-scope",
+        "category": "Monitor",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Network Application Gateways",
+        "url": "/docs/res-network-application-gateway/0-1-0.html",
+        "id": "res-network-application-gateway",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Application Gateway Web Application Firewall (WAF) Policies",
+        "url": "/docs/res-network-application-gateway-web-application-firewall-policy/0-1-0.html",
+        "id": "res-network-application-gateway-web-application-firewall-policy",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Network Security Group",
+        "url": "/docs/res-network-network-security-group/0-1-0.html",
+        "id": "res-network-network-security-group",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Private Endpoint",
+        "url": "/docs/res-network-private-endpoint/0-2-0.html",
+        "id": "res-network-private-endpoint",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Route Table",
+        "url": "/docs/res-network-route-table/0-1-0.html",
+        "id": "res-network-route-table",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Virtual Network",
+        "url": "/docs/res-network-virtual-network/0-1-0.html",
+        "id": "res-network-virtual-network",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Virtual Network Subnet",
+        "url": "/docs/res-network-virtual-network-subnet/0-2-0.html",
+        "id": "res-network-virtual-network-subnet",
+        "category": "Network",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            },
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Key Vault",
+        "url": "/docs/res-key-vault-vault/0-3-0.html",
+        "id": "res-key-vault-vault",
+        "category": "Security",
+        "versions": [
+            {
+                "version": "0.3.0",
+                "page": "0-3-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Key Vault Key",
+        "url": "/docs/res-key-vault-vault-key/0-3-0.html",
+        "id": "res-key-vault-vault-key",
+        "category": "Security",
+        "versions": [
+            {
+                "version": "0.3.0",
+                "page": "0-3-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Azure Key Vault Secret",
+        "url": "/docs/res-key-vault-vault-secret/0-2-0.html",
+        "id": "res-key-vault-vault-secret",
+        "category": "Security",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Storage Account",
+        "url": "/docs/res-storage-storage-account/0-2-0.html",
+        "id": "res-storage-storage-account",
+        "category": "Storage",
+        "versions": [
+            {
+                "version": "0.2.0",
+                "page": "0-2-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Storage Account Blob Container",
+        "url": "/docs/res-storage-storage-account-blob-service-container/0-1-0.html",
+        "id": "res-storage-storage-account-blob-service-container",
+        "category": "Storage",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Storage Account File Share",
+        "url": "/docs/res-storage-storage-account-file-service-share/0-1-0.html",
+        "id": "res-storage-storage-account-file-service-share",
+        "category": "Storage",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Storage Account Management Policy",
+        "url": "/docs/res-storage-storage-account-management-policy/0-1-0.html",
+        "id": "res-storage-storage-account-management-policy",
+        "category": "Storage",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Storage Account Queue",
+        "url": "/docs/res-storage-storage-account-queue-service-queue/0-1-0.html",
+        "id": "res-storage-storage-account-queue-service-queue",
+        "category": "Storage",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Storage Account Table",
+        "url": "/docs/res-storage-storage-account-table-service-table/0-1-0.html",
+        "id": "res-storage-storage-account-table-service-table",
+        "category": "Storage",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "App Service Plan",
+        "url": "/docs/res-web-serverfarm/0-1-0.html",
+        "id": "res-web-serverfarm",
+        "category": "Web",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "App Service Plan Apps",
+        "url": "/docs/res-web-site/0-1-0.html",
+        "id": "res-web-site",
+        "category": "Web",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Static Web Apps (early preview)",
+        "url": "/docs/res-web-static-site/0-1-0.html",
+        "id": "res-web-static-site",
+        "category": "Web",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "App Configuration Stores",
+        "url": "/docs/res-app-configuration-configuration-store/0-1-0.html",
+        "id": "res-app-configuration-configuration-store",
+        "category": "Web",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Cognitive Services",
+        "url": "/docs/res-cognitive-services-account/0-1-0.html",
+        "id": "res-cognitive-services-account",
+        "category": "Cognitive Services",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Search Services",
+        "url": "/docs/res-search-search-service/0-1-0.html",
+        "id": "res-search-search-service",
+        "category": "Cognitive Services",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Application Configuration",
+        "url": "/docs/res-app-configuration-configuration-store/0-1-0.html",
+        "id": "res-app-configuration-configuration-store",
+        "category": "Web",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    },
+    {
+        "text": "Naming",
+        "url": "/docs/utl-amavm-naming/0-1-0.html",
+        "id": "utl-amavm-naming",
+        "category": "Utilities",
+        "versions": [
+            {
+                "version": "0.1.0",
+                "page": "0-1-0.html"
+            }
+        ]
+    }
+]

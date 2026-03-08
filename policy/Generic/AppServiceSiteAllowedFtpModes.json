@@ -1,0 +1,72 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-11 - Deny FTP access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-11 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Allowed FTP mode",
+    "description": "This policy prevents the creation of an app service (such as an Web App, Function App or Logic App v2) that has incorrectly configured the FTP mode setting. Azure FTP deployment endpoints are public. An attacker listening to traffic on a wifi network used by a remote employee or a corporate network could see login traffic in clear-text which would then grant them full control of the code base of the app or service.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteAllowedFtpModes",
+        "severity": 3,
+        "controlId": "drcp-aps-11",
+        "controlDesc": "Deny FTP access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      },
+      "allowedFtpModes": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed FTP modes",
+          "description": "The list of allowed App Service FTP modes."
+        },
+        "allowedValues": [
+          "Disabled",
+          "FtpsOnly"
+        ],
+        "defaultValue": [
+          "Disabled"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Web/sites/config",
+          "name": "web",
+          "existenceCondition": {
+            "field": "Microsoft.Web/sites/config/ftpsState",
+            "in": "[parameters('allowedFtpModes')]"
+          }
+        }
+      }
+    }
+  }
+}

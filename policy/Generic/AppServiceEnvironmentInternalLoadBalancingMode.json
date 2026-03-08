@@ -1,0 +1,71 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-05 - Deny public network access to App Service Environments'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Environment Internal load balancing mode",
+    "description": "This policy requires App Service Environments to use a virtual network IP so it is not accessible over public internet. To ensure apps deployed in an App Service Environment are not accessible over public internet, one should deploy App Service Environment with an IP address in virtual network. To set the IP address to a virtual network IP, the App Service Environment must be deployed with an internal load balancer.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceEnvironmentInternalLoadBalancingMode",
+        "severity": 3,
+        "controlId": "drcp-aps-05",
+        "controlDesc": "Deny public network access to App Service Environments",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/hostingEnvironments"
+          },
+          {
+            "field": "kind",
+            "like": "ASE*"
+          },
+          {
+            "field": "Microsoft.Web/HostingEnvironments/internalLoadBalancingMode",
+            "notContains": "2"
+          },
+          {
+            "field": "Microsoft.Web/HostingEnvironments/internalLoadBalancingMode",
+            "notContains": "3"
+          },
+          {
+            "field": "Microsoft.Web/HostingEnvironments/internalLoadBalancingMode",
+            "notContains": "Web"
+          },
+          {
+            "field": "Microsoft.Web/HostingEnvironments/internalLoadBalancingMode",
+            "notContains": "Publishing"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

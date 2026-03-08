@@ -1,0 +1,87 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-05 - VNet peering'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Network VNet peering",
+    "description": "This policy denies the creation of VNet peerings outside of the same subscriptions under the assigned scope.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "NetworkVNetPeerings",
+        "severity": 3,
+        "controlId": "drcp-sub-05",
+        "controlDesc": "VNet peering",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "hubVirtualNetwork": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "HubVirtualNetwork",
+          "description": "Changes to the VNet peering of the VNet Id in this parameter are denied."
+        }
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+              },
+              {
+                "not": {
+                  "field": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings/remoteVirtualNetwork.id",
+                  "in": "[parameters('hubVirtualNetwork')]"
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Network/virtualNetworks"
+              },
+              {
+                "not": {
+                  "field": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings[*].remoteVirtualNetwork.id",
+                  "in": "[parameters('hubVirtualNetwork')]"
+                }
+              },
+              {
+                "not": {
+                  "field": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings[*].remoteVirtualNetwork.id",
+                  "exists": false
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

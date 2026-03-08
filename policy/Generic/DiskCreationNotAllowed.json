@@ -1,0 +1,61 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-14 - Prevents the creation of Azure Disk, because IAAS isn't supported'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-14 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Disk creation is not allowed",
+    "description": "This policy prevents the creation of Azure Disk.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "DiskCreationNotAllowed",
+        "severity": 3,
+        "controlId": "drcp-sub-14",
+        "controlDesc": "Deny Azure Disk",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-14"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "like": "Microsoft.Compute/disks*"
+          },
+          {
+            "not": {
+              "allOf": [
+                {
+                  "value": "[resourceGroup().name]",
+                  "like": "*-adbmanaged-rg"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-srch-02 - Disable Public network access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI Search Disable Public network access",
+    "description": "This policy prevents public network access to AI Search instances. Disabling public network access improves security by ensuring that your Azure AI Search service isn't exposed on the public internet. Creating private endpoints can limit exposure of your Search service.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI Search",
+        "name": "AISearchPublicNetworkAccessDisabled",
+        "severity": 3,
+        "controlId": "drcp-srch-02",
+        "controlDesc": "Disable Public network access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+Search",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-02"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Search/searchServices"
+          },
+          {
+            "field": "Microsoft.Search/searchServices/publicNetworkAccess",
+            "notEquals": "Disabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

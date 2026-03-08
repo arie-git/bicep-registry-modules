@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-kv-01 - Disable Public Network Access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP KeyVault Public network access",
+    "description": "This policy prevents the creation of a key vault that has public network access enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Key Vault",
+        "name": "KeyVaultPublicNetworkAccessEnabled",
+        "severity": 3,
+        "controlId": "drcp-kv-01",
+        "controlDesc": "Disable public network access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault-drcp-kv-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.KeyVault/vaults"
+          },
+          {
+            "field": "Microsoft.KeyVault/vaults/createMode",
+            "notEquals": "recover"
+          },
+          {
+            "field": "Microsoft.KeyVault/vaults/publicNetworkAccess",
+            "notEquals": "Disabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

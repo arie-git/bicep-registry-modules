@@ -1,0 +1,57 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ai-o04 - Disable custom content filters'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP OpenAI Disable custom content filters",
+    "description": "This policy prevents creating custom content filters. Disabling creation of custom content filters prevents DevOps teams from using other filters than the default ones.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "OpenAIDisableCustomContentFilters",
+        "severity": 3,
+        "controlId": "drcp-ai-o04",
+        "controlDesc": "Disable custom content filters",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+services",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Deny, Audit or Disabled the execution of the Policy"
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "like": "Microsoft.CognitiveServices/accounts/raiPolicies*"
+          },
+          {
+            "not": {
+              "field": "name",
+              "like": "Microsoft.Default*"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

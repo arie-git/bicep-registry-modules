@@ -1,0 +1,64 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-04 - Enforce service managed encryption keys'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Enforce service managed encryption keys",
+    "mode": "All",
+    "description": "This policy enforces the use of service managed encryption keys to prevent key loss and ensure data security.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLEnforceServiceManagedKeys",
+        "severity": 3,
+        "controlId": "drcp-psql-04",
+        "controlDesc": "Enforce service managed encryption keys",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-04"
+      },
+      "dynamic": "true"
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Policy Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DBforPostgreSQL/flexibleServers"
+          },
+          {
+            "allOf": [
+              {
+                "field": "Microsoft.DBforPostgreSQL/flexibleServers/dataEncryption.type",
+                "exists": true
+              },
+              {
+                "field": "Microsoft.DBforPostgreSQL/flexibleServers/dataEncryption.type",
+                "equals": "AzureKeyVault"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

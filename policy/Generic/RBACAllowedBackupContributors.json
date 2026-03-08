@@ -1,0 +1,103 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The Backup Contributor RBAC role is only allowed to be assigned to a given set of principals. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC Backup Contributor role",
+    "description": "This policy ensures that the Backup Contributor RBAC role is not assigned to principals.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACAllowedBackupContributors",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "roleDefinitionIdDev": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of Backup Contributor Role in DEV.",
+          "displayName": "Role Definition Id of Backup Contributor Role in DEV"
+        },
+        "defaultValue": "01d77227-9efc-4be0-8275-83533d139699"
+      },
+      "roleDefinitionIdAcc": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of Backup Contributor Role in ACC.",
+          "displayName": "Role Definition Id of Backup Contributor Role in ACC"
+        },
+        "defaultValue": "56a1245b-8666-4159-a0ec-ecf46c22db08"
+      },
+      "roleDefinitionIdPrd": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of Backup Contributor Role in PRD.",
+          "displayName": "Role Definition Id of Backup Contributor Role in PRD"
+        },
+        "defaultValue": "9db26d14-6138-46e6-b547-69070b5cf5ff"
+      },
+      "allowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Allowed AAD principal Ids.",
+          "displayName": "Allowed AAD principal Ids"
+        },
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+                "contains": "[parameters('roleDefinitionIdDev')]"
+              },
+              {
+                "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+                "contains": "[parameters('roleDefinitionIdAcc')]"
+              },
+              {
+                "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+                "contains": "[parameters('roleDefinitionIdPrd')]"
+              }
+            ]
+          },
+          {
+            "field": "Microsoft.Authorization/roleAssignments/principalId",
+            "notIn": "[parameters('allowedPrincipalIds')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

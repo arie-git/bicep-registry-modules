@@ -1,0 +1,73 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-15 - Defender for Storage Malware Scanning'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Event Grid system topic handler type is required to be a Storage Account",
+    "description": "This policy enforces that the Event Grid system topic's handler type must be a Storage Account.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "EventGridSysTopicEventSub",
+        "severity": 3,
+        "controlId": "drcp-sub-15",
+        "controlDesc": "Defender for Storage Malware Scanning",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-15"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny, or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.EventGrid/systemTopics/eventSubscriptions"
+          },
+          {
+            "field": "Microsoft.EventGrid/systemTopics/eventSubscriptions/destination.endpointType",
+            "equals": "WebHook"
+          },
+          {
+            "field": "Microsoft.EventGrid/systemTopics/eventSubscriptions/destination.WebHook.azureActiveDirectoryTenantId",
+            "equals": "33e01921-4d64-4f8c-a055-5bdaffd5e33d"
+          },
+          {
+            "count": {
+              "field": "Microsoft.EventGrid/systemTopics/eventSubscriptions/filter.advancedFilters[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.EventGrid/systemTopics/eventSubscriptions/filter.advancedFilters[*].StringContains",
+                    "equals": "Microsoft.Storage.BlobCreated"
+                  }
+                ]
+              }
+            },
+            "equals": 1
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

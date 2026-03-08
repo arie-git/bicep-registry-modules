@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-03 - Listeners'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway Enforce HTTPS listeners",
+    "description": "This policy denies the deployment of listeners which do not use HTTPS.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayDenyHTTPListener",
+        "severity": 3,
+        "controlId": "drcp-agw-03",
+        "controlDesc": "Listeners",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Audit or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGateways"
+          },
+          {
+            "field": "Microsoft.Network/applicationGateways/httpListeners[*].protocol",
+            "notEquals": "Https"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

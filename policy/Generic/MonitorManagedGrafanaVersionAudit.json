@@ -1,0 +1,62 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amg-08 - Grafana version'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amg-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Managed Grafana Version",
+    "description": "This policy checks that only allowed versions of Managed Grafana are used.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorManagedGrafanaVersionAudit",
+        "severity": 3,
+        "controlId": "drcp-amg-08",
+        "controlDesc": "Grafana version.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amg-08"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      },
+      "allowedGrafanaMajorVersion": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Grafana major version",
+          "description": "Major version of Managed Grafana to audit on."
+        },
+        "defaultValue": "11"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Dashboard/grafana"
+          },
+          {
+            "field": "Microsoft.Dashboard/grafana/grafanaMajorVersion",
+            "less": "[parameters('allowedGrafanaMajorVersion')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

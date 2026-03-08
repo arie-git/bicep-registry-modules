@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-srch-01 - Disable local authentication methods'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI Search Disable local authentication methods",
+    "description": "This policy prevents AI Search instances from using local authentication methods. Disabling local authentication methods improves security by ensuring that Azure AI Search services require Entra ID identities for authentication.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI Search",
+        "name": "AISearchLocalAuthenticationDisabled",
+        "severity": 3,
+        "controlId": "drcp-srch-01",
+        "controlDesc": "Disable local authentication methods",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+Search",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-01"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Search/searchServices"
+          },
+          {
+            "field": "Microsoft.Search/searchServices/disableLocalAuth",
+            "notEquals": true
+          },
+          {
+            "field": "tags['usedBy']",
+            "notEquals": "AILanguage"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

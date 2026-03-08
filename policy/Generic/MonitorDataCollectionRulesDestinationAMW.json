@@ -1,0 +1,77 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amo-06 - Azure Monitor Data Collection Rules: Restrict destination Azure Monitor Workspace'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Data Collection Rules Restrict destination Azure Monitor Workspace",
+    "mode": "All",
+    "description": "This policy denies the use of destination Azure Monitor Workspace that reside outside of the current subscription.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorDataCollectionRulesDestinationAMW",
+        "severity": 3,
+        "controlId": "drcp-amo-06",
+        "controlDesc": "Azure Monitor Data Collection Rules: Restrict destination Azure Monitor Workspace",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-06"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedSubscriptionIds": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed subscription IDs",
+          "description": "Array of subscriptions IDs that are allowed access."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/dataCollectionRules"
+          },
+          {
+            "allOf": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/dataCollectionRules/destinations.monitoringAccounts[*]",
+                  "where": {
+                    "value": "[split(current('Microsoft.Insights/dataCollectionRules/destinations.monitoringAccounts[*].accountResourceId'), '/')[2]]",
+                    "notIn": "[parameters('allowedSubscriptionIds')]"
+                  }
+                },
+                "greater": 0
+              },
+              {
+                "value": "[length(field('Microsoft.Insights/dataCollectionRules/destinations.monitoringAccounts'))]",
+                "greater": 0
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

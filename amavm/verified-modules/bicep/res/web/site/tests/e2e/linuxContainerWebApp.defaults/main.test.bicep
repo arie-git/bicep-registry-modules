@@ -1,0 +1,78 @@
+targetScope = 'subscription'
+
+metadata name = '(NOT VALIDATED) Web App, using only defaults'
+metadata description = 'This instance deploys the module as a Linux Container Web App with the minimum set of required parameters.'
+
+// ========== //
+// Parameters //
+// ========== //
+
+@description('Optional. The name of the resource group to deploy for testing purposes.')
+@maxLength(90)
+param resourceGroupName string = 'dep-${namePrefix}-web.sites-${serviceShort}-rg'
+
+@description('Optional. The location to deploy resources to.')
+param resourceLocation string = deployment().location
+
+@description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
+param serviceShort string = 'minwapp'
+
+@description('Optional. A token to inject into the name of each resource.')
+param namePrefix string = '#_namePrefix_#'
+
+// ============ //
+// Dependencies //
+// ============ //
+
+// General resources
+// =================
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-07-01' = {
+  name: resourceGroupName
+  location: resourceLocation
+}
+
+module nestedDependencies 'dependencies.bicep' = {
+  scope: resourceGroup
+  name: '${uniqueString(deployment().name, resourceLocation)}-nestedDependencies'
+  params: {
+    serverFarmName: 'dep-${namePrefix}${serviceShort}asp'
+    virtualNetworkName: 'dep-${namePrefix}${serviceShort}vnet'
+    location: resourceLocation
+  }
+}
+
+// ============== //
+// Test Execution //
+// ============== //
+
+@batchSize(1)
+module testDeployment '../../../main.bicep' = [
+  for iteration in ['init', 'idem']: {
+    scope: resourceGroup
+    name: '${uniqueString(deployment().name, resourceLocation)}-test-${serviceShort}-${iteration}'
+    params: {
+      name: '${namePrefix}${serviceShort}001'
+      location: resourceLocation
+      kind: 'app,linux,container'
+      serverFarmResourceId: nestedDependencies.outputs.serverFarmResourceId
+      siteConfiguration: {
+        appSettings: [
+          {
+            name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
+            value: 'false'
+          }
+        ]
+        linuxFxVersion: 'DOCKER|mcr.microsoft.com/appsvc/staticsite:latest'
+      }
+      privateEndpoints: [
+        {
+          subnetResourceId: nestedDependencies.outputs.subnetResourceId
+        }
+      ]
+    }
+
+    dependsOn: [
+      nestedDependencies
+    ]
+  }
+]

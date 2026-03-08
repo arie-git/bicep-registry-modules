@@ -1,0 +1,82 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The Monitoring Contributor RBAC role is only allowed to be assigned to a given set of principals. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC Monitoring Contributor role",
+    "description": "This policy ensures that the Monitoring Contributor role cannot be assigned.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACMonitoringContributor",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "roleDefinitionId": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of Monitoring Contributor Role.",
+          "displayName": "Role Definition Id of Monitoring Contributor Role"
+        },
+        "defaultValue": "749f88d5-cbae-40b8-bcfc-e573ddc772fa"
+      },
+      "allowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Allowed AAD principal Ids. By default, two LLDC service principals are allowed to perform monitoring functions at a higher Azure level by using the Monitoring Contributor role.",
+          "displayName": "Allowed AAD principal Ids"
+        },
+        "defaultValue": [
+          "9fb924d5-ae5c-4085-8710-b444a499ef5d",
+          "67dfaacc-6eb5-489c-95e7-06cf31518c93"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.Authorization/roleAssignments"
+              },
+              {
+                "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+                "contains": "[parameters('roleDefinitionId')]"
+              },
+              {
+                "field": "Microsoft.Authorization/roleAssignments/principalId",
+                "notIn": "[parameters('allowedPrincipalIds')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

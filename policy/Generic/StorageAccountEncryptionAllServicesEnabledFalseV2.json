@@ -1,0 +1,139 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-st-08 - Support for all types of encryption for all services'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount#drcp-st-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP StorageAccount Encryption all services enabled V2",
+    "description": "This policy denies the selection of 'Blob and Files only' option when using customer-managed keys in Azure Storage Account resources.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Storage Account",
+        "name": "StorageAccountEncryptionAllServicesEnabledFalseV2",
+        "severity": 3,
+        "controlId": "drcp-st-08",
+        "controlDesc": "Support for all types of encryption for all services",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Storage+Account",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount-drcp-st-08"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "field": "id",
+            "notContains": "-adbmanaged-rg/providers/Microsoft.Storage/storageAccounts/"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "kind",
+                    "equals": "FileStorage"
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "field": "Microsoft.Storage/storageAccounts/encryption.services.file.enabled",
+                        "exists": "false"
+                      },
+                      {
+                        "field": "Microsoft.Storage/storageAccounts/encryption.services.file.enabled",
+                        "notEquals": true
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "kind",
+                    "equals": "StorageV2"
+                  },
+                  {
+                    "anyOf": [
+                      {
+                        "anyOf": [
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.blob.enabled",
+                            "exists": "false"
+                          },
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.blob.enabled",
+                            "notEquals": true
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.file.enabled",
+                            "exists": "false"
+                          },
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.file.enabled",
+                            "notEquals": true
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.queue.keyType",
+                            "exists": "false"
+                          },
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.queue.keyType",
+                            "notEquals": "Account"
+                          }
+                        ]
+                      },
+                      {
+                        "anyOf": [
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.table.keyType",
+                            "exists": "false"
+                          },
+                          {
+                            "field": "Microsoft.Storage/storageAccounts/encryption.services.table.keyType",
+                            "notEquals": "Account"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-evh-07 - Encrypt sensitive data in transit'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP EventHub Minimum TLS version",
+    "description": "This policy denies enabling a TLS version on the Event Hub that is less then required.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Event Hubs",
+        "name": "EventHubMinimumTlsVersion",
+        "severity": 3,
+        "controlId": "drcp-evh-07",
+        "controlDesc": "Encrypt sensitive data in transit",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Event+Hubs",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs-drcp-evh-07"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "minimumTlsVersion": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Minimum TLS Version",
+          "description": "Minimum version of TLS required to access data in the Event Hub Namespace"
+        },
+        "allowedValues": [
+          "1.2",
+          "1.3"
+        ],
+        "defaultValue": "1.2"
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.EventHub/namespaces"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.EventHub/namespaces/minimumTlsVersion",
+                "exists": "false"
+              },
+              {
+                "field": "Microsoft.EventHub/namespaces/minimumTlsVersion",
+                "less": "[parameters('minimumTlsVersion')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

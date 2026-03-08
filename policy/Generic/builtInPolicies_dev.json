@@ -1,0 +1,593 @@
+{
+  "builtin": [
+    {
+      "name": "APG DRCP Application Insights should be linked to a Log Analytics workspace",
+      "noncomplianceMessage": "DRCP control 'drcp-appi-02 - Log storage'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplicationInsights#drcp-appi-02 .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Application Insights",
+          "name": "ApplicationInsightsLinkedToLogAnalyticsWorkspace",
+          "severity": 3,
+          "controlId": "drcp-appi-02",
+          "controlDesc": "Log storage",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Insights",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplication+Insights-drcp-appi-02"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/d550e854-df1a-4de9-bf44-cd894b39a95e",
+      "parameters": {
+        "effect": {
+          "value": "Deny"
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS cluster containers should run with a read only root file system",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-10 - Disable the admission of containers with allowPrivilegeEscalation'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-10 and https://aka.ms/kubepolicydoc .",
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/df49d893-a74c-421d-bc95-c663042e5b80",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSReadOnlyRootFilesystem",
+          "severity": 3,
+          "controlId": "drcp-aks-10",
+          "controlDesc": "Disable the admission of containers with allowPrivilegeEscalation",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-10"
+        }
+      },
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS clusters should not grant CAP_SYS_ADMIN security capabilities",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-08 - Do not allow SYS_ADMIN capabilities'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-08 and https://aka.ms/kubepolicydoc .",
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/d2e7ea85-6b44-4317-a0be-1b951587f626",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisableCapSysAdminCapabilities",
+          "severity": 3,
+          "controlId": "drcp-aks-08",
+          "controlDesc": "Do not allow SYS_ADMIN capabilities",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-08"
+        }
+      },
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "excludedContainers": {
+          "value": []
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS cluster pods and containers should only use allowed SELinux options",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-10 - Disable the admission of containers with allowPrivilegeEscalation'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-10 and https://aka.ms/kubepolicydoc .",
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/e1e6c427-07d9-46ab-9689-bfa85431e636",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSSELinuxOptions",
+          "severity": 3,
+          "controlId": "drcp-aks-10",
+          "controlDesc": "Disable the admission of containers with allowPrivilegeEscalation",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-10"
+        }
+      },
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "allowedSELinuxOptions": {
+          "value": {
+            "options": []
+          }
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS clusters should not use the default namespace",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-15 - Ensure that the default namespace is empty'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-15 and https://aka.ms/kubepolicydoc .",
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/9f061a12-e40d-4183-a00e-171812443373",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisallowDefaultNamespace",
+          "severity": 3,
+          "controlId": "drcp-aks-15",
+          "controlDesc": "Ensure that the default namespace is empty",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-15"
+        }
+      },
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": [
+            "default"
+          ]
+        },
+        "labelSelector": {
+          "value": {}
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS cluster containers should not share host process ID or host IPC namespace",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-15 - Ensure that the default namespace is empty'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-15 and https://aka.ms/kubepolicydoc .",
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/47a1ee2f-2a2a-4576-bf2a-e0e36709c2b8",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisallowShareHostProcessId",
+          "severity": 3,
+          "controlId": "drcp-aks-15",
+          "controlDesc": "Ensure that the default namespace is empty",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-15"
+        }
+      },
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS cluster should not allow privileged containers",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-06 - Deny privileged container admission to AKS'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-06 and https://aka.ms/kubepolicydoc .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisallowPrivilegedContainers",
+          "severity": 3,
+          "controlId": "drcp-aks-06",
+          "controlDesc": "Deny privileged container admission to AKS",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-06"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/95edb821-ddaf-4404-9732-666045e056b4",
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "excludedContainers": {
+          "value": []
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS clusters should not use specific security capabilities",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-08 - Disable the admission of containers with the SYS_ADMIN / NET_RAW capability'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-08 and https://aka.ms/kubepolicydoc .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisallowSpecificSecCapabilities",
+          "severity": 3,
+          "controlId": "drcp-aks-08",
+          "controlDesc": "Disable the admission of containers with the SYS_ADMIN / NET_RAW capability",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-08"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/a27c700f-8a22-44ec-961c-41625264370b",
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "disallowedCapabilities": {
+          "value": [
+            "NET_RAW",
+            "SYS_ADMIN"
+          ]
+        },
+        "excludedContainers": {
+          "value": []
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS clusters should not allow container privilege escalation",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-10 - Disable the admission of containers with allowPrivilegeEscalation'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-10 and https://aka.ms/kubepolicydoc .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisableAllowPrivilegeEscalation2",
+          "severity": 3,
+          "controlId": "drcp-aks-10",
+          "controlDesc": "Disable the admission of containers with allowPrivilegeEscalation",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-10"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/1c6e92c9-99f0-4e55-9cf2-0c234dc48f99",
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "excludedContainers": {
+          "value": []
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP AKS cluster pods should only use approved host network and port range",
+      "noncomplianceMessage": "DRCP control 'drcp-aks-17 - Ensure nodes are in a dedicated subnet and disallow host network'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-17 and https://aka.ms/kubepolicydoc .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Kubernetes Service",
+          "name": "AKSDisallowHostNetwork",
+          "severity": 3,
+          "controlId": "drcp-aks-17",
+          "controlDesc": "Ensure nodes are in a dedicated subnet' and disallow host network",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-17"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/82985f06-dc18-4a48-bc1c-b9f4f0098cfe",
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "excludedNamespaces": {
+          "value": [
+            "kube-system",
+            "gatekeeper-system",
+            "azure-arc"
+          ]
+        },
+        "namespaces": {
+          "value": []
+        },
+        "labelSelector": {
+          "value": {}
+        },
+        "allowHostNetwork": {
+          "value": false
+        },
+        "excludedImages": {
+          "value": []
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Keys should have the specified maximum validity period",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-06 - Monitoring on Keys inside a Key Vault and ensure a maximum validity of 366 days'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-06 .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultMaximumValidityPeriod",
+          "severity": 3,
+          "controlId": "drcp-kv-06",
+          "controlDesc": "Monitoring on Keys inside a Key Vault and ensure a maximum validity of 366 days",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-06"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/49a22571-d204-4c91-a7b6-09b1a586fbc9",
+      "parameters": {
+        "effect": {
+          "value": "Deny"
+        },
+        "maximumValidityInDays": {
+          "value": 366
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Keys should have more than the specified number of days before expiration",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-06 - Monitoring on keys inside a Key Vault and ensure to renew 60 days before expiration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-06 .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultAlertBeforeExpiration",
+          "severity": 3,
+          "controlId": "drcp-kv-06",
+          "controlDesc": "Monitoring on keys inside a Key Vault and ensure to renew 60 days before expiration",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-06"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/5ff38825-c5d8-47c5-b70e-069a21955146",
+      "parameters": {
+        "effect": {
+          "value": "Disabled"
+        },
+        "minimumDaysBeforeExpiration": {
+          "value": 60
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Managed HSM keys should have an expiration date",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-09 - Monitoring on HSM keys inside a Key Vault and ensure to configure an expiration date'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-09 .",
+      "metadata": {
+        "version": "1.0.1-preview",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultHSMKeysExpirationDate",
+          "severity": 3,
+          "controlId": "drcp-kv-09",
+          "controlDesc": "Monitoring on HSM keys inside a Key Vault and ensure to configure an expiration date",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-09"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/1d478a74-21ba-4b9f-9d8f-8e6fced0eec5",
+      "parameters": {
+        "effect": {
+          "value": "Deny"
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Secrets should have the specified maximum validity period",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-07 - Monitoring on secrets inside a Key Vault and ensure a maximum validity of 366 days'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-07 .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultSecretsValidityPeriod",
+          "severity": 3,
+          "controlId": "drcp-kv-07",
+          "controlDesc": "Monitoring on secrets inside a Key Vault and ensure a maximum validity of 366 days",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-07"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/342e8053-e12e-4c44-be01-c3c2f318400f",
+      "parameters": {
+        "effect": {
+          "value": "Deny"
+        },
+        "maximumValidityInDays": {
+          "value": 366
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Certificates should have the specified maximum validity period",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-08 - Monitoring on certificates inside a Key Vault and ensure a maximum validity of 14 months'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-08 .",
+      "metadata": {
+        "version": "2.2.0-preview",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultCertificatesMaximumValidityPeriod",
+          "severity": 3,
+          "controlId": "drcp-kv-08",
+          "controlDesc": "Monitoring on certificates inside a Key Vault and ensure a maximum validity of 14 months",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-08"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/0a075868-4c26-42ef-914c-5bc007359560",
+      "parameters": {
+        "effect": {
+          "value": "Deny"
+        },
+        "maximumValidityInMonths": {
+          "value": 14
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Secrets should have more than the specified number of days before expiration",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-07 - Monitoring on secrets inside a Key Vault and ensure to renew 60 days before expiration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-07 .",
+      "metadata": {
+        "version": "1.0.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultSecretsAlertBeforeExpiration",
+          "severity": 3,
+          "controlId": "drcp-kv-07",
+          "controlDesc": "Monitoring on secrets inside a Key Vault and ensure to renew 60 days before expiration",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-07"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/b0eb591a-5e70-4534-a8bf-04b9c489584a",
+      "parameters": {
+        "effect": {
+          "value": "Disabled"
+        },
+        "minimumDaysBeforeExpiration": {
+          "value": 60
+        }
+      }
+    },
+    {
+      "name": "APG DRCP KeyVault Certificates should not expire within the specified number of days",
+      "noncomplianceMessage": "DRCP control 'drcp-kv-08 - Monitoring on certificates inside a Key Vault and ensure to renew 60 days before expiration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-08 .",
+      "metadata": {
+        "version": "2.1.1",
+        "category": "APG DRCP Policy",
+        "status": "Active",
+        "drcp": {
+          "component": "Key Vault",
+          "name": "KeyVaultCertificatesAlertBeforeExpiration",
+          "severity": 3,
+          "controlId": "drcp-kv-08",
+          "controlDesc": "Monitoring on certificates inside a Key Vault and ensure to renew 60 days before expiration",
+          "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+          "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-08"
+        }
+      },
+      "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/f772fb64-8e40-40ad-87bc-7706e1949427",
+      "parameters": {
+        "effect": {
+          "value": "Audit"
+        },
+        "daysToExpire": {
+          "value": 60
+        }
+      }
+    }
+  ]
+}

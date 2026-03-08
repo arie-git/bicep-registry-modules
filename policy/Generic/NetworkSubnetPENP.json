@@ -1,0 +1,83 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-09 - Private links'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-09 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Network Subnet Private Endpoint Network Policy",
+    "description": "This policy denies the creation of a subnet without Private Endpoint Network Policies enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "NetworkSubnetPENP",
+        "severity": 3,
+        "controlId": "drcp-sub-09",
+        "controlDesc": "Private links",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-09"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "The effect of the policy."
+        }
+      },
+      "excludedSubnets": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Excluded Subnets",
+          "description": "Array of subnet names that are excluded from this policy."
+        },
+        "defaultValue": []
+      },
+      "networkPolicy": {
+        "type": "Array",
+        "allowedValues": [
+          "Disabled",
+          "Enabled",
+          "RouteTableEnabled",
+          "NetworkSecurityGroupEnabled"
+        ],
+        "defaultValue": [
+          "RouteTableEnabled"
+        ],
+        "metadata": {
+          "displayName": "Network Policy status",
+          "description": "The network policy determines in what way the Private Endpoint either uses the Network Security Group or Route table or both as policy."
+        }
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/virtualNetworks/subnets"
+          },
+          {
+            "field": "name",
+            "notIn": "[parameters('excludedSubnets')]"
+          },
+          {
+            "field": "Microsoft.Network/virtualNetworks/subnets/privateEndpointNetworkPolicies",
+            "notIn": "[parameters('networkPolicy')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

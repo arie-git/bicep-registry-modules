@@ -1,0 +1,57 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sql-08 - Microsoft Defender for Cloud'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+SQL+Database#IncidentremediationSQLDatabase#drcp-sql-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP SQL Defender",
+    "description": "This policy checks if Azure Defender for Azure SQL is enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "SQL Database",
+        "name": "SQLDefenderEnabled",
+        "severity": 3,
+        "controlId": "drcp-sql-08",
+        "controlDesc": "Microsoft Defender for Cloud",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+SQL+Database",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+SQL+Database#IncidentremediationSQLDatabase-drcp-sql-08"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/pricings",
+          "name": "SqlServers",
+          "evaluationDelay": "AfterProvisioning",
+          "existenceScope": "subscription",
+          "existenceCondition": {
+            "field": "Microsoft.Security/pricings/pricingTier",
+            "equals": "Standard"
+          }
+        }
+      }
+    }
+  }
+}

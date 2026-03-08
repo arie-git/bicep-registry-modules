@@ -1,0 +1,54 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-st-09 - Disable sFTP for blob storage'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount#drcp-st-09 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP StorageAccount SFTP enabled",
+    "description": "This policy prevents using the SFTP functionality for Blob Storage.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Storage Account",
+        "name": "StorageAccountSftpEnabledTrue",
+        "severity": 3,
+        "controlId": "drcp-st-09",
+        "controlDesc": "Disable sFTP for blob storage",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Storage+Account",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount-drcp-st-09"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "field": "Microsoft.Storage/storageAccounts/isSftpEnabled",
+            "equals": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

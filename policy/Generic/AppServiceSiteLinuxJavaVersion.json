@@ -1,0 +1,83 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-17 - Audit for latest version of application framework'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-17 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Linux Java version",
+    "description": "This policy prevents the usage of older or outdated Java versions. Periodically, newer versions are released for Java software either due to security flaws or to include additional functionality. Using the latest Java version for App Service apps is recommended in order to take advantage of security fixes and/or new functionalities. This policy only applies to Linux apps and requires the usage of a specific Java version.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteLinuxJavaVersion",
+        "severity": 3,
+        "controlId": "drcp-aps-17",
+        "controlDesc": "Audit for enabling of remote debugging",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-17"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      },
+      "allowedLinuxJavaVersions": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Linux Java versions",
+          "description": "Specify the supported Java versions for Linux App Service."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites"
+          },
+          {
+            "field": "kind",
+            "contains": "linux"
+          },
+          {
+            "field": "kind",
+            "notContains": "functionapp"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Web/sites/config",
+          "evaluationDelay": "AfterProvisioning",
+          "name": "web",
+          "existenceCondition": {
+            "anyOf": [
+              {
+                "field": "Microsoft.Web/sites/config/web.linuxFxVersion",
+                "notContains": "JAVA"
+              },
+              {
+                "field": "Microsoft.Web/sites/config/web.linuxFxVersion",
+                "in": "[parameters('allowedLinuxJavaVersions')]"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

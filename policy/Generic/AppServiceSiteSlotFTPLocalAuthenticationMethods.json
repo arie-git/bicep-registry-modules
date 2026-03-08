@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-12 - Deny local authentication methods for FTP and SCM deployments to App Service'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-12 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Slot FTP Deny local authentication methods",
+    "description": "This policy prevents the creation of a deployment slot of an app service (such as an Web App or Function App) that uses local authentication methods. Disabling local authentication methods improves security by ensuring that App Service exclusively require Azure Active Directory identities for authentication.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteSlotFTPLocalAuthenticationMethods",
+        "severity": 3,
+        "controlId": "drcp-aps-12",
+        "controlDesc": "Deny local authentication methods for FTP and SCM deployments to App Service",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-12"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies"
+          },
+          {
+            "field": "name",
+            "equals": "ftp"
+          },
+          {
+            "field": "Microsoft.Web/sites/slots/basicPublishingCredentialsPolicies/allow",
+            "notEquals": "false"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

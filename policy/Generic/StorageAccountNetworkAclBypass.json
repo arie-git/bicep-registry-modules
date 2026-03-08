@@ -1,0 +1,92 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-st-15 - No ACL and component firewall bypassing'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount#drcp-st-15 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP StorageAccount Disallow network ACL and firewall bypassing",
+    "description": "This policy prevents bypassing the network ACL and firewall of the Storage Account.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Storage Account",
+        "name": "StorageAccountNetworkAclBypass",
+        "severity": 3,
+        "controlId": "drcp-st-15",
+        "controlDesc": "No ACL and component firewall bypassing",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Storage+Account",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount-drcp-st-15"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedBypass": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Bypass Options",
+          "description": "Specifies which options are allowed to bypass the vnet configuration"
+        },
+        "allowedValues": [
+          "None",
+          "Logging",
+          "Metrics",
+          "AzureServices",
+          "Logging, Metrics",
+          "Logging, AzureServices",
+          "Metrics, AzureServices",
+          "Logging, Metrics, AzureServices",
+          "Logging, Metrics, AzureServices"
+        ],
+        "defaultValue": [
+          "None"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "field": "id",
+            "notContains": "-adbmanaged-rg/providers/Microsoft.Storage/storageAccounts/"
+          },
+          {
+            "field": "tags['usedBy']",
+            "notEquals": "EventHub"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Storage/storageAccounts/networkAcls.bypass",
+                "exists": "false"
+              },
+              {
+                "field": "Microsoft.Storage/storageAccounts/networkAcls.bypass",
+                "notIn": "[parameters('allowedBypass')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-01 - Disabled public network access and enforce VNet integration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Disable public network access and enforce VNet integration",
+    "mode": "All",
+    "description": "This policy denies public network access and enforces VNet integration.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLDisablePublicNetworkAccess",
+        "severity": 3,
+        "controlId": "drcp-psql-01",
+        "controlDesc": "Disable public network access and enforce VNet integration",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-01"
+      },
+      "dynamic": "true"
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Disabled or Deny."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "field": "Microsoft.DBforPostgreSQL/flexibleServers/network.delegatedSubnetResourceId",
+            "exists": "false"
+          },
+          {
+            "field": "Microsoft.DBforPostgreSQL/flexibleServers/network.privateDnsZoneArmResourceId",
+            "exists": "false"
+          },
+          {
+            "allOf": [
+              {
+                "field": "Microsoft.DBforPostgreSQL/flexibleServers/network.publicNetworkAccess",
+                "exists": "true"
+              },
+              {
+                "field": "Microsoft.DBforPostgreSQL/flexibleServers/network.publicNetworkAccess",
+                "notEquals": "Disabled"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

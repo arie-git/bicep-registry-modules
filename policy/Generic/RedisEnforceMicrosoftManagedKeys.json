@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-redis-06 - Enforce Microsoft managed keys'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#IncidentremediationRedis#drcp-redis-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Redis Enforce Microsoft managed keys",
+    "description": "This policy enforces Microsoft managed keys for Azure Managed Redis.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Redis",
+        "name": "RedisEnforceMicrosoftManagedKeys",
+        "severity": 3,
+        "controlId": "drcp-redis-06",
+        "controlDesc": "Enforce Microsoft managed keys",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Redis",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#/IncidentremediationRedis-drcp-redis-06"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Cache/redisEnterprise"
+          },
+          {
+            "field": "Microsoft.Cache/redisEnterprise/encryption.customerManagedKeyEncryption",
+            "exists": "true"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

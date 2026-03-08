@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-08 - Audit for injection of App Service apps into a virtual network'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Slot should have virtual network injection",
+    "description": "This policy enforces injecting App Service apps (not hosted in an App Service Environment) in a virtual network, unlocking advanced App Service networking and security features and providing greater control over network security configurations. Learn more at: https://docs.microsoft.com/azure/app-service/web-sites-integrate-with-vnet.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteSlotVirtualNetworkInjection",
+        "severity": 3,
+        "controlId": "drcp-aps-08",
+        "controlDesc": "Audit for injection of App Service apps into a virtual network",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-08"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites/slots"
+          },
+          {
+            "field": "Microsoft.Web/sites/slots/hostingEnvironmentProfile.id",
+            "exists": false
+          },
+          {
+            "field": "Microsoft.Web/sites/slots/virtualNetworkSubnetId",
+            "equals": ""
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

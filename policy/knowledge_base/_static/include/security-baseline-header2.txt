@@ -1,0 +1,37 @@
+The PO of DRCP carries the ownership of this security configuration baseline which will checked/tested every quarter. If one wants to deviate from this, submit it to Information Risk & Security Management (IRSM) with business and security justification.
+
+.. note:: Determined test cycle periodicity: every quarter.
+
+The security configuration baseline describes the security level that a product (component) must meet.
+
+This document doesn't contain all parameters related to the entire environment. This may require the interplay of security configuration baselines, each of which relates to a part of the product.
+
+.. note:: Some policy effects (for example deny or audit) deviate between development and other usages (test, acceptance, and production). All :doc:`Policy exemptions <../../Azure-components/Subscription/Policy-exemptions>`.
+
+Way of working
+--------------
+Using the security configuration template and guidance from IT Security, DRCP creates a security configuration baseline for an APG product (component).
+
+These channels (not exhaustive) have provided input for the content:
+
+-	APG information security policy
+-	Threat modelling
+-	APG security architecture
+-	Supplier best practices
+-	Best practices (for example CIS benchmarks, community guidelines, security forums)
+
+The product/service owners are responsible for reviewing and recalibrating each security configuration baseline at least annually. The product/service owner, IRSM, and IT Security approve the final version of a security configuration baseline.
+
+Exceptions
+----------
+If a product (component) in the landscape deviates from the security configuration baseline, someone must submit an exception and handle it according to the Exception IT Policy procedure.
+
+Maintenance
+-----------
+The product/service owners are responsible for reviewing and recalibrating the security configuration baseline at least annually. Afterward, the product/service owner, IRSM, and IT Security approve the resulting new final version of the security configuration baseline.
+
+.. note:: Determined baseline evaluation cycle: every year.
+
+System settings and conditions
+------------------------------
+This paragraph describes what the security-related system and configuration parameters of Azure |AzureComponent| should be.

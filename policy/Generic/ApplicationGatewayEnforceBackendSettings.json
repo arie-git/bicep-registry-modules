@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-02 - Backend settings'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway Enforce backend settings",
+    "description": "This policy denies the deployment of a routing rule which does not use a backend setting.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayEnforceBackendSettings",
+        "severity": 3,
+        "controlId": "drcp-agw-02",
+        "controlDesc": "Backend setting",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-02"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Audit or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGateways"
+          },
+          {
+            "field": "Microsoft.Network/applicationGateways/requestRoutingRules[*].backendHttpSettings",
+            "equals": ""
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

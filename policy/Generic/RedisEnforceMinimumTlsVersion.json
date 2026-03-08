@@ -1,0 +1,69 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-redis-08 - Enforce TLS 1.2 or newer'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#IncidentremediationRedis#drcp-redis-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Redis Minimum TLS version",
+    "mode": "All",
+    "description": "This policy denies a TLS version on Azure Managed Redis that is less then 1.2.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Redis ",
+        "name": "RedisEnforceMinimumTlsVersion",
+        "severity": 3,
+        "controlId": "drcp-redis-08",
+        "controlDesc": "Enforce TLS 1.2 or newer",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Redis",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#/IncidentremediationRedis-drcp-redis-08"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      },
+      "minimumTlsVersion": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Minimum TLS Version",
+          "description": "Minimum version of TLS required to access data."
+        },
+        "allowedValues": [
+          "1.2",
+          "1.3"
+        ],
+        "defaultValue": [
+          "1.2",
+          "1.3"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Cache/redisEnterprise"
+          },
+          {
+            "field": "Microsoft.Cache/redisEnterprise/minimumTlsVersion",
+            "notIn": "[parameters('minimumTlsVersion')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-20 - DRCP platform critical configuration protection'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-20 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic Deny resource deletion",
+    "description": "This policy denies the deletion of DRCP defined resources.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericDenyResourceDeletion",
+        "severity": 3,
+        "controlId": "drcp-sub-20",
+        "controlDesc": "DRCP platform critical configuration protection",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-20"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "DenyAction",
+          "Disabled"
+        ],
+        "defaultValue": "DenyAction"
+      },
+      "cascadeEffect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Cascade effect",
+          "description": "Cascade effect of the Deny Action policy."
+        },
+        "allowedValues": [
+          "Deny",
+          "Allow"
+        ],
+        "defaultValue": "Deny"
+      },
+      "protectedResourceNames": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Protected Resources Names",
+          "description": "Names of the resources which are protected against deletion."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "name",
+        "in": "[parameters('protectedResourceNames')]"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "actionNames": [
+            "delete"
+          ],
+          "cascadeBehaviors": {
+            "resourceGroup": "[parameters('cascadeEffect')]"
+          }
+        }
+      }
+    }
+  }
+}

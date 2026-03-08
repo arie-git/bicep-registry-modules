@@ -1,0 +1,57 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-19 - Defender for Cloud configuration'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-19 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Servers Defender for Endpoint",
+    "description": "This policy checks if Endpoint setting in Azure Defender for Servers is enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericServersDefenderEndpointEnabled",
+        "severity": 3,
+        "controlId": "drcp-sub-19",
+        "controlDesc": "Defender for Cloud configuration",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-19"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/settings",
+          "name": "WDATP",
+          "evaluationDelay": "AfterProvisioning",
+          "existenceScope": "subscription",
+          "existenceCondition": {
+            "field": "Microsoft.Security/settings/DataExportSetting.enabled",
+            "equals": "true"
+          }
+        }
+      }
+    }
+  }
+}

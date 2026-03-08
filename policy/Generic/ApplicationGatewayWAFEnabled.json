@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-05 - WAF policy state'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway Web Application Firewall should be enabled",
+    "description": "This policy enforces that the Web Application Firewall (WAF) functionality is enabled on the Application Gateway.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayWAFEnabled",
+        "severity": 3,
+        "controlId": "drcp-agw-05",
+        "controlDesc": "WAF policy state",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGateways"
+          },
+          {
+            "field": "Microsoft.Network/applicationGateways/webApplicationFirewallConfiguration",
+            "exists": "false"
+          },
+          {
+            "field": "Microsoft.Network/applicationGateways/firewallPolicy",
+            "exists": "false"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

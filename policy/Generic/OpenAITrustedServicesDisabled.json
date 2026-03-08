@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ai-o02 - Disable trusted services'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP OpenAI Disable trusted services",
+    "description": "This policy prevents allowing Trusted Microsoft services. This ensures that other services can't connect to the OpenAI in other way than by using Private Endpoints.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "OpenAITrustedServicesDisabled",
+        "severity": 3,
+        "controlId": "drcp-ai-o02",
+        "controlDesc": "Disable trusted services",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+services",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o02"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.CognitiveServices/accounts"
+          },
+          {
+            "field": "kind",
+            "equals": "OpenAI"
+          },
+          {
+            "field": "Microsoft.CognitiveServices/accounts/networkAcls.bypass",
+            "notEquals": "None"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

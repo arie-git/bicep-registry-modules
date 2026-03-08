@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-03 - Ensure that authorization and authentication use the AzureAD'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS AAD profile enabled",
+    "description": "AKS-managed Azure Active Directory integration can manage the access to the clusters by configuring Kubernetes role-based access control (Kubernetes RBAC) based on a user's identity or directory group membership. Learn more at: https://aka.ms/aks-managed-aad.",
+    "metadata": {
+      "version": "1.0.1",
+      "category": "APG DRCP Policy",
+      "status": "Active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSAADProfile",
+        "severity": 3,
+        "controlId": "drcp-aks-03",
+        "controlDesc": "Ensure that authorization and authentication use Microsoft Entra ID",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-03"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled.",
+          "portalReview": true
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/aadProfile",
+            "exists": false
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

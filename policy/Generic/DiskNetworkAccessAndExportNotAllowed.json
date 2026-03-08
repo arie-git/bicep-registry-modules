@@ -1,0 +1,91 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-14 - Prevents the use of network access and disk export with Azure Disk'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-14 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Disk cannot use network access and disk export",
+    "description": "This policy prevents the use of network access and disk export with Azure Disk.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "DiskNetworkAccessAndExportNotAllowed",
+        "severity": 3,
+        "controlId": "drcp-sub-14",
+        "controlDesc": "Deny Azure Disk",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-14"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "networkAccessPolicy": {
+        "type": "String",
+        "metadata": {
+          "description": "Network Access Policy",
+          "displayName": "DenyAll or AllowPrivate allowed value for Network Access Policy"
+        },
+        "allowedValues": [
+          "DenyAll",
+          "AllowPrivate"
+        ],
+        "defaultValue": "DenyAll"
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Modify, Deny, Audit or Disabled the execution of the Policy"
+        },
+        "allowedValues": [
+          "Modify",
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "equals": "Microsoft.Compute/disks",
+            "field": "type"
+          },
+          {
+            "field": "Microsoft.Compute/disks/networkAccessPolicy",
+            "notEquals": "[parameters('networkAccessPolicy')]"
+          },
+          {
+            "not": {
+              "allOf": [
+                {
+                  "value": "[resourceGroup().name]",
+                  "like": "*-adbmanaged-rg"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "details": {
+          "conflictEffect": "deny",
+          "operations": [
+            {
+              "field": "Microsoft.Compute/disks/networkAccessPolicy",
+              "operation": "addOrReplace",
+              "value": "[parameters('networkAccessPolicy')]"
+            }
+          ],
+          "roleDefinitionIds": [
+            "/providers/Microsoft.Authorization/roleDefinitions/c3eb8fb4-37eb-4e7f-8990-09937fcc57c0"
+          ]
+        },
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

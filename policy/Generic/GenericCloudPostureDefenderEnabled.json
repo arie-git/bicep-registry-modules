@@ -1,0 +1,129 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-19 - Defender for Cloud configuration'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-19 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Cloud Posture (CSPM) Defender",
+    "description": "This policy checks if Azure Cloud Posture Defender is enabled with Agentless scanning for machines, Agentless discovery for Kubernetes and Agentless container vulnerability assessment.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericCloudPostureDefenderEnabled",
+        "severity": 3,
+        "controlId": "drcp-sub-19",
+        "controlDesc": "Defender for Cloud configuration",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-19"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      },
+      "requiredSettings": {
+        "type": "array",
+        "metadata": {
+          "description": "Which settings are required.'",
+          "displayName": "Required settings"
+        },
+        "allowedValues": [
+          "AgentlessVmScanning",
+          "AgentlessDiscoveryForKubernetes",
+          "ContainerRegistriesVulnerabilityAssessments"
+        ],
+        "defaultValue": [
+          "AgentlessVmScanning",
+          "AgentlessDiscoveryForKubernetes",
+          "ContainerRegistriesVulnerabilityAssessments"
+        ]
+      },
+      "notAllowedSettings": {
+        "type": "array",
+        "metadata": {
+          "description": "Which settings are not allowed.'",
+          "displayName": "Disallowed settings"
+        },
+        "allowedValues": [
+          "EntraPermissionsManagement",
+          "SensitiveDataDiscovery"
+        ],
+        "defaultValue": [
+          "EntraPermissionsManagement",
+          "SensitiveDataDiscovery"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/pricings",
+          "name": "CloudPosture",
+          "evaluationDelay": "AfterProvisioning",
+          "existenceScope": "subscription",
+          "existenceCondition": {
+            "allOf": [
+              {
+                "field": "Microsoft.Security/pricings/pricingTier",
+                "equals": "Standard"
+              },
+              {
+                "count": {
+                  "field": "Microsoft.Security/pricings/extensions[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Security/pricings/extensions[*].name",
+                        "in": "[parameters('requiredSettings')]"
+                      },
+                      {
+                        "field": "Microsoft.Security/pricings/extensions[*].isEnabled",
+                        "equals": "true"
+                      }
+                    ]
+                  }
+                },
+                "equals": 3
+              },
+              {
+                "count": {
+                  "field": "Microsoft.Security/pricings/extensions[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Security/pricings/extensions[*].name",
+                        "in": "[parameters('notAllowedSettings')]"
+                      },
+                      {
+                        "field": "Microsoft.Security/pricings/extensions[*].isEnabled",
+                        "equals": "false"
+                      }
+                    ]
+                  }
+                },
+                "equals": 2
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

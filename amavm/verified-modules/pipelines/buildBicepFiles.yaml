@@ -1,0 +1,174 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(environmentSnowId)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger:
+  paths:
+    include:
+    - bicep/*
+    - pipelines/buildBicepFiles.yaml
+    - pipelines/publishToBCR.yaml
+    - utils/buildBicepFiles.ps1
+    - utils/publishToBCR.ps1
+  branches:
+    include:
+    - "*"
+    exclude:
+    - main
+pr: none
+
+parameters:
+- name: 'environmentType'
+  type: string
+  default: 'dev'
+  values:
+  - 'dev'
+  - 'tst'
+  - 'acc'
+  - 'prd'
+- name: 'location'
+  type: string
+  default: 'swedencentral'
+  values:
+  - 'swedencentral'
+  - 'westeurope'
+  - 'northeurope'
+- name: 'environmentSnowId'
+  displayName: 'ServiceNow environment Id'
+  type: string
+  default: 'ENV23944'
+- name: 'bcrPaths'
+  displayName: "List of module paths to process (in order)"
+  type: object
+  default:
+  - res/
+  - ptn/
+  - utl/
+
+variables:
+- name: applicationSnowId
+  value: 'AMAVM'
+- name: environmentSnowId
+  value: ${{parameters.environmentSnowId}}
+- name: serviceConnectionName
+  value: 'SC-${{variables.applicationSnowId}}-${{variables.environmentSnowId}}'
+- name: organizationCode
+  value: 's2'
+- name: purpose
+  value: 'amavm'
+- name: environmentType
+  value: ${{parameters.environmentType}}
+- name: location
+  value: '${{parameters.location}}'
+- name: locationShort
+  ${{ if eq(parameters.location,'westeurope') }}:
+    value: 'we'
+  ${{ if eq(parameters.location,'northeurope') }}:
+    value: 'ne'
+  ${{ if eq(parameters.location,'swedencentral') }}:
+    value: 'sec'
+- name: acrName
+  value: ${{variables.organizationCode}}${{variables.purpose}}${{variables.environmentType}}${{variables.locationShort}}acr
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DRCP-Templates/templates
+      ref: 'refs/heads/main'
+
+pool: CPP-Ubuntu2204-Latest-A
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+    - ${{ each path in parameters.bcrPaths }}:
+      - stage: "build_${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}"
+        displayName: 'Build and Test ${{path}}'
+        jobs:
+        - job: buildBicep
+          displayName: 'Build'
+          steps:
+          - checkout: self
+            clean: true
+          - script: |
+              mkdir -p /agent/_work/_temp/repocode  # Create a repo directory
+              cp -r $(Build.SourcesDirectory)/* /agent/_work/_temp/repocode
+            displayName: 'Copy Files to Build Directory'
+          - task: AzurePowerShell@5
+            displayName: 'Set used BCR'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/setBCRinLinter.ps1
+              azurePowerShellVersion: latestVersion
+              ScriptArguments:
+                -acrName "${{variables.acrName}}"
+              pwsh: true
+          - task: AzureCLI@2
+            displayName: 'Prepare bicep'
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              scriptType: 'pscore'
+              scriptLocation: 'inlineScript'
+              useGlobalConfig: true
+              inlineScript: |
+                az bicep uninstall
+                az config set bicep.use_binary_from_path=false
+                az bicep install
+          - task: AzurePowerShell@5
+            displayName: 'Build modules'
+            timeoutInMinutes: 120
+            enabled: true
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/buildBicepFiles.ps1
+              azurePowerShellVersion: latestVersion
+              ScriptArguments:
+                -modulesSubpath "${{path}}"
+              pwsh: true
+          - task: AzurePowerShell@5
+            displayName: 'Compare README files'
+            timeoutInMinutes: 120
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              ScriptType: 'filePath'
+              ScriptPath: utils/compareReadMe.ps1
+              azurePowerShellVersion: latestVersion
+              ScriptArguments:
+                -modulesRootPath "$(Build.SourcesDirectory)/bicep/${{path}}" -destinationPathPrefix "/agent/_work/_temp/repocode/bicep/${{path}}"
+              pwsh: true
+          - task: UsePythonVersion@0
+            displayName: 'Set python version'
+            inputs:
+              versionSpec: '3.11'
+              architecture: 'x64'
+          - script: |
+              python -m pip install --upgrade pip
+              cd utils/readmePublisher
+              pip install -r requirements.txt
+            displayName: 'Install dependencies'
+          - task: AzureCLI@2
+            displayName: 'Create HTML files from README'
+            timeoutInMinutes: 60
+            inputs:
+              azureSubscription: ${{variables.serviceConnectionName}}
+              scriptType: 'bash'
+              useGlobalConfig: false
+              scriptLocation: inlineScript
+              inlineScript: |
+                az config set extension.use_dynamic_install=yes_without_prompt || exit 1
+                cd utils/readmePublisher
+                python convertreadmetohtml.py --generate-toc --sources-subpath "${{path}}"
+                if [ $? != 0 ];
+                then
+                    exit 1
+                fi
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publish HTML files artifact'
+            inputs:
+              targetPath: '$(Build.SourcesDirectory)/utils/html-assets'
+              artifact: "html-${{replace(replace(replace(path,'\\',''),'/',''),'-','')}}"
+              publishLocation: 'pipeline'

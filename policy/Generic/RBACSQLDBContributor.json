@@ -1,0 +1,98 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The SQL DB Contributor RBAC role is only allowed to be assigned to a given set of principals. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC SQL DB Contributor role",
+    "description": "This policy ensures that the SQL DB Contributor RBAC role is only assigned to the environment admin group.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACSQLDBContributor",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "roleDefinitionId": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of SQL DB Contributor Role.",
+          "displayName": "Role Definition Id of SQL DB Contributor Role."
+        },
+        "defaultValue": "9b7fa17d-e63e-47b0-bb0a-15c516ac86ec"
+      },
+      "notAllowedPrincipalType": {
+        "type": "Array",
+        "metadata": {
+          "description": "Which principal type to disallow, e.g. 'User, Group, ServicePrincipal.'",
+          "displayName": "Disallowed Principal Types"
+        },
+        "allowedValues": [
+          "User",
+          "Group",
+          "ServicePrincipal"
+        ],
+        "defaultValue": []
+      },
+      "allowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Allowed AAD principal Ids.",
+          "displayName": "Allowed AAD principal Ids"
+        },
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+            "contains": "[parameters('roleDefinitionId')]"
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "field": "Microsoft.Authorization/roleAssignments/principalId",
+                  "in": "[parameters('allowedPrincipalIds')]"
+                },
+                {
+                  "field": "Microsoft.Authorization/roleAssignments/principalType",
+                  "notIn": "[parameters('notAllowedPrincipalType')]"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

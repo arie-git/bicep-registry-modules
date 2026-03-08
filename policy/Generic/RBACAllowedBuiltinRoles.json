@@ -1,0 +1,75 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The assigned built in role is not a role that belongs to a DRCP platform available component. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC Allowed built in roles",
+    "description": "This policy ensures that only built in roles that belong to the DRCP platform can be assigned.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "inactive",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACAllowedBuiltinRoles",
+        "severity": 3,
+        "controlId": "drcp-sub-..",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-.."
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "AllAzureBuiltInRoles": {
+        "type": "Array",
+        "metadata": {
+          "description": "Available Azure Roles.",
+          "displayName": "Available Azure Roles."
+        },
+        "defaultValue": []
+      },
+      "AllowedBuiltInRoles": {
+        "type": "Array",
+        "metadata": {
+          "description": "Available DRCP platform roles.",
+          "displayName": "Available DRCP platform roles."
+        },
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Disabled"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "value": "[last(split(field('Microsoft.Authorization/roleAssignments/roleDefinitionId'), '/'))]",
+            "in": "[parameters('allAzureBuiltInRoles')]"
+          },
+          {
+            "value": "[last(split(field('Microsoft.Authorization/roleAssignments/roleDefinitionId'), '/'))]",
+            "notIn": "[parameters('AllowedBuiltInRoles')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

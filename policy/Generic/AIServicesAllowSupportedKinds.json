@@ -1,0 +1,74 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ai-04 - Allow supported kinds'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI services Allow supported kinds",
+    "description": "This policy prevents using unapproved AI services. Allowing supported kinds ensures that DevOps teams can deploy assessed and approved AI services from a security perspective.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "AIServicesAllowSupportedKinds",
+        "severity": 3,
+        "controlId": "drcp-ai-04",
+        "controlDesc": "Allow supported kinds",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+services",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+    "listOfAllowedKinds": {
+      "type": "Array",
+      "metadata": {
+        "description": "The list of AI services kinds that can be deployed.",
+        "displayName": "Allowed AI services kinds"
+      },
+      "allowedValues": [
+        "TextAnalytics",
+        "OpenAI",
+        "AIServices"
+      ],
+      "defaultValue": [
+        "TextAnalytics",
+        "OpenAI",
+        "AIServices"
+      ]
+    },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.CognitiveServices/accounts"
+          },
+          {
+            "not": {
+              "field": "kind",
+              "in": "[parameters('listOfAllowedKinds')]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

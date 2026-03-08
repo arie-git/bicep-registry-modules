@@ -1,0 +1,260 @@
+metadata name = 'Storage Account blob Services'
+metadata description = 'This module deploys a Storage Account Blob Service.'
+metadata owner = 'AMCCC'
+metadata compliance = 'There are no special compliance requirements for this module'
+metadata complianceVersion = '20240705'
+
+
+@maxLength(24)
+@description('Conditional. The name of the parent Storage Account. Required if the template is used in a standalone deployment.')
+param storageAccountName string
+
+@description('Optional. Automatic Snapshot is enabled if set to true.')
+param automaticSnapshotPolicyEnabled bool = false
+
+@description('Optional. The blob service properties for change feed events. Indicates whether change feed event logging is enabled for the Blob service.')
+param changeFeedEnabled bool = false
+
+@minValue(1)
+@maxValue(146000)
+@description('Optional. Indicates whether change feed event logging is enabled for the Blob service. Indicates the duration of changeFeed retention in days. If left blank, it indicates an infinite retention of the change feed.')
+param changeFeedRetentionInDays int?
+
+@description('Optional. The blob service properties for container soft delete. Indicates whether DeleteRetentionPolicy is enabled.')
+param containerDeleteRetentionPolicyEnabled bool = true
+
+@minValue(1)
+@maxValue(365)
+@description('Optional. Indicates the number of days that the deleted item should be retained.')
+param containerDeleteRetentionPolicyDays int?
+
+@description('Optional. This property when set to true allows deletion of the soft deleted blob versions and snapshots. This property cannot be used with blob restore policy. This property only applies to blob service and does not apply to containers or file share.')
+param containerDeleteRetentionPolicyAllowPermanentDelete bool = false
+
+@description('Optional. Specifies CORS rules for the Blob service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the Blob service.')
+param corsRules corsRuleType[]?
+
+@description('Optional. Indicates the default version to use for requests to the Blob service if an incoming request\'s version is not specified. Possible values include version 2008-10-27 and all more recent versions.')
+param defaultServiceVersion string = ''
+
+@description('Optional. The blob service properties for blob soft delete.')
+param deleteRetentionPolicyEnabled bool = true
+
+@minValue(1)
+@maxValue(365)
+@description('Optional. Indicates the number of days that the deleted blob should be retained.')
+param deleteRetentionPolicyDays int = 7
+
+@description('Optional. This property when set to true allows deletion of the soft deleted blob versions and snapshots. This property cannot be used with blob restore policy. This property only applies to blob service and does not apply to containers or file share.')
+param deleteRetentionPolicyAllowPermanentDelete bool = false
+
+@description('Optional. Use versioning to automatically maintain previous versions of your blobs.')
+param isVersioningEnabled bool = false
+
+@description('Optional. The blob service property to configure last access time based tracking policy. When set to true last access time based tracking is enabled.')
+param lastAccessTimeTrackingPolicyEnabled bool = false
+
+@description('Optional. The blob service properties for blob restore policy. If point-in-time restore is enabled, then versioning, change feed, and blob soft delete must also be enabled.')
+param restorePolicyEnabled bool = false
+
+@minValue(1)
+@description('Optional. How long this blob can be restored. It should be less than DeleteRetentionPolicy days.')
+param restorePolicyDays int = 6
+
+@description('Optional. Blob containers to create.')
+param containers blobServiceContainerType[] = []
+
+@description('''The diagnostic settings of the service.
+
+Available options for log categories are: 'StorageRead', 'StorageWrite', 'StorageDelete'
+''')
+param diagnosticSettings diagnosticSettingType
+
+// The name of the blob services
+var name = 'default'
+
+// When a diagnostic setting is provided without the log category, this array will be used to define defaults
+var defaultLogCategoryNames = [
+  'StorageRead'
+  'StorageWrite'
+  'StorageDelete'
+]
+var defaultLogCategories = [for category in defaultLogCategoryNames ?? []: {
+  category: category
+}]
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+  name: storageAccountName
+}
+
+resource blobServices 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
+  name: name
+  parent: storageAccount
+  properties: {
+    automaticSnapshotPolicyEnabled: automaticSnapshotPolicyEnabled
+    changeFeed: changeFeedEnabled
+      ? {
+          enabled: true
+          retentionInDays: changeFeedRetentionInDays
+        }
+      : null
+    containerDeleteRetentionPolicy: { // TODO: rework into one param
+      enabled: containerDeleteRetentionPolicyEnabled
+      days: containerDeleteRetentionPolicyDays
+      allowPermanentDelete: containerDeleteRetentionPolicyEnabled == true
+        ? containerDeleteRetentionPolicyAllowPermanentDelete
+        : null
+    }
+    cors: {
+      corsRules: corsRules ?? []
+    }
+    defaultServiceVersion: !empty(defaultServiceVersion) ? defaultServiceVersion : null
+    deleteRetentionPolicy: { // TODO: rework into one param
+      enabled: deleteRetentionPolicyEnabled
+      days: deleteRetentionPolicyDays
+      allowPermanentDelete: deleteRetentionPolicyEnabled && deleteRetentionPolicyAllowPermanentDelete ? true : null
+    }
+    isVersioningEnabled: isVersioningEnabled
+    lastAccessTimeTrackingPolicy: storageAccount.kind != 'Storage'
+      ? {
+          enable: lastAccessTimeTrackingPolicyEnabled
+          name: lastAccessTimeTrackingPolicyEnabled == true ? 'AccessTimeTracking' : null
+          trackingGranularityInDays: lastAccessTimeTrackingPolicyEnabled == true ? 1 : null
+        }
+      : null
+    restorePolicy: restorePolicyEnabled
+      ? {
+          enabled: true
+          days: restorePolicyDays
+        }
+      : null
+  }
+}
+
+#disable-next-line use-recent-api-versions
+resource blobServices_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [
+  for (diagnosticSetting, index) in (diagnosticSettings ?? []): {
+    name: diagnosticSetting.?name ?? '${name}-diagnosticSettings'
+    properties: {
+      storageAccountId: diagnosticSetting.?storageAccountResourceId
+      workspaceId: diagnosticSetting.?workspaceResourceId
+      eventHubAuthorizationRuleId: diagnosticSetting.?eventHubAuthorizationRuleResourceId
+      eventHubName: diagnosticSetting.?eventHubName
+      metrics: [
+        for group in (diagnosticSetting.?metricCategories ?? [{ category: 'AllMetrics' }]): {
+          category: group.category
+          enabled: group.?enabled ?? true
+          timeGrain: null
+        }
+      ]
+      logs: [
+        for group in (diagnosticSetting.?logCategoriesAndGroups ?? defaultLogCategories): {
+          categoryGroup: group.?categoryGroup
+          category: group.?category
+          enabled: group.?enabled ?? true
+        }
+      ]
+      marketplacePartnerId: diagnosticSetting.?marketplacePartnerResourceId
+      logAnalyticsDestinationType: diagnosticSetting.?logAnalyticsDestinationType
+    }
+    scope: blobServices
+  }
+]
+
+module blobServices_container 'container/main.bicep' = [
+  for (container, index) in (containers ?? []): {
+    name: take('${deployment().name}-container-${index}-${container.name}',64)
+    params: {
+      storageAccountName: storageAccount.name
+      name: container.name
+      defaultEncryptionScope: container.?defaultEncryptionScope
+      denyEncryptionScopeOverride: container.?denyEncryptionScopeOverride
+      enableNfsV3AllSquash: container.?enableNfsV3AllSquash
+      enableNfsV3RootSquash: container.?enableNfsV3RootSquash
+      immutableStorageWithVersioningEnabled: container.?immutableStorageWithVersioningEnabled
+      metadata: container.?metadata
+      publicAccess: container.?publicAccess
+      roleAssignments: container.?roleAssignments
+      immutabilityPolicyProperties: container.?immutabilityPolicyProperties
+      enableTelemetry: false // main module telemetry applies
+    }
+  }
+]
+
+@description('The name of the deployed blob service.')
+output name string = blobServices.name
+
+@description('The resource ID of the deployed blob service.')
+output resourceId string = blobServices.id
+
+@description('The name of the deployed blob service.')
+output resourceGroupName string = resourceGroup().name
+
+// =============== //
+//   Definitions   //
+// =============== //
+
+import {
+  diagnosticSettingType
+  roleAssignmentType
+  corsRuleType
+} from '../../../../../bicep-shared/types.bicep'
+
+import { blobServiceContainerType } from 'container/main.bicep'
+
+@export()
+type blobServiceType = {
+  @description('Optional. Automatic Snapshot is enabled if set to true.')
+  automaticSnapshotPolicyEnabled: bool?
+
+  @description('Optional. The blob service properties for change feed events. Indicates whether change feed event logging is enabled for the Blob service.')
+  changeFeedEnabled: bool?
+
+  @description('''Optional. Indicates whether change feed event logging is enabled for the Blob service. Indicates the duration of changeFeed retention in days (1-146000).
+  If left blank, it indicates an infinite retention of the change feed.''')
+  changeFeedRetentionInDays: int?
+
+  @description('Optional. The blob service properties for container soft delete. Indicates whether DeleteRetentionPolicy is enabled.')
+  containerDeleteRetentionPolicyEnabled: bool?
+
+  @description('Optional. Indicates the number of days (1-365) that the deleted item should be retained.')
+  containerDeleteRetentionPolicyDays: int?
+
+  @description('Optional. This property when set to true allows deletion of the soft deleted blob versions and snapshots. This property cannot be used with blob restore policy. This property only applies to blob service and does not apply to containers or file share.')
+  containerDeleteRetentionPolicyAllowPermanentDelete: bool?
+
+  @description('Optional. Specifies CORS rules for the Blob service. You can include up to five CorsRule elements in the request. If no CorsRule elements are included in the request body, all CORS rules will be deleted, and CORS will be disabled for the Blob service.')
+  corsRules: corsRuleType[]?
+
+  @description('Optional. Indicates the default version to use for requests to the Blob service if an incoming request\'s version is not specified. Possible values include version 2008-10-27 and all more recent versions.')
+  defaultServiceVersion: string?
+
+  @description('Optional. The blob service properties for blob soft delete.')
+  deleteRetentionPolicyEnabled: bool?
+
+  @description('Optional. Indicates the number of days (1-365) that the deleted blob should be retained.')
+  deleteRetentionPolicyDays: int?
+
+  @description('Optional. This property when set to true allows deletion of the soft deleted blob versions and snapshots. This property cannot be used with blob restore policy. This property only applies to blob service and does not apply to containers or file share.')
+  deleteRetentionPolicyAllowPermanentDelete: bool?
+
+  @description('Optional. Use versioning to automatically maintain previous versions of your blobs.')
+  isVersioningEnabled: bool?
+
+  @description('Optional. The blob service property to configure last access time based tracking policy. When set to true last access time based tracking is enabled.')
+  lastAccessTimeTrackingPolicyEnabled: bool?
+
+  @description('Optional. The blob service properties for blob restore policy. If point-in-time restore is enabled, then versioning, change feed, and blob soft delete must also be enabled.')
+  restorePolicyEnabled: bool?
+
+  @description('Optional. How long this blob can be restored. It should be less than DeleteRetentionPolicy days.')
+  restorePolicyDays: int?
+
+  @description('Optional. Blob containers to create.')
+  containers: blobServiceContainerType[]?
+
+  @description('''Optional. The diagnostic settings of the service. Available options for log categories are: 'StorageRead', 'StorageWrite', 'StorageDelete'''')
+  diagnosticSettings: diagnosticSettingType?
+}
+
+

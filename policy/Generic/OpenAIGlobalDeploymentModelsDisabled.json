@@ -1,0 +1,72 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ai-o01 - Disable global deployment models'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP OpenAI Disable Global deployment models",
+    "description": "This policy prevents using Global deployment models. Disabling Global deployment models makes sure that the processed data doesn't leave the target region.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "OpenAIGlobalDeploymentModelsDisabled",
+        "severity": 3,
+        "controlId": "drcp-ai-o01",
+        "controlDesc": "Disable global deployment models",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+services",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "listOfAllowedSKUs": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed SKUs",
+          "description": "The list of allowed SKUs."
+        },
+        "allowedValues": [
+          "Standard",
+          "ProvisionedManaged"
+        ],
+        "defaultValue": [
+          "Standard",
+          "ProvisionedManaged"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.CognitiveServices/accounts/deployments"
+          },
+          {
+            "not": {
+              "field": "Microsoft.CognitiveServices/accounts/deployments/sku.name",
+              "in": "[parameters('listOfAllowedSKUs')]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

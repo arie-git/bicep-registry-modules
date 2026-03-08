@@ -1,0 +1,62 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sql-06 - Vulnerability Assessment'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+SQL+Database#IncidentremediationSQLDatabase#drcp-sql-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP SQL Assessments status",
+    "mode": "All",
+    "description": "This policy audits if Vulnerability Assessment is enabled on SQL instances.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "SQL Database",
+        "name": "SQLAssessmentsStatus",
+        "severity": 3,
+        "controlId": "drcp-sql-06",
+        "controlDesc": "Vulnerability Assessment",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+SQL+Database",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+SQL+Database#IncidentremediationSQLDatabase-drcp-sql-06"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Sql/servers"
+          },
+          {
+            "field": "kind",
+            "notContains": "analytics"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/assessments",
+          "name": "82e20e14-edc5-4373-bfc4-f13121257c37",
+          "existenceCondition": {
+            "field": "Microsoft.Security/assessments/status",
+            "exists": "true"
+          }
+        }
+      }
+    }
+  }
+}

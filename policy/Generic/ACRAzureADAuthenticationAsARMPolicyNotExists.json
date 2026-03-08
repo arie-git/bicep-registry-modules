@@ -1,0 +1,54 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cr-01 - Anonymous authentication'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP ACR Azure AD authentication as ARM policy enabled",
+    "description": "This policy audits for Azure Container Registry resources that should have Azure AD authentication as ARM policy enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Container Registry",
+        "name": "ACRAzureADAuthenticationAsARMPolicyNotExists",
+        "severity": 3,
+        "controlId": "drcp-cr-01",
+        "controlDesc": "Anonymous authentication",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Container+Registry",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerRegistry/registries"
+          },
+          {
+            "field": "Microsoft.ContainerRegistry/registries/policies.azureADAuthenticationAsArmPolicy",
+            "exists": false
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

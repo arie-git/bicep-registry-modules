@@ -1,0 +1,93 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-10 - SIEM logging'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-10 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic Diagnostic settings enabled",
+    "description": "This policy audits for the required categories diagnostic settings being configured on the scope of the subscription.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericDiagnosticSettings",
+        "severity": 3,
+        "controlId": "drcp-sub-10",
+        "controlDesc": "SIEM logging",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-10"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "listOfRequiredCategories": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Required categrories",
+          "description": "The list of required logging categories."
+        },
+        "allowedValues": [
+          "Administrative",
+          "Security",
+          "Recommendation",
+          "Alert",
+          "ServiceHealth"
+        ],
+        "defaultValue": [
+          "Administrative",
+          "Security",
+          "Recommendation",
+          "Alert",
+          "ServiceHealth"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Insights/diagnosticSettings",
+          "existenceScope": "subscription",
+          "existenceCondition": {
+            "allOf": [
+              {
+                "count": {
+                  "field": "Microsoft.Insights/diagnosticSettings/logs[*]",
+                  "where": {
+                    "allOf": [
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].enabled",
+                        "equals": "True"
+                      },
+                      {
+                        "field": "Microsoft.Insights/diagnosticSettings/logs[*].category",
+                        "in": "[parameters('listOfRequiredCategories')]"
+                      }
+                    ]
+                  }
+                },
+                "equals": "[length(parameters('listOfRequiredCategories'))]"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amo-02 - Prohibit external domains for webhooks'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Action Group Only allow approved domains in webhook receivers",
+    "description": "This policy ensures that only approved domains are allowed in Action Group alert webhook receivers.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorActionGroupRestrictWebhookReceiversDomains",
+        "severity": 3,
+        "controlId": "drcp-amo-02",
+        "controlDesc": "Azure Monitor Action Groups: Prohibit external domains for webhooks.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amo-02"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/actiongroups"
+          },
+          {
+            "count": {
+              "field": "Microsoft.Insights/actionGroups/webhookReceivers[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "not": {
+                      "field": "Microsoft.Insights/actionGroups/webhookReceivers[*].serviceUri",
+                      "like": "https://apgprd.service-now.com/*"
+                    }
+                  },
+                  {
+                    "not": {
+                      "field": "Microsoft.Insights/actionGroups/webhookReceivers[*].serviceUri",
+                      "like": "https://apgacc.service-now.com/*"
+                    }
+                  },
+                  {
+                    "not": {
+                      "field": "Microsoft.Insights/actionGroups/webhookReceivers[*].serviceUri",
+                      "like": "https://apgdev2.service-now.com/*"
+                    }
+                  }
+                ]
+              }
+            },
+            "greater": 0
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

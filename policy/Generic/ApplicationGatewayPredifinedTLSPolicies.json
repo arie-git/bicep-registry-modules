@@ -1,0 +1,79 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-11 - Custom rules and exclusions'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-11 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway should be deployed with predefined Microsoft policy TLS version 1.2",
+    "description": "This policy enables you to restrict that Application Gateway is always deployed with predefined Microsoft policy that is using TLS version 1.2.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayPredifinedTLSPolicies",
+        "severity": 3,
+        "controlId": "drcp-agw-11",
+        "controlDesc": "Custom rules and exclusions",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedPredefinedTlsVersions": {
+        "type": "array",
+        "metadata": {
+          "displayName": "TLSVersion",
+          "description": "Required Version of the Application Gateway."
+        },
+        "defaultValue": [
+          "AppGwSslPolicy20220101",
+          "AppGwSslPolicy20170401S",
+          "AppGwSslPolicy20220101S"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/applicationGateways"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Network/applicationGateways/sslPolicy.policyType",
+                "notEquals": "Predefined"
+              },
+              {
+                "field": "Microsoft.Network/applicationGateways/sslPolicy.policyType",
+                "exists": "false"
+              },
+              {
+                "field": "Microsoft.Network/applicationGateways/sslPolicy.policyName",
+                "notIn": "[parameters('allowedPredefinedTlsVersions')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

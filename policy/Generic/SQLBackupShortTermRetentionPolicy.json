@@ -1,0 +1,73 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sql-07 - Backup status'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+SQL+Database#IncidentremediationSQLDatabase#drcp-sql-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP SQL Backup short term retention policy",
+    "mode": "All",
+    "description": "This policy audits if a backup policy with a minimum of 5 PIT days is present on SQL instances.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "SQL Database",
+        "name": "SQLBackupShortTermRetentionPolicy",
+        "severity": 3,
+        "controlId": "drcp-sql-07",
+        "controlDesc": "Backup status",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+SQL+Database",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+SQL+Database#IncidentremediationSQLDatabase-drcp-sql-07"
+      }
+    },
+    "parameters": {
+      "retentionDays": {
+        "type": "Integer",
+        "metadata": {
+          "displayName": "Retention Days",
+          "description": "Set the minimum number of Backup Retention Days."
+        },
+        "defaultValue": 5
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Sql/servers/databases"
+          },
+          {
+            "field": "name",
+            "notEquals": "master"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies",
+          "name": "default",
+          "roleDefinitionIds": [
+            "/providers/Microsoft.Authorization/roleDefinitions/9b7fa17d-e63e-47b0-bb0a-15c516ac86ec"
+          ],
+          "existenceCondition": {
+            "field": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies/retentionDays",
+            "greaterOrEquals": "[parameters('retentionDays')]"
+          }
+        }
+      }
+    }
+  }
+}

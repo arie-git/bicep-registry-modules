@@ -1,0 +1,103 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-09 - Audit for enabling of configuration routing of App Service apps'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-09 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Slot routing to Azure Virtual Network",
+    "description": "This policy enforces image pulling and content share traffic to be directed through the Azure Virtual Network. By default, app configuration such as pulling container images and mounting content storage will not be routed through the regional virtual network integration. These settings allow features like network security groups and user defined routes to be used, and service endpoints to be private. For more information, visit https://aka.ms/appservice-vnet-configuration-routing.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteSlotRoutingToVNet",
+        "severity": 3,
+        "controlId": "drcp-aps-09",
+        "controlDesc": "Audit for enabling of configuration routing of App Service apps",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-09"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites/slots"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/sites/slots/vnetImagePullEnabled",
+                    "exists": "true"
+                  },
+                  {
+                    "field": "Microsoft.Web/sites/slots/vnetImagePullEnabled",
+                    "notEquals": "true"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/sites/slots/vnetContentShareEnabled",
+                    "exists": "true"
+                  },
+                  {
+                    "field": "Microsoft.Web/sites/slots/vnetContentShareEnabled",
+                    "notEquals": "true"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/sites/slots/outboundVnetRouting.imagePullTraffic",
+                    "exists": "true"
+                  },
+                  {
+                    "field": "Microsoft.Web/sites/slots/outboundVnetRouting.imagePullTraffic",
+                    "notEquals": "true"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/sites/slots/outboundVnetRouting.contentShareTraffic",
+                    "exists": "true"
+                  },
+                  {
+                    "field": "Microsoft.Web/sites/slots/outboundVnetRouting.contentShareTraffic",
+                    "notEquals": "true"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

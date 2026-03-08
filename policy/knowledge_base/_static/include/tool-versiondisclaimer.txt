@@ -1,0 +1,7 @@
+DRCP supports 2 ways to use the tool:
+
+- From Azure DevOps Pipelines.
+- From the APG workstation.
+
+| The choice of pool in your pipeline determines the active Azure DevOps build agents. You can find the actual software versions `here <https://confluence.office01.internalcorp.net:8453/spaces/LLDCSHAS/overview>`__.
+| Workplace Services of SIS configures the active version on your APG workstation defined by the latest package request. As the functional owner of the tool, DRCP initiates these requests and adheres to its LCM processes.

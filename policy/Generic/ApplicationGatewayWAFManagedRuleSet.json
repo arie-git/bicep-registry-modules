@@ -1,0 +1,109 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-agw-08 - Rule sets'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway#drcp-agw-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Gateway Web Application Firewall Managed Rule set",
+    "description": "This policy enforces the Microsoft Default Ruleset 2.1, excluding Microsoft Threat Intelligence Collection rules.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Gateway",
+        "name": "ApplicationGatewayWAFManagedRuleSet",
+        "severity": 3,
+        "controlId": "drcp-agw-08",
+        "controlDesc": "Rule sets",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Gateway+Web+Application+Firewall",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Gateway#IncidentremediationApplicationGateway-drcp-agw-08"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedExceptedRules": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed excepted WAF rules",
+          "description": "List of WAF rules which are allowed to be disabled."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "count": {
+              "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleSetType",
+                    "equals": "Microsoft_DefaultRuleSet"
+                  },
+                  {
+                    "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleSetVersion",
+                    "equals": "2.1"
+                  }
+                ]
+              }
+            },
+            "equals": 0
+          },
+          {
+            "count": {
+              "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleSetType",
+                    "equals": "Microsoft_DefaultRuleSet"
+                  },
+                  {
+                    "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleSetVersion",
+                    "equals": "2.1"
+                  },
+                  {
+                    "count": {
+                      "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[*]",
+                      "where": {
+                        "allOf": [
+                          {
+                            "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[*].ruleId",
+                            "notIn": "[parameters('allowedExceptedRules')]"
+                          },
+                          {
+                            "field": "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies/managedRules.managedRuleSets[*].ruleGroupOverrides[*].rules[*].state",
+                            "equals": "Disabled"
+                          }
+                        ]
+                      }
+                    },
+                    "greaterOrEquals": 1
+                  }
+                ]
+              }
+            },
+            "greaterOrEquals": 1
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

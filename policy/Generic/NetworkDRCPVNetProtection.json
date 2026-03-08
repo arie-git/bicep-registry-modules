@@ -1,0 +1,62 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-20 - DRCP platform critical configuration protection'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP VNet protection",
+    "description": "This policy prevents users from creating a VNet other than the DRCP-delivered spoke VNet.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "NetworkDRCPVNetProtection",
+        "severity": 3,
+        "controlId": "drcp-sub-20",
+        "controlDesc": "DRCP platform critical configuration protection",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-20"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "virtualNetworkName": {
+        "type": "String",
+        "metadata": {
+          "description": "The name the created VNet is limited to."
+        }
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/virtualNetworks"
+          },
+          {
+            "field": "name",
+            "notEquals": "[parameters('virtualNetworkName')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

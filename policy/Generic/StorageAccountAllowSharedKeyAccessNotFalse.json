@@ -1,0 +1,82 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-st-04 - Microsoft Entra ID authentication'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount#drcp-st-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Storage Account Shared Key Access should be disabled",
+    "description": "This policy audits for Storage Accounts that use shared key access.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Storage Account",
+        "name": "StorageAccountAllowSharedKeyAccessNotFalse",
+        "severity": 3,
+        "controlId": "drcp-st-04",
+        "controlDesc": "Microsoft Entra ID authentication",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Storage+Account",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Storage+Account#IncidentremediationStorageAccount-drcp-st-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Storage/storageAccounts"
+          },
+          {
+            "field": "id",
+            "notContains": "-adbmanaged-rg/providers/Microsoft.Storage/storageAccounts/"
+          },
+          {
+            "field": "tags['usedBy']",
+            "notEquals": "FunctionApp"
+          },
+          {
+            "field": "tags['usedBy']",
+            "notEquals": "LogicApp"
+          },
+          {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.Storage/storageAccounts/allowSharedKeyAccess",
+                    "exists": "false"
+                  },
+                  {
+                    "field": "Microsoft.Storage/storageAccounts/allowSharedKeyAccess",
+                    "equals": ""
+                  }
+                ]
+              },
+              {
+                "field": "Microsoft.Storage/storageAccounts/allowSharedKeyAccess",
+                "equals": true
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

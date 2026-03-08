@@ -1,0 +1,47 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-log-05 - Workspace-context access mode'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Log+Analytics+Workspace#IncidentremediationLogAnalyticsWorkspace#drcp-log-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Log Analytics Workspace Disable Workspace context access",
+    "description": "This policy disables the Log Analytics Workspace Workspace context access mode.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Log Analytics Workspace",
+        "name": "LogAnalyticsWorkspaceDisableWorkspaceContext",
+        "severity": 3,
+        "controlId": "drcp-log-05",
+        "controlDesc": "Workspace-context access mode",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Log+Analytics+Workspace",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Log+Analytics#IncidentremediationLogAnalytics-drcp-log-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Disabled or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled",
+          "Audit"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "Microsoft.OperationalInsights/workspaces/features.enableLogAccessUsingOnlyResourcePermissions",
+        "notEquals": true
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

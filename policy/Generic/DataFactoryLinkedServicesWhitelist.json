@@ -1,0 +1,143 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adf-05 - Use approved data services'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory#drcp-adf-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Data Factory Linked service should be in the whitelist of allowed linked services",
+    "description": "This policy denies the creation of a Data Factory linked service that is not in the whitelist.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Data Factory",
+        "name": "DataFactoryLinkedServicesWhitelist",
+        "severity": 3,
+        "controlId": "drcp-adf-05",
+        "controlDesc": "Use approved data services",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Data+Factory",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory-drcp-adf-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedLinkedServiceResourceTypes": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed linked service resource types",
+          "description": "The list of allowed linked service types."
+        },
+        "allowedValues": [
+          "AmazonMWS",
+          "AmazonRdsForOracle",
+          "AmazonRdsForSqlServer",
+          "AmazonRedshift",
+          "AmazonS3",
+          "AmazonS3Compatible",
+          "AzureBatch",
+          "AzureBlobFS",
+          "AzureBlobStorage",
+          "AzureDatabricks",
+          "AzureDatabricksDeltaLake",
+          "AzureDataExplorer",
+          "AzureDataLakeAnalytics",
+          "AzureDataLakeStore",
+          "AzureFileStorage",
+          "AzureFunction",
+          "AzureKeyVault",
+          "AzureMariaDB",
+          "AzureML",
+          "AzureMLService",
+          "AzureMySql",
+          "AzurePostgreSql",
+          "AzureSearch",
+          "AzureSqlDatabase",
+          "AzureSqlDW",
+          "AzureSqlMI",
+          "AzureStorage",
+          "AzureSynapseArtifacts",
+          "AzureTableStorage",
+          "Cassandra",
+          "CommonDataServiceForApps",
+          "CosmosDb",
+          "CosmosDbMongoDbApi",
+          "Db2",
+          "Dynamics",
+          "DynamicsAX",
+          "DynamicsCrm",
+          "FileServer",
+          "FtpServer",
+          "HBase",
+          "Hdfs",
+          "HDInsight",
+          "Hive",
+          "HttpServer",
+          "Informix",
+          "Jira",
+          "Kusto",
+          "MicrosoftAccess",
+          "MongoDb",
+          "MongoDbAtlas",
+          "MongoDbV2",
+          "MySql",
+          "Odata",
+          "Odbc",
+          "Office365",
+          "Oracle",
+          "OracleCloudStorage",
+          "OracleServiceCloud",
+          "PostgreSql",
+          "RestService",
+          "Salesforce",
+          "SalesforceMarketingCloud",
+          "SalesforceServiceCloud",
+          "SapBw",
+          "SapCloudForCustomer",
+          "SapEcc",
+          "SapHana",
+          "SapOpenHub",
+          "SapTable",
+          "ServiceNow",
+          "Sftp",
+          "SharePointOnlineList",
+          "Snowflake",
+          "Spark",
+          "SqlServer",
+          "Sybase",
+          "Teradata",
+          "Web",
+          "WebConnection"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DataFactory/factories/linkedservices"
+          },
+          {
+            "field": "Microsoft.DataFactory/factories/linkedservices/type",
+            "notIn": "[parameters('allowedLinkedServiceResourceTypes')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

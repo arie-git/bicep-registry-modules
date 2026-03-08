@@ -1,0 +1,73 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-04 - Deny lower / legacy TLS versions'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Environment Minimum TLS version",
+    "description": "This policy prevents the creation of an app service environment that has configured a TLS version lower then required.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceEnvironmentMinimumTlsVersion",
+        "severity": 3,
+        "controlId": "drcp-aps-04",
+        "controlDesc": "Deny lower / legacy TLS versions",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "kind",
+            "like": "ASE*"
+          },
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/hostingEnvironments"
+          },
+          {
+            "count": {
+              "field": "Microsoft.Web/HostingEnvironments/clusterSettings[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/HostingEnvironments/clusterSettings[*].name",
+                    "contains": "DisableTls1.0"
+                  },
+                  {
+                    "value": "Microsoft.Web/HostingEnvironments/clusterSettings[*].value",
+                    "notequals": "1"
+                  }
+                ]
+              }
+            },
+            "less": 1
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

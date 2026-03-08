@@ -1,0 +1,69 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-kv-02 - Microsoft Entra ID authentication and Azure RBAC for Data Plane'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP KeyVault Disabled RBAC permission model",
+    "description": "This policy prevents the creation of a key vault that does not have the RBAC permission model enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Key Vault",
+        "name": "KeyVaultEnableRBACAuthorizationDisabled",
+        "severity": 3,
+        "controlId": "drcp-kv-02",
+        "controlDesc": "Microsoft Entra ID authentication and Azure RBAC for Data Plane",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault-drcp-kv-02"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.KeyVault/vaults"
+          },
+          {
+            "not": {
+              "field": "Microsoft.KeyVault/vaults/createMode",
+              "equals": "recover"
+            }
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.KeyVault/vaults/enableRbacAuthorization",
+                "exists": "false"
+              },
+              {
+                "field": "Microsoft.KeyVault/vaults/enableRbacAuthorization",
+                "equals": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

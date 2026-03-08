@@ -1,0 +1,84 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adf-06 - Ensure DevOps way-of-working suitable for ADF'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory#drcp-adf-06 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Data Factory can not use external Azure DevOps repository",
+    "description": "This policy denies the use of a code repository that is not in the list of the allowed for use by a Data Factory.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Data Factory",
+        "name": "DataFactoryNonOrgRepoNotAllowed",
+        "severity": 3,
+        "controlId": "drcp-adf-06",
+        "controlDesc": "Ensure DevOps way-of-working suitable for ADF",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Data+Factory",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory-drcp-adf-06"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "listOfAllowedOrgs": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Azure DevOps organizations",
+          "description": "The list of allowed Azure DevOps organizations for Data Factory Git repository."
+        },
+        "allowedValues": [],
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Audit or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DataFactory/factories"
+          },
+          {
+            "field": "Microsoft.DataFactory/factories/repoConfiguration.type",
+            "exists": "true"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.DataFactory/factories/repoConfiguration.type",
+                "notEquals": "FactoryVSTSConfiguration"
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.DataFactory/factories/repoConfiguration.type",
+                    "equals": "FactoryVSTSConfiguration"
+                  },
+                  {
+                    "field": "Microsoft.DataFactory/factories/repoConfiguration.accountName",
+                    "notIn": "[parameters('listOfAllowedOrgs')]"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

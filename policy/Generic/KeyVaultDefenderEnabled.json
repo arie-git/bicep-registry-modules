@@ -1,0 +1,57 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-kv-10 - Enable treat detection capabilities with Microsoft Defender for Key Vaults'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault#drcp-kv-10 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP KeyVault Defender",
+    "description": "This policy checks if Azure Defender for Azure KeyVault is enabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Key Vault",
+        "name": "KeyVaultDefenderEnabled",
+        "severity": 3,
+        "controlId": "drcp-kv-10",
+        "controlDesc": "Enable treat detection capabilities with Microsoft Defender for Key Vaults",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Key+Vault",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Key+Vault#IncidentremediationKeyVault-drcp-kv-10"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - AuditIfNotExists or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "field": "type",
+        "equals": "Microsoft.Resources/subscriptions"
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Security/pricings",
+          "name": "KeyVaults",
+          "evaluationDelay": "AfterProvisioning",
+          "existenceScope": "subscription",
+          "existenceCondition": {
+            "field": "Microsoft.Security/pricings/pricingTier",
+            "equals": "Standard"
+          }
+        }
+      }
+    }
+  }
+}

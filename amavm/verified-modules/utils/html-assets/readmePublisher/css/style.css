@@ -1,0 +1,146 @@
+/* General styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    height: 100vh;
+}
+ul {
+    list-style-type: disc;
+    padding-left: 20px;
+}
+/* Index (left div) */
+#container {
+    display: flex;
+}
+
+#sidebar {
+    width: 15%;
+    background-color: #f4f4f4;
+    padding: 15px;
+    position: fixed;
+    height: 100%;
+    overflow-y: scroll; /* Adds vertical scroll bar */
+    /* Optionally style the scroll bar if needed */
+    border: 1px solid #ccc; /* Optional: adds a border for better visibility */
+}
+/* Style for headings and links inside the index */
+#sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+#sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#sidebar ul li {
+    margin: 5px 0;
+    font-size: small;
+    background-color: #f0f0f0;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    /* font-weight: bold; */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#sidebar ul > li:hover {
+    background-color: #87CEEB;
+}
+
+#sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+}
+
+#sidebar ul li a:hover {
+    text-decoration: underline;
+    color: #007BFF;
+}
+
+#sidebar ul > li > ul {
+    padding-left: 5px;
+    margin-top: 5px;
+}
+
+#main-content {
+    margin-left: calc(15vw); /* Matches sidebar width */
+    padding: 40px;
+    flex: 1;
+}
+h1,
+h2,
+h3 {
+    font-size: 20px;
+    padding-left: 0px; padding-top: 20px; padding-bottom: 10px; padding-right: 1px;
+}
+
+code {
+    background-color: #f4f4f4;
+    color: #666;
+    padding: 2px 4px;
+    font-family: monospace;
+}
+
+pre {
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    overflow: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 80%;
+    padding: auto;
+}
+
+table,
+th,
+td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+    font-family: Verdana
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2
+}
+
+th {
+    background-color: #ABABAB;
+    color: white;
+}
+
+p {
+    font-family: Verdana
+}
+
+td {
+    font-family: Verdana
+}
+
+tr:hover {
+    background-color: #fafafa;
+}
+
+table td ul,
+table th ul {
+  list-style: disc;
+  list-style-position: inside;
+  margin: 0;
+  padding-left: 1rem !important;
+}
+table td {
+  vertical-align: top;
+  word-break: break-word;
+}

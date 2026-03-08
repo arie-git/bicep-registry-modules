@@ -1,0 +1,69 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-amg-07 - Disallow connections to Azure Monitor Workspaces outside of current Subscription'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amg-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Monitor Managed Grafana Restrict Azure Monitor Workspace Subscription",
+    "description": "This policy ensures that connected Azure Monitor Workspaces reside in the same Subscription.",
+    "mode": "Indexed",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Monitor",
+        "name": "MonitorManagedGrafanaRestrictAMW",
+        "severity": 3,
+        "controlId": "drcp-amg-07",
+        "controlDesc": "Disallow connections to Azure Monitor Workspaces outside of current Subscription.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Azure+Monitor",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Azure+Monitor#IncidentremediationAzureMonitor-drcp-amg-07"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Dashboard/grafana"
+          },
+          {
+            "allOf": [
+              {
+                "count": {
+                  "field": "Microsoft.Dashboard/grafana/grafanaIntegrations.azureMonitorWorkspaceIntegrations[*]",
+                  "where": {
+                    "value": "[split(current('Microsoft.Dashboard/grafana/grafanaIntegrations.azureMonitorWorkspaceIntegrations[*].azureMonitorWorkspaceResourceId'), '/')[2]]",
+                    "notEquals": "[split(field('id'), '/')[2]]"
+                  }
+                },
+                "greater": 0
+              },
+              {
+                "value": "[length(field('Microsoft.Dashboard/grafana/grafanaIntegrations.azureMonitorWorkspaceIntegrations'))]",
+                "greater": 0
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

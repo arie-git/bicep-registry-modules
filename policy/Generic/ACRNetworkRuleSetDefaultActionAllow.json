@@ -1,0 +1,79 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cr-04 - Public network access'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP ACR Network ruleset with default action is allowed",
+    "description": "This policy prevents unrestricted network access to Azure Container Registry resources.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Container Registry",
+        "name": "ACRNetworkRuleSetDefaultActionAllow",
+        "severity": 3,
+        "controlId": "drcp-cr-04",
+        "controlDesc": "Public network access",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Container+Registry",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-04"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerRegistry/registries"
+          },
+          {
+            "allOf": [
+              {
+                "anyof": [
+                  {
+                    "field": "Microsoft.ContainerRegistry/registries/networkRuleSet.defaultAction",
+                    "exists": "false"
+                  },
+                  {
+                    "field": "Microsoft.ContainerRegistry/registries/networkRuleSet.defaultAction",
+                    "equals": "Allow"
+                  }
+                ]
+              },
+              {
+                "anyof": [
+                  {
+                    "field": "Microsoft.ContainerRegistry/registries/publicNetworkAccess",
+                    "exists": "false"
+                  },
+                  {
+                    "field": "Microsoft.ContainerRegistry/registries/publicNetworkAccess",
+                    "equals": "Enabled"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

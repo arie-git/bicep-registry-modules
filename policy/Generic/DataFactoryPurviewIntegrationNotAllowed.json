@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adf-07 - Purview integration isn't allowed'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory#drcp-adf-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Data Factory cannot use Purview integration",
+    "description": "This policy denies the use of Purview with a Data Factory instance.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Data Factory",
+        "name": "DataFactoryPurviewIntegrationNotAllowed",
+        "severity": 3,
+        "controlId": "drcp-adf-07",
+        "controlDesc": "Purview integration isn't allowed.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Data+Factory",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory-drcp-adf-07"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DataFactory/factories"
+          },
+          {
+            "field": "Microsoft.DataFactory/factories/purviewConfiguration.purviewResourceId",
+            "exists": "true"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

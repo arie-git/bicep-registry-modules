@@ -1,0 +1,54 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-cr-05 - Repository scoped access token'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP ACR Tokens enabled",
+    "description": "This policy prevents the use of repository scoped access token(s) in Azure Container Registry resources.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Container Registry",
+        "name": "ACRTokensStatusEnabled",
+        "severity": 3,
+        "controlId": "drcp-cr-05",
+        "controlDesc": "Repository scoped access token",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Container+Registry",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Container+Registry#IncidentremediationContainerRegistry-drcp-cr-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerRegistry/registries/tokens"
+          },
+          {
+            "field": "Microsoft.ContainerRegistry/registries/tokens/status",
+            "notequals": "disabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

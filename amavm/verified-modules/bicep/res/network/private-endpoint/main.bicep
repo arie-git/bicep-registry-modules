@@ -1,0 +1,256 @@
+metadata name = 'Private Endpoint'
+metadata description = 'This module deploys a Private Endpoint.'
+metadata owner = 'AMCCC'
+metadata compliance = 'Private endpoints to other subscriptions are not allowed by default.'
+metadata complianceVersion = '20241022'
+
+@description('Required. Name of the private endpoint resource to create.')
+param name string
+
+@description('Required. Resource ID of the subnet where the endpoint needs to be created.')
+param subnetResourceId string
+
+@description('Optional. Application security groups in which the private endpoint IP configuration is included.')
+param applicationSecurityGroupResourceIds array?
+
+@description('Optional. The custom name of the network interface attached to the private endpoint.')
+param customNetworkInterfaceName string?
+
+@description('Optional. A list of IP configurations of the private endpoint. This will be used to map to the First Party Service endpoints.')
+param ipConfigurations ipConfigurationsType
+
+@description('Optional. The private DNS zone group to configure for the private endpoint.')
+param privateDnsZoneGroup privateDnsZoneGroupType?
+
+@description('Optional. Location for all Resources.')
+param location string = resourceGroup().location
+
+@description('Optional. The lock settings of the service.')
+param lock lockType
+
+@description('Optional. Array of role assignments to create.')
+param roleAssignments roleAssignmentType
+
+@description('Optional. Tags to be applied on all resources/resource groups in this deployment.')
+param tags object?
+
+@description('Optional. Custom DNS configurations.')
+param customDnsConfigs customDnsConfigType
+
+@description('Optional. A grouping of information about the connection to the remote resource. Used when the network admin does not have access to approve connections to the remote resource.')
+param manualPrivateLinkServiceConnections manualPrivateLinkServiceConnectionsType
+
+@description('Optional. A grouping of information about the connection to the remote resource.')
+param privateLinkServiceConnections privateLinkServiceConnectionsType
+
+@description('Optional. Enable/Disable usage telemetry for module.')
+param enableTelemetry bool = true
+
+// Variables
+import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'
+
+var specificBuiltInRoleNames = {
+  'DNS Resolver Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','0f2ebee7-ffd4-4fc0-b3b7-664099fdad5d')
+  'DNS Zone Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','befefa01-2a29-4197-83a8-272ff33ce314')
+  'Domain Services Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','eeaeda52-9324-47f6-8069-5d5bade478b2')
+  'Domain Services Reader': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','361898ef-9ed1-48c2-849c-a832951106bb')
+  'Network Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','4d97b98b-1d4f-4787-a291-c67834d212e7')
+  'Private DNS Zone Contributor': subscriptionResourceId('Microsoft.Authorization/roleDefinitions','b12aa53e-6015-4669-85d0-8515ebb3ae7f')
+}
+var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
+
+var formattedRoleAssignments = [
+  for (roleAssignment, index) in (roleAssignments ?? []): union(roleAssignment, {
+    roleDefinitionId: builtInRoleNames[?roleAssignment.roleDefinitionIdOrName] ?? (contains(
+        roleAssignment.roleDefinitionIdOrName,
+        '/providers/Microsoft.Authorization/roleDefinitions/'
+      )
+      ? roleAssignment.roleDefinitionIdOrName
+      : subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAssignment.roleDefinitionIdOrName))
+  })
+]
+
+var versionInfo = loadJsonContent('version.json')
+var moduleVersion = versionInfo.version
+var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemetryAVMversion: moduleVersion},tags??{})
+
+// Resources
+
+resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' =
+  if (enableTelemetry) {
+    name: take('${telemetryId}.res.network-privateendpoint.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',64)
+    properties: {
+      mode: 'Incremental'
+      template: {
+        '$schema': 'https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#'
+        contentVersion: '1.0.0.0'
+        resources: []
+        outputs: {
+          telemetry: {
+            type: 'String'
+            value: 'For more information, see https://aka.ms/avm/TelemetryInfo'
+          }
+        }
+      }
+    }
+  }
+
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-01-01' = {
+  name: name
+  location: location
+  tags: finalTags
+  properties: {
+    applicationSecurityGroups: [
+      for applicationSecurityGroupResourceId in (applicationSecurityGroupResourceIds ?? []): {
+        id: applicationSecurityGroupResourceId
+      }
+    ]
+    customDnsConfigs: customDnsConfigs ?? []
+    customNetworkInterfaceName: customNetworkInterfaceName ?? ''
+    ipConfigurations: ipConfigurations ?? []
+    manualPrivateLinkServiceConnections: manualPrivateLinkServiceConnections ?? []
+    privateLinkServiceConnections: privateLinkServiceConnections ?? []
+    subnet: {
+      id: subnetResourceId
+    }
+  }
+}
+
+module privateEndpoint_privateDnsZoneGroup 'private-dns-zone-group/main.bicep' = if (!empty(privateDnsZoneGroup)) {
+  name: '${uniqueString(deployment().name)}-privateendpoint-privatednszonegroup'
+  params: {
+    name: privateDnsZoneGroup.?name
+    privateEndpointName: privateEndpoint.name
+    privateDnsZoneConfigs: privateDnsZoneGroup!.privateDnsZoneGroupConfigs
+  }
+}
+
+resource privateEndpoint_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock ?? {}) && lock.?kind != 'None') {
+    name: lock.?name ?? 'lock-${name}'
+    properties: {
+      level: lock.?kind ?? ''
+      notes: lock.?kind == 'CanNotDelete'
+        ? 'Cannot delete resource or child resources.'
+        : 'Cannot delete or modify the resource or child resources.'
+    }
+    scope: privateEndpoint
+  }
+
+resource privateEndpoint_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
+    name: roleAssignment.?name ?? guid(privateEndpoint.id, roleAssignment.principalId, roleAssignment.roleDefinitionIdOrName)
+    properties: {
+      roleDefinitionId: roleAssignment.roleDefinitionIdOrName
+      principalId: roleAssignment.principalId
+      description: roleAssignment.?description
+      principalType: roleAssignment.?principalType
+      condition: roleAssignment.?condition
+      conditionVersion: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condition is set
+      delegatedManagedIdentityResourceId: roleAssignment.?delegatedManagedIdentityResourceId
+    }
+    scope: privateEndpoint
+  }
+]
+
+@description('The resource group the private endpoint was deployed into.')
+output resourceGroupName string = resourceGroup().name
+
+@description('The resource ID of the private endpoint.')
+output resourceId string = privateEndpoint.id
+
+@description('The name of the private endpoint.')
+output name string = privateEndpoint.name
+
+@description('The location the resource was deployed into.')
+output location string = privateEndpoint.location
+
+@description('The custom DNS configurations of the private endpoint.')
+output customDnsConfig customDnsConfigType = privateEndpoint.properties.customDnsConfigs
+
+@description('The IDs of the network interfaces associated with the private endpoint.')
+output networkInterfaceIds array = privateEndpoint.properties.networkInterfaces
+
+@description('The group Id for the private endpoint Group.')
+output groupId string = !empty(privateEndpoint.properties.manualPrivateLinkServiceConnections) && length(privateEndpoint.properties.manualPrivateLinkServiceConnections[0].properties.?groupIds) > 0
+  ? privateEndpoint.properties.manualPrivateLinkServiceConnections[0].properties.?groupIds[0] ?? ''
+  : !empty(privateEndpoint.properties.privateLinkServiceConnections) && length(privateEndpoint.properties.privateLinkServiceConnections[0].properties.?groupIds) > 0
+      ? privateEndpoint.properties.privateLinkServiceConnections[0].properties.?groupIds[0] ?? ''
+      : ''
+
+@description('Is there evidence of usage in non-compliance with policies?')
+output evidenceOfNonCompliance bool = false //TODO: maybe check for links to other subscriptions
+
+// ================ //
+// Definitions      //
+// ================ //
+
+import {roleAssignmentType, lockType} from '../../../../bicep-shared/types.bicep'
+
+import { privateDnsZoneGroupConfigType } from 'private-dns-zone-group/main.bicep'
+
+type privateDnsZoneGroupType = {
+  @description('Optional. The name of the Private DNS Zone Group.')
+  name: string?
+
+  @description('Required. The private DNS zone groups to associate the private endpoint. A DNS zone group can support up to 5 DNS zones.')
+  privateDnsZoneGroupConfigs: privateDnsZoneGroupConfigType[]
+}
+
+type ipConfigurationsType = {
+  @description('Required. The name of the resource that is unique within a resource group.')
+  name: string
+
+  @description('Required. Properties of private endpoint IP configurations.')
+  properties: {
+    @description('Required. The ID of a group obtained from the remote resource that this private endpoint should connect to.')
+    groupId: string
+
+    @description('Required. The member name of a group obtained from the remote resource that this private endpoint should connect to.')
+    memberName: string
+
+    @description('Required. A private IP address obtained from the private endpoint\'s subnet.')
+    privateIPAddress: string
+  }
+}[]?
+
+type manualPrivateLinkServiceConnectionsType = {
+  @description('Required. The name of the private link service connection.')
+  name: string
+
+  @description('Required. Properties of private link service connection.')
+  properties: {
+    @description('Required. The ID of a group obtained from the remote resource that this private endpoint should connect to.')
+    groupIds: array
+
+    @description('Required. The resource id of private link service.')
+    privateLinkServiceId: string
+
+    @description('Optional. A message passed to the owner of the remote resource with this connection request. Restricted to 140 chars.')
+    requestMessage: string
+  }
+}[]?
+
+type privateLinkServiceConnectionsType = {
+  @description('Required. The name of the private link service connection.')
+  name: string
+
+  @description('Required. Properties of private link service connection.')
+  properties: {
+    @description('Required. The ID of a group obtained from the remote resource that this private endpoint should connect to.')
+    groupIds: array
+
+    @description('Required. The resource id of private link service.')
+    privateLinkServiceId: string
+
+    @description('Optional. A message passed to the owner of the remote resource with this connection request. Restricted to 140 chars.')
+    requestMessage: string?
+  }
+}[]?
+
+type customDnsConfigType = {
+  @description('Required. Fqdn that resolves to private endpoint IP address.')
+  fqdn: string
+
+  @description('Required. A list of private IP addresses of the private endpoint.')
+  ipAddresses: string[]
+}[]?

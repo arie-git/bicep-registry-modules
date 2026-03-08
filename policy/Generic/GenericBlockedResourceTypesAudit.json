@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-18 - Resource type restriction'. Only resources types can be deployed that have been whitelisted as resource provider or component by DRCP. For a list of allowed components, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Azure+components ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic blocked resource types audit",
+    "description": "This policy acts as temporary pre-deny audit to ensure that resource types that have been blacklisted by DRCP cannot be provisioned or altered. In a subsequent DRCP release, this policy gets disabled and the audited resource types are added to existing Deny-policy 'DRCP-Generic-GenericBlockedResourceTypes'.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericBlockedResourceTypesAudit",
+        "severity": 3,
+        "controlId": "drcp-sub-18",
+        "controlDesc": "Resource type restriction",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-18"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Disabled"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/servers/databases/syncGroups*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/servers/jobAgents*"
+          },
+          {
+            "field": "type",
+            "like": "Microsoft.Sql/servers/dnsAliases*"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

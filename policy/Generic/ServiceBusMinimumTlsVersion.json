@@ -1,0 +1,75 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sbns-01 - Minimal TLS version'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Service+Bus#IncidentremediationServiceBus#drcp-sbns-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Service Bus Minimum TLS version",
+    "description": "This policy denies enabling a TLS version on the Service Bus that is less then required.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Service Bus",
+        "name": "ServiceBusMinimumTlsVersion",
+        "severity": 3,
+        "controlId": "drcp-sbns-01",
+        "controlDesc": "Minimal TLS version",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Service+Bus",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Service+Bus#Incident+remediation+Service+Bus-drcp-sbns-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "minimumTlsVersion": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Minimum TLS Version",
+          "description": "Minimum version of TLS required to access the Service Bus"
+        },
+        "allowedValues": [
+          "1.2",
+          "1.3"
+        ],
+        "defaultValue": "1.2"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ServiceBus/namespaces"
+          },
+          {
+            "field": "Microsoft.ServiceBus/namespaces/minimumTlsVersion",
+            "exists": "true"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.ServiceBus/namespaces/minimumTlsVersion",
+                "less": "[parameters('minimumTlsVersion')]"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

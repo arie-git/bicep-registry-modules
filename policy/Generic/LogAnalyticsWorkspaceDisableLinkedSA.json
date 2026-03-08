@@ -1,0 +1,51 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-log-03 - Linked Storage Accounts'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Log+Analytics+Workspace#IncidentremediationLogAnalyticsWorkspace#drcp-log-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Log Analytics Workspace Disable linked storage accounts",
+    "description": "This policy disables linking storage accounts to the Log Analytics Workspace.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Log Analytics Workspace",
+        "name": "LogAnalyticsWorkspaceDisableLinkedSA",
+        "severity": 3,
+        "controlId": "drcp-log-03",
+        "controlDesc": "Linked storage accounts",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Log+Analytics+Workspace",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Log+Analytics#IncidentremediationLogAnalytics-drcp-log-03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Disabled or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled",
+          "Audit"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.OperationalInsights/workspaces/linkedstorageaccounts"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,116 @@
+// This is a Bicep configuration file. It can be used to control how Bicep operates and to customize validation settings for the Bicep linter. The linter uses these settings when evaluating your Bicep files for best practices.
+// For further information, please refer to the official documentation at: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/bicep-config
+{
+  "analyzers": {
+      "core": {
+          "enabled": true,
+          "rules": {
+              // See: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/linter
+              "adminusername-should-not-be-literal": {
+                  "level": "error"
+              },
+              "decompiler-cleanup": {
+                  "level": "error"
+              },
+              "explicit-values-for-loc-params": {
+                  "level": "warning"
+              },
+              "max-resources": {
+                  "level": "error"
+              },
+              "max-variables": {
+                  "level": "error"
+              },
+              "no-deployments-resources": {
+                  "level": "off" // Reason: The telemetry resource only has a single output and is self-contained in a deployment
+              },
+              "no-conflicting-metadata": {
+                  "level": "error"
+              },
+              "no-hardcoded-env-urls": {
+                  "level": "error",
+                  "excludedhosts": [
+                      "schema.management.azure.com"
+                  ]
+              },
+              "no-hardcoded-location": {
+                  "level": "error"
+              },
+              "no-loc-expr-outside-params": {
+                  "level": "error"
+              },
+              "no-unnecessary-dependson": {
+                  "level": "warning"
+              },
+              "no-unused-existing-resources": {
+                  "level": "error"
+              },
+              "no-unused-params": {
+                  "level": "error"
+              },
+              "no-unused-vars": {
+                  "level": "error"
+              },
+              "outputs-should-not-contain-secrets": {
+                  "level": "error"
+              },
+              "prefer-interpolation": {
+                  "level": "warning"
+              },
+              "prefer-unquoted-property-names": {
+                  "level": "error"
+              },
+              "protect-commandtoexecute-secrets": {
+                  "level": "error"
+              },
+              "secure-parameter-default": {
+                  "level": "error"
+              },
+              "secure-params-in-nested-deploy": {
+                  "level": "error"
+              },
+              "secure-secrets-in-params": {
+                  "level": "error"
+              },
+              "simplify-interpolation": {
+                  "level": "error"
+              },
+              "simplify-json-null": {
+                  "level": "error"
+              },
+              "use-parent-property": {
+                  "level": "warning"
+              },
+              "use-recent-api-versions": {
+                  "level": "warning"
+              },
+              "use-resource-id-functions": {
+                  "level": "warning"
+              },
+              "use-resource-symbol-reference": {
+                  "level": "error"
+              },
+              "use-secure-value-for-secure-inputs": {
+                  "level": "error"
+              },
+              "use-stable-resource-identifiers": {
+                  "level": "error"
+              }
+          }
+      }
+  },
+  "moduleAliases": {
+      "br": {
+          "amavm": {
+              "registry": "s2amavmprdsecacr.azurecr.io"
+          },
+          "public": {
+              "registry": "s2amavmaccsecacr.azurecr.io"
+          }
+      }
+  },
+  "formatting": {
+      "indentKind": "Space",
+      "indentSize": 2
+  }
+}

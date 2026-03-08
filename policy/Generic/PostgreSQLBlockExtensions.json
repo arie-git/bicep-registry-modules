@@ -1,0 +1,68 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-11 - Block PostgreSQL Extensions'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-11 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Block Extensions",
+    "mode": "All",
+    "description": "This policy ensures that the PostgreSQL Extensions are blocked.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLBlockExtensions",
+        "severity": 3,
+        "controlId": "drcp-psql-11",
+        "controlDesc": "Block PostgreSQL Extensions",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-11"
+      }
+    },
+    "parameters": {
+      "allowedExtensions": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Extensions",
+          "description": "List of allowed PostgreSQL extensions."
+        },
+        "allowedValues": [],
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DBforPostgreSQL/flexibleServers/configurations"
+          },
+          {
+            "field": "name",
+            "equals": "azure.extensions"
+          },
+          {
+            "value": "[if(empty(field('Microsoft.DBforPostgreSQL/flexibleServers/configurations/value')), 0, length(split(field('Microsoft.DBforPostgreSQL/flexibleServers/configurations/value'), ',')))]",
+            "notEquals": "[length(intersection(split(field('Microsoft.DBforPostgreSQL/flexibleServers/configurations/value'), ','), parameters('allowedExtensions')))]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

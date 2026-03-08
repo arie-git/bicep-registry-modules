@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aks-16 - Disable Command Invoke on Azure Kubernetes Service clusters'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-16 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AKS Disable run command",
+    "description": "Disabling command invoke can enhance the security by avoiding bypass of restricted network access or Kubernetes role-based access control.",
+    "metadata": {
+      "version": "1.0.1",
+      "category": "APG DRCP Policy",
+      "status": "Active",
+      "drcp": {
+        "component": "Kubernetes Service",
+        "name": "AKSDisableRunCommand",
+        "severity": 3,
+        "controlId": "drcp-aks-16",
+        "controlDesc": "Disable Command Invoke on Azure Kubernetes Service clusters",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Kubernetes+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Kubernetes+Service#IncidentremediationKubernetesService-drcp-aks-16"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit or Disabled.",
+          "portalReview": true
+        },
+        "allowedValues": [
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.ContainerService/managedClusters"
+          },
+          {
+            "field": "Microsoft.ContainerService/managedClusters/apiServerAccessProfile.disableRunCommand",
+            "notEquals": true
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

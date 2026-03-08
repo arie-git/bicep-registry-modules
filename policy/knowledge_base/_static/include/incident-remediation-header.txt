@@ -1,0 +1,13 @@
+.. contents::
+   Contents:
+   :local:
+   :depth: 2
+
+Introduction
+------------
+
+| The items of the security baseline |AzureComponent| are automatically audited and monitored. Deviations on the security baseline will lead to incidents in ServiceNow.
+| The page describes remediations for these incidents. For the description of the technical details of the remediations, see the Use Cases page of the component.
+
+Incidents
+---------

@@ -1,0 +1,59 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adf-01 - Establish network segmentation boundaries'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory#drcp-adf-01 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Data Factory Allow only Self-Hosted Integration Runtimes",
+    "description": "This policy limits the choice of Azure Data Factory Integration Runtime types to Self-Hosted type only.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Data Factory",
+        "name": "DataFactoryOnlySelfHostedIRisAllowed",
+        "severity": 3,
+        "controlId": "drcp-adf-01",
+        "controlDesc": "Establish network segmentation boundaries",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Data+Factory",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory-drcp-adf-01"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DataFactory/factories/integrationruntimes"
+          },
+          {
+            "field": "Microsoft.DataFactory/factories/integrationruntimes/type",
+            "exists": "true"
+          },
+          {
+            "field": "Microsoft.DataFactory/factories/integrationruntimes/type",
+            "notEquals": "SelfHosted"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

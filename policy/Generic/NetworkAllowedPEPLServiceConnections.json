@@ -1,0 +1,98 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-07 - Cross subscription private links'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Network Allowed Private endpoints private link service connections",
+    "description": "This policy prevents private link(s) between subscriptions.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "NetworkAllowedPEPLServiceConnections",
+        "severity": 3,
+        "controlId": "drcp-sub-07",
+        "controlDesc": "Cross Subscription private links",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-07"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedSubscriptionIds": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed subscription IDs",
+          "description": "Array of subscriptions IDs that are allowed access."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/privateEndpoints"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "count": {
+                      "field": "Microsoft.Network/privateEndpoints/privateLinkServiceConnections[*]",
+                      "where": {
+                        "value": "[split(current('Microsoft.Network/privateEndpoints/privateLinkServiceConnections[*].privateLinkServiceId'), '/')[2]]",
+                        "notIn": "[parameters('allowedSubscriptionIds')]"
+                      }
+                    },
+                    "greater": 0
+                  },
+                  {
+                    "value": "[length(field('Microsoft.Network/privateEndpoints/privateLinkServiceConnections'))]",
+                    "greater": 0
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "count": {
+                      "field": "Microsoft.Network/privateEndpoints/manualPrivateLinkServiceConnections[*]",
+                      "where": {
+                        "value": "[if(greater(length(split(current('Microsoft.Network/privateEndpoints/manualPrivateLinkServiceConnections[*].privateLinkServiceId'), '/')), 1), split(current('Microsoft.Network/privateEndpoints/manualPrivateLinkServiceConnections[*].privateLinkServiceId'), '/')[2], current('Microsoft.Network/privateEndpoints/manualPrivateLinkServiceConnections[*].privateLinkServiceId'))]",
+                        "notIn": "[parameters('allowedSubscriptionIds')]"
+                      }
+                    },
+                    "greater": 0
+                  },
+                  {
+                    "value": "[length(field('Microsoft.Network/privateEndpoints/manualPrivateLinkServiceConnections'))]",
+                    "greater": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

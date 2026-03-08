@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adf-02 - Disable public network inbound access for Self-Hosted Integration Runtimes'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory#drcp-adf-02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Data Factory cannot use public network access",
+    "description": "This policy prevents public network access to Azure Data Factory resources.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Data Factory",
+        "name": "DataFactoryPublicNetworkAccessMustbeDisabled",
+        "severity": 3,
+        "controlId": "drcp-adf-02",
+        "controlDesc": "Disable public network inbound access for Self-Hosted Integration Runtimes",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Data+Factory",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Data+Factory#IncidentremediationDataFactory-drcp-adf-02"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DataFactory/factories"
+          },
+          {
+            "field": "Microsoft.DataFactory/factories/publicNetworkAccess",
+            "notEquals": "Disabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

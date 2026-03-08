@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-05 - Disabled PostgreSQL single server and CosmosDB PostgreSQL'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Disable PostgreSQL single server and Cosmos DB PostgreSQL",
+    "mode": "All",
+    "description": "This policy ensures only PostgreSQL flexible server can be used. PostgreSQL single server and CosmosDB PostgreSQL are blocked.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLDisableOtherPSQLSolutions",
+        "severity": 3,
+        "controlId": "drcp-psql-05",
+        "controlDesc": "Disable PostgreSQL single server and CosmosDB PostgreSQL",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-05"
+      },
+      "dynamic": "true"
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Disabled or Deny."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DBforPostgreSQL/serverGroupsv2"
+          },
+          {
+            "field": "type",
+            "equals": "Microsoft.DBforPostgreSQL/servers"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

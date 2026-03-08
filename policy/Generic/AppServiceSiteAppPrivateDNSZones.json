@@ -1,0 +1,154 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-08 - Automated private link DNS integration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-08 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Network Private DNS zones",
+    "description": "This policy automatically remediates the Private DNS Group for Azure App Service (Microsoft.Web/sites) private endpoints, based on the domain suffix.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteAppPrivateDNSZones",
+        "severity": 3,
+        "controlId": "drcp-sub-08",
+        "controlDesc": "Audit for injection of App Service apps into a virtual network",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-08"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "privateDnsZoneIdAzureWebsites": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Private Dns Zone Id for azurewebsites.net",
+          "description": "The private DNS zone to deploy in a new private DNS zone group and link to the private endpoint for apps on azurewebsites.net.",
+          "strongType": "Microsoft.Network/privateDnsZones"
+        }
+      },
+      "privateDnsZoneIdAppServiceEnvironment": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Private Dns Zone Id for appserviceenvironment.net",
+          "description": "The private DNS zone to deploy in a new private DNS zone group and link to the private endpoint for apps on appserviceenvironment.net.",
+          "strongType": "Microsoft.Network/privateDnsZones"
+        }
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - DeployIfNotExists, AuditIfNotExists, or Disabled."
+        },
+        "allowedValues": [
+          "DeployIfNotExists",
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "DeployIfNotExists"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Network/privateEndpoints"
+          },
+          {
+            "count": {
+              "field": "Microsoft.Network/privateEndpoints/privateLinkServiceConnections[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Network/privateEndpoints/privateLinkServiceConnections[*].privateLinkServiceId",
+                    "contains": "Microsoft.Web/sites"
+                  },
+                  {
+                    "field": "Microsoft.Network/privateEndpoints/privateLinkServiceConnections[*].groupIds[*]",
+                    "like": "sites*"
+                  }
+                ]
+              }
+            },
+            "greaterOrEquals": 1
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+          "evaluationDelay": "AfterProvisioning",
+          "roleDefinitionIds": [
+            "/providers/Microsoft.Authorization/roleDefinitions/4d97b98b-1d4f-4787-a291-c67834d212e7"
+          ],
+          "deployment": {
+            "properties": {
+              "mode": "incremental",
+              "template": {
+                "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+                "contentVersion": "1.0.0.0",
+                "parameters": {
+                  "privateDnsZoneIdAzureWebsites": {
+                    "type": "string"
+                  },
+                  "privateDnsZoneIdAppServiceEnvironment": {
+                    "type": "string"
+                  },
+                  "privateEndpointName": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "type": "string"
+                  },
+                  "privateLinkServiceId": {
+                    "type": "array"
+                  }
+                },
+                "resources": [
+                  {
+                    "name": "[concat(parameters('privateEndpointName'), '/deployedByPolicy')]",
+                    "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+                    "apiVersion": "2020-03-01",
+                    "location": "[parameters('location')]",
+                    "properties": {
+                      "privateDnsZoneConfigs": [
+                        {
+                          "name": "websites-privateDnsZone",
+                          "properties": {
+                            "privateDnsZoneId": "[if(endsWith(reference(parameters('privateLinkServiceId')[0], '2023-12-01').defaultHostname, 'appserviceenvironment.net'), parameters('privateDnsZoneIdAppServiceEnvironment'), if(endsWith(reference(parameters('privateLinkServiceId')[0], '2023-12-01').defaultHostname, 'azurewebsites.net'), parameters('privateDnsZoneIdAzureWebsites'), parameters('privateDnsZoneIdAzureWebsites')))]"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "parameters": {
+                "privateDnsZoneIdAzureWebsites": {
+                  "value": "[parameters('privateDnsZoneIdAzureWebsites')]"
+                },
+                "privateDnsZoneIdAppServiceEnvironment": {
+                  "value": "[parameters('privateDnsZoneIdAppServiceEnvironment')]"
+                },
+                "privateEndpointName": {
+                  "value": "[field('name')]"
+                },
+                "location": {
+                  "value": "[field('location')]"
+                },
+                "privateLinkServiceId": {
+                  "value": "[field('Microsoft.Network/privateEndpoints/privateLinkServiceConnections[*].privateLinkServiceId')]"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

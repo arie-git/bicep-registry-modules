@@ -1,0 +1,65 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-adb-r02 - Deny using Standard and Trial pricing tier'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks#drcp-adb-r02 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Azure Databricks workspaces should be Premium SKU",
+    "description": "Only allow Databricks workspaces with the Premium SKU so that it supports features like Private Link and customer-managed keys for encryption.",
+    "mode": "All",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Databricks",
+        "name": "DatabricksSupportedSKUs",
+        "severity": 3,
+        "controlId": "drcp-adb-r02",
+        "controlDesc": "Deny using Standard and Trial pricing tier",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Databricks",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Databricks#IncidentremediationDatabricks-drcp-adb-r02"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedSKU": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "AllowedSKU",
+          "description": "Array of SKU's that are allowed in this policy."
+        },
+        "defaultValue": [
+          "Premium"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Databricks/workspaces"
+          },
+          {
+            "field": "Microsoft.Databricks/workspaces/sku.name",
+            "notIn": "[parameters('allowedSKU')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

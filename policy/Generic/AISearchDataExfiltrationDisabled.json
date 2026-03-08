@@ -1,0 +1,93 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-srch-03 - Disabled data ex-filtration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI Search Disabled Data ex-filtration",
+    "description": "This policy prevents any data ex-filtration scenarios. Disabling data ex-filtration increases the security by ensuring that no one can export data to not trusted targets by leveraging built-in AI Search mechanisms. This option disallows creating any kind of skill sets.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI Search",
+        "name": "AISearchDataExfiltrationDisabled",
+        "severity": 3,
+        "controlId": "drcp-srch-03",
+        "controlDesc": "Disable data ex-filtration",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+Search",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-03"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "listOfDisabledDataExfiltrationOptions": {
+        "type": "Array",
+        "metadata": {
+          "description": "The list of allowed disabled data ex-filtration options.",
+          "displayName": "Allowed disabled data ex-filtration options"
+        },
+        "allowedValues": [
+          "BlockAll",
+          "All"
+        ],
+        "defaultValue": [
+          "BlockAll"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Search/searchServices"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Search/searchServices/dataExfiltrationProtections[*]",
+                "exists": false
+              },
+              {
+                "not": {
+                  "field": "Microsoft.Search/searchServices/dataExfiltrationProtections[*]",
+                  "in": "[parameters('listOfDisabledDataExfiltrationOptions')]"
+                }
+              }
+            ]
+          },
+          {
+            "anyOf": [
+              {
+                "field": "Microsoft.Search/searchServices/disabledDataExfiltrationOptions[*]",
+                "exists": false
+              },
+              {
+                "not": {
+                  "field": "Microsoft.Search/searchServices/disabledDataExfiltrationOptions[*]",
+                  "in": "[parameters('listOfDisabledDataExfiltrationOptions')]"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

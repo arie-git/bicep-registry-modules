@@ -1,0 +1,63 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-psql-03 - Restrict administrator'. For remediation, see https://confluence.office01.internalcorp.net:8453/spaces/DRCPKB/pages/367985854/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP PostgreSQL Restrict administrator principals",
+    "mode": "All",
+    "description": "This policy restricts the principals allowed to use as PostgreSQL administrator.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "PostgreSQL",
+        "name": "PostgreSQLRestrictAdministrator",
+        "severity": 3,
+        "controlId": "drcp-psql-03",
+        "controlDesc": "Restrict administrator",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/spaces/DRCPKB/pages/367985856/Security+baseline+PostgreSQL",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/spaces/DRCPKB/pages/367985854/Incident+remediation+PostgreSQL#IncidentremediationPostgreSQL#drcp-psql-03"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Disabled or Deny."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedPrincipalNames": {
+        "type": "Array",
+        "metadata": {
+          "description": "Which principal names are allowed as PostgreSQL administrator.'",
+          "displayName": "Allowed principal names"
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.DBforPostgreSQL/flexibleServers/administrators"
+          },
+          {
+            "field": "Microsoft.DBforPostgreSQL/flexibleServers/administrators/principalName",
+            "notIn": "[parameters('allowedPrincipalNames')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

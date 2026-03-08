@@ -1,0 +1,79 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-10 - Audit for enabling outbound non-RFC 1918 traffic to Azure Virtual Network'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-10 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Site Audit outbound non-RFC 1918 traffic into Azure Virtual Network",
+    "description": "This policy enforces all outbound traffic to be directed into the Azure Virtual Network by setting the API property 'vnetRouteAllEnabled' to true. By default, if one uses regional Azure Virtual Network (VNET) integration, the app only routes RFC1918 traffic into that respective virtual network. This setting allows features like network security groups and user defined routes to be used for all outbound traffic from the App Service app.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceSiteVNetRouteAll",
+        "severity": 3,
+        "controlId": "drcp-aps-10",
+        "controlDesc": "Audit for enabling outbound non-RFC 1918 traffic to Azure Virtual Network",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-10"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/sites/vnetRouteAllEnabled",
+                    "exists": "true"
+                  },
+                  {
+                    "field": "Microsoft.Web/sites/vnetRouteAllEnabled",
+                    "notEquals": "true"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "Microsoft.Web/sites/outboundVnetRouting.applicationTraffic",
+                    "exists": "true"
+                  },
+                  {
+                    "field": "Microsoft.Web/sites/outboundVnetRouting.applicationTraffic",
+                    "notEquals": "true"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

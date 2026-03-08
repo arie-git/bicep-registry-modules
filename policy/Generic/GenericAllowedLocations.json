@@ -1,0 +1,104 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-17 - Location restriction'. For more information, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-17 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Generic allowed locations",
+    "description": "This policy restricts the locations for deploying resources. This excludes resource groups, 'Microsoft.AzureActiveDirectory/b2cDirectories', and resources that use the 'global' region.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "GenericAllowedLocations",
+        "severity": 3,
+        "controlId": "drcp-sub-17",
+        "controlDesc": "Location restriction (Azure data center regions)",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-17"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "listOfAllowedLocations": {
+        "type": "Array",
+        "metadata": {
+          "description": "The list of locations that can be specified when deploying resources.",
+          "strongType": "location",
+          "displayName": "Allowed locations"
+        },
+        "allowedValues": [
+          "global",
+          "westeurope",
+          "northeurope",
+          "swedencentral"
+        ],
+        "defaultValue": [
+          "global"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "location",
+            "notIn": "[parameters('listOfAllowedLocations')]"
+          },
+          {
+            "field": "location",
+            "notEquals": "global"
+          },
+          {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "notLike": "Microsoft.Web/staticSites*"
+                  },
+                  {
+                    "field": "type",
+                    "notEquals": "Microsoft.Insights/ActionGroups"
+                  },
+                  {
+                    "field": "type",
+                    "notEquals": "Microsoft.AzureActiveDirectory/b2cDirectories"
+                  }
+                ]
+              },
+              {
+                "allOf": [
+                  {
+                    "field": "type",
+                    "like": "Microsoft.Web/staticSites*"
+                  },
+                  {
+                    "field": "location",
+                    "notEquals": "westeurope"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+Guidance for determining contents
+---------------------------------
+A security configuration baseline contains standards in the form of configuration / settings / parameters within a product (component) in relation to security.
+
+Procedural measures (controls performed by people or systems) aren't described in the security configuration baseline but in the Risk Control framework.
+
+IT Management & security processes
+----------------------------------
+The security of a product strongly depends on the quality of the management & security processes followed. This includes, for example, the controlled implementation of changes, access, and authorizations based on least privilege & need to know need to have, the application of security updates/patches and monitoring systems for suspicious patterns.
+
+Security measures within processes such as change, access, incident, vulnerability and configuration management aren't part of the security configuration baseline. They're part of the risk-control framework.

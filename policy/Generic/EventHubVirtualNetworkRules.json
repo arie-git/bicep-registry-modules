@@ -1,0 +1,74 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-evh-03 - Virtual Network Integration'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP EventHub Virtual network rules",
+    "mode": "All",
+    "description": "This policy audits any Event Hub not configured to use a virtual network service endpoint.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Event Hubs",
+        "name": "EventHubVirtualNetworkRules",
+        "severity": 3,
+        "controlId": "drcp-evh-03",
+        "controlDesc": "VNet integration",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Event+Hubs",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs-drcp-evh-03"
+      }
+    },
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "count": {
+              "field": "Microsoft.EventHub/namespaces/networkRuleSets/ipRules[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.EventHub/namespaces/networkRuleSets/ipRules[*].ipMask",
+                    "notEquals": ""
+                  }
+                ]
+              }
+            },
+            "greaterOrEquals": 1
+          },
+          {
+            "count": {
+              "field": "Microsoft.EventHub/namespaces/networkRuleSets/virtualNetworkRules[*]",
+              "where": {
+                "allOf": [
+                  {
+                    "field": "Microsoft.EventHub/namespaces/networkRuleSets/virtualNetworkRules[*].subnet.id",
+                    "notEquals": ""
+                  }
+                ]
+              }
+            },
+            "greaterOrEquals": 1
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

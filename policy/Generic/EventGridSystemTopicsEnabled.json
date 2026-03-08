@@ -1,0 +1,56 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-15 - Malware Scanning for Storage Account'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-15 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Event Grid system topic source type is required to be a Storage Account",
+    "description": "This policy enforces that the source type for Event Grid system topics must be a Storage Account.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "EventGridSystemTopicsEnabled",
+        "severity": 3,
+        "controlId": "drcp-sub-15",
+        "controlDesc": "Defender for Storage Malware Scanning",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-15"
+      },
+      "dynamic": "true"
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.EventGrid/systemTopics"
+          },
+          {
+            "field": "Microsoft.EventGrid/systemTopics/topicType",
+            "notequals": "Microsoft.Storage.StorageAccounts"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

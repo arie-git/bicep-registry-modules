@@ -1,0 +1,66 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-15 - Audit for legacy App Service Environment versions'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-15 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Environment Allowed versions",
+    "description": "This policy requires App Service Environments to only use version 3. Older versions of App Service Environment require manual management of Azure resources and have greater scaling limitations.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceEnvironmentAllowedVersions",
+        "severity": 3,
+        "controlId": "drcp-aps-15",
+        "controlDesc": "Audit for legacy App Service Environment versions",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-15"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Audit"
+      },
+      "aseVersion": {
+        "type": "String",
+        "metadata": {
+          "displayName": "ASEVersion",
+          "description": "Version of the App Service Environment to require."
+        },
+        "allowedValues": [
+          "ASEV3"
+        ],
+        "defaultValue": "ASEV3"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/hostingEnvironments"
+          },
+          {
+            "field": "kind",
+            "notEquals": "[parameters('aseVersion')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

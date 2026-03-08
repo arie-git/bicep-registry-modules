@@ -1,0 +1,51 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-appi-03 - Tests'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplicationInsights#drcp-appi-03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Application Insights Disable Application Insights web tests",
+    "description": "This policy disables the testing functionality included in Application Insights.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Application Insights",
+        "name": "ApplicationInsightsDisableTests",
+        "severity": 3,
+        "controlId": "drcp-appi-03",
+        "controlDesc": "Tests",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Application+Insights",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Application+Insights#IncidentremediationApplication+Insights-drcp-appi-03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny, Disabled or Audit."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled",
+          "Audit"
+        ],
+        "defaultValue": "Audit"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Insights/webtests"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

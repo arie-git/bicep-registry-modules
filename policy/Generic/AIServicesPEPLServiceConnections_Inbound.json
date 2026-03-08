@@ -1,0 +1,80 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-sub-07 - Cross subscription private links'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription#drcp-sub-07 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI services Network Inbound Private endpoints private link service connections",
+    "description": "This policy prevents inbound private link(s) between external subscriptions and AI services.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "AIServicesPEPLServiceConnections_Inbound",
+        "severity": 3,
+        "controlId": "drcp-sub-07",
+        "controlDesc": "Cross Subscription private links",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#Incidentremediation+Subscription-drcp-sub-07"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Deny or Disabled."
+        },
+        "allowedValues": [
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      },
+      "allowedInboundPrivateLinkServices": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed external subscriptions",
+          "description": "List of the subscription ids."
+        },
+        "defaultValue": [
+          "subscription().subscriptionId"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "anyOf": [
+          {
+            "allOf": [
+              {
+                "field": "type",
+                "equals": "Microsoft.CognitiveServices/accounts/privateEndpointConnections"
+              },
+              {
+                "field": "Microsoft.CognitiveServices/accounts/privateEndpointConnections/privateLinkServiceConnectionState.status",
+                "equals": "Approved"
+              },
+              {
+                "anyOf": [
+                  {
+                    "field": "Microsoft.CognitiveServices/accounts/privateEndpointConnections/privateEndpoint.id",
+                    "exists": false
+                  },
+                  {
+                    "value": "[split(concat(field('Microsoft.CognitiveServices/accounts/privateEndpointConnections/privateEndpoint.id'), '//'), '/')[2]]",
+                    "notIn": "[parameters('allowedInboundPrivateLinkServices')]"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

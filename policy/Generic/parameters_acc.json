@@ -1,0 +1,2639 @@
+{
+  "ACRAdminUserEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ACRAnonymousPullEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ACRAzureADAuthenticationAsARMPolicyNotExists": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "ACRConnectedRegistriesDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ACRNetworkRuleBypassOptions": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "ACRNetworkRuleSetDefaultActionAllow": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ACRPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ACRPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.azurecr.io"
+    }
+  },
+  "ACRPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ACRTokensStatusEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AISearchAllowApprovedAPIVersions": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedApiVersions": {
+      "value": [
+        "2024-06-01-preview",
+        "2021-04-01-Preview",
+        "2024-03-01-Preview",
+        "2025-02-01-Preview",
+        "2025-05-01"
+      ]
+    }
+  },
+  "AISearchDataExfiltrationDisabled": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfDisabledDataExfiltrationOptions": {
+      "value": [
+        "BlockAll",
+        "All"
+      ]
+    }
+  },
+  "AISearchLocalAuthenticationDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AISearchPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "AISearchPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.search.windows.net"
+    }
+  },
+  "AISearchPublicNetworkAccessDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AIServicesAllowSupportedKinds": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedKinds": {
+      "value": [
+        "TextAnalytics",
+        "OpenAI",
+        "AIServices"
+      ]
+    }
+  },
+  "AIServicesDenyFoundry": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AIServicesLocalAuthenticationDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AIServicesManagedIdentityEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AIServicesPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AIServicesPrivateDNSZones": {
+    "azureOpenAIPrivateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.openai.azure.com"
+    },
+    "defaultPrivateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.cognitiveservices.azure.com"
+    },
+    "effect": {
+      "value": "DeployIfNotExists"
+    }
+  },
+  "AIServicesPublicNetworkAccessDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AKSAADProfile": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AKSAddOnProfileAzurePolicyEnabled": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AKSClusterVersion": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AKSDefenderSecurityMonitoringEnabled": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AKSDisableLocalAccounts": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AKSDisableRunCommand": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AKSEnableNodePublicIP": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AKSEnablePrivateCluster": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AKSPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AKSPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.{{location}}.azmk8s.io"
+    }
+  },
+  "AKSServicePrincipalProfile": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppConfigLocalAuthenticationMethods": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppConfigPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppConfigPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.azconfig.io"
+    }
+  },
+  "AppConfigPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayAllowedSKU": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedSKUs": {
+      "value": [
+        "Standard_v2",
+        "WAF_v2"
+      ]
+    }
+  },
+  "ApplicationGatewayDenyHTTPBackend": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayDenyHTTPListener": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayEnforceBackendSettings": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayFrontendIPListener": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayPredifinedTLSPolicies": {
+    "allowedPredefinedTlsVersions": {
+      "value": [
+        "AppGwSslPolicy20220101",
+        "AppGwSslPolicy20170401S",
+        "AppGwSslPolicy20220101S"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayWAFDisableCustomRules": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayWAFDisableExclusions": {
+    "allowedExcludedRuleIds": {
+      "value": [
+        "{{allowedWAFRuleExclusions}}",
+        "920440",
+        "942430",
+        "942440"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayWAFDisableWAF": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayWAFEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayWAFManagedRuleSet": {
+    "allowedExceptedRules": {
+      "value": [
+        "99001016",
+        "99001015",
+        "99001014",
+        "99005006",
+        "942440",
+        "942430",
+        "942260",
+        "942110",
+        "942150"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationGatewayWAFMode": {
+    "effect": {
+      "value": "Deny"
+    },
+    "modeRequirement": {
+      "value": [
+        "Prevention",
+        "Detection"
+      ]
+    }
+  },
+  "ApplicationInsightsDiagnosticSettings": {
+    "disallowedExportCategories": {
+      "value": [
+        "AppEvents",
+        "AppExceptions",
+        "AppRequests",
+        "AppTraces"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ApplicationInsightsDisableJavascriptSourceMap": {
+    "effect": {
+      "value": "Deny"
+    },
+    "tagName": {
+      "value": "hidden-link:Insights.Sourcemap.Storage"
+    }
+  },
+  "ApplicationInsightsDisableLocalAuth": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "ApplicationInsightsDisableTests": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceEnvironmentAllowedVersions": {
+    "aseVersion": {
+      "value": "ASEV3"
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceEnvironmentInternalEncryption": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceEnvironmentInternalLoadBalancingMode": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceEnvironmentMinimumTlsCipherSuite": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceEnvironmentMinimumTlsVersion": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceEnvironmentPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceFunctionLinuxDotNETVersion": {
+    "allowedLinuxDotNETVersions": {
+      "value": [
+        "DOTNET-ISOLATED|8.0",
+        "DOTNET-ISOLATED|9.0",
+        "DOTNET-ISOLATED|10.0"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionLinuxJavaVersion": {
+    "allowedLinuxJavaVersions": {
+      "value": [
+        "Java|8",
+        "Java|11",
+        "Java|17",
+        "Java|21",
+        "Java|25"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionLinuxNodeVersion": {
+    "allowedLinuxNodeVersions": {
+      "value": [
+        "Node|20",
+        "Node|22",
+        "Node|24"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionLinuxPowershellVersion": {
+    "allowedLinuxPowershellVersions": {
+      "value": [
+        "Powershell|7.4"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionLinuxPythonVersion": {
+    "allowedLinuxPythonVersions": {
+      "value": [
+        "Python|3.10",
+        "Python|3.11",
+        "Python|3.12",
+        "Python|3.13",
+        "Python|3.14"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionSlotLinuxDotNETVersion": {
+    "allowedLinuxDotNETVersions": {
+      "value": [
+        "DOTNET-ISOLATED|8.0",
+        "DOTNET-ISOLATED|9.0",
+        "DOTNET-ISOLATED|10.0"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionSlotLinuxJavaVersion": {
+    "allowedLinuxJavaVersions": {
+      "value": [
+        "Java|8",
+        "Java|11",
+        "Java|17",
+        "Java|21",
+        "Java|25"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionSlotLinuxNodeVersion": {
+    "allowedLinuxNodeVersions": {
+      "value": [
+        "Node|20",
+        "Node|22",
+        "Node|24"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionSlotLinuxPowershellVersion": {
+    "allowedLinuxPowershellVersions": {
+      "value": [
+        "Powershell|7.4"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceFunctionSlotLinuxPythonVersion": {
+    "allowedLinuxPythonVersions": {
+      "value": [
+        "Python|3.10",
+        "Python|3.11",
+        "Python|3.12",
+        "Python|3.13",
+        "Python|3.14"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteAllowedFtpModes": {
+    "allowedFtpModes": {
+      "value": [
+        "Disabled"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteAppPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneIdAppServiceEnvironment": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}appserviceenvironment.net"
+    },
+    "privateDnsZoneIdAzureWebsites": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.azurewebsites.net"
+    }
+  },
+  "AppServiceSiteAuthEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteCORSAllowAnyResource": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteFTPLocalAuthenticationMethods": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteHttp20Enabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteHttpsOnlyEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteLinuxDotNETVersion": {
+    "allowedLinuxDotNETVersions": {
+      "value": [
+        "DOTNETCORE|8.0",
+        "DOTNETCORE|9.0",
+        "DOTNETCORE|10.0"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteLinuxJavaVersion": {
+    "allowedLinuxJavaVersions": {
+      "value": [
+        "JAVA|8-jre8",
+        "JAVA|11-java11",
+        "JAVA|17-java17",
+        "JAVA|21-java21",
+        "TOMCAT|9.0-jre8",
+        "TOMCAT|9.0-java11",
+        "TOMCAT|9.0-java17",
+        "TOMCAT|9.0-java21",
+        "TOMCAT|10.1-java11",
+        "TOMCAT|10.1-java17",
+        "TOMCAT|10.1-java21",
+        "TOMCAT|11.0-java17",
+        "TOMCAT|11.0-java21"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteLinuxNodeVersion": {
+    "allowedLinuxNodeVersions": {
+      "value": [
+        "NODE|20-lts",
+        "NODE|22-lts",
+        "NODE|24-lts"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteLinuxPHPVersion": {
+    "allowedLinuxPHPVersions": {
+      "value": [
+        "PHP|8.3",
+        "PHP|8.4"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteLinuxPythonVersion": {
+    "allowedLinuxPythonVersions": {
+      "value": [
+        "PYTHON|3.10",
+        "PYTHON|3.11",
+        "PYTHON|3.12",
+        "PYTHON|3.13",
+        "PYTHON|3.14"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteLinuxTomcatVersion": {
+    "allowedLinuxTomcatVersions": {
+      "value": [
+        "TOMCAT|9.0-jre8",
+        "TOMCAT|9.0-java11",
+        "TOMCAT|9.0-java17",
+        "TOMCAT|9.0-java21",
+        "TOMCAT|10.1-java11",
+        "TOMCAT|10.1-java17",
+        "TOMCAT|10.1-java21",
+        "TOMCAT|11.0-java17",
+        "TOMCAT|11.0-java21"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteManagedIdentity": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteMinimumTlsCipherSuite": {
+    "allowedMinTlsCipherSuites": {
+      "value": [
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CCM",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CCM",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "1.2"
+    }
+  },
+  "AppServiceSitePEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSitePublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteRemoteDebuggingEnabled": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceSiteRoutingToVNet": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceSiteSCMLocalAuthenticationMethods": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotAllowedFtpModes": {
+    "allowedFtpModes": {
+      "value": [
+        "Disabled"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotCORSAllowAnyResource": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotFTPLocalAuthenticationMethods": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotHttp20Enabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotHttpsOnlyEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotLinuxDotNETVersion": {
+    "allowedLinuxDotNETVersions": {
+      "value": [
+        "DOTNETCORE|8.0",
+        "DOTNETCORE|9.0",
+        "DOTNETCORE|10.0"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotLinuxJavaVersion": {
+    "allowedLinuxJavaVersions": {
+      "value": [
+        "JAVA|8-jre8",
+        "JAVA|11-java11",
+        "JAVA|17-java17",
+        "JAVA|21-java21",
+        "TOMCAT|9.0-jre8",
+        "TOMCAT|9.0-java11",
+        "TOMCAT|9.0-java17",
+        "TOMCAT|9.0-java21",
+        "TOMCAT|10.1-java11",
+        "TOMCAT|10.1-java17",
+        "TOMCAT|10.1-java21",
+        "TOMCAT|11.0-java17",
+        "TOMCAT|11.0-java21"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotLinuxNodeVersion": {
+    "allowedLinuxNodeVersions": {
+      "value": [
+        "NODE|20-lts",
+        "NODE|22-lts",
+        "NODE|24-lts"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotLinuxPHPVersion": {
+    "allowedLinuxPHPVersions": {
+      "value": [
+        "PHP|8.3",
+        "PHP|8.4"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotLinuxPythonVersion": {
+    "allowedLinuxPythonVersions": {
+      "value": [
+        "PYTHON|3.10",
+        "PYTHON|3.11",
+        "PYTHON|3.12",
+        "PYTHON|3.13",
+        "PYTHON|3.14"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotLinuxTomcatVersion": {
+    "allowedLinuxTomcatVersions": {
+      "value": [
+        "TOMCAT|9.0-jre8",
+        "TOMCAT|9.0-java11",
+        "TOMCAT|9.0-java17",
+        "TOMCAT|9.0-java21",
+        "TOMCAT|10.1-java11",
+        "TOMCAT|10.1-java17",
+        "TOMCAT|10.1-java21",
+        "TOMCAT|11.0-java17",
+        "TOMCAT|11.0-java21"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotManagedIdentity": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotMinimumTlsCipherSuite": {
+    "allowedMinTlsCipherSuites": {
+      "value": [
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CCM",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_CCM",
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+      ]
+    },
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "AppServiceSiteSlotMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "1.2"
+    }
+  },
+  "AppServiceSiteSlotPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotRemoteDebuggingEnabled": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceSiteSlotRoutingToVNet": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceSiteSlotSCMLocalAuthenticationMethods": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteSlotVirtualNetworkInjection": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceSiteSlotVNetRouteAll": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceSiteVirtualNetworkInjection": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "AppServiceSiteVNetRouteAll": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceStaticSitesPartitionedPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.azurestaticapps.net"
+    }
+  },
+  "AppServiceStaticSitesPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceStaticSitesPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "AppServiceStaticSitesSupportedSKUs": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfSkuNames": {
+      "value": [
+        "S1"
+      ]
+    },
+    "listOfSkuTiers": {
+      "value": [
+        "Standard"
+      ]
+    }
+  },
+  "CosmosDBAdvancedThreatProtectionSettingsEnabled": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "CosmosDBCapabilities": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfCapabilities": {
+      "value": [
+        "EnableMongo",
+        "EnableCassandra",
+        "EnableTable",
+        "EnableGremlin"
+      ]
+    }
+  },
+  "CosmosDBDefenderEnabled": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "CosmosDBDisableKeyBasedMetadataWriteAccessTrue": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "CosmosDBDisableLocalAuthTrue": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "CosmosDBMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "Tls12"
+    }
+  },
+  "CosmosDBPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "CosmosDBPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.documents.azure.com"
+    }
+  },
+  "CosmosDBPrivateDNSZonesCassandra": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.cassandra.cosmos.azure.com"
+    }
+  },
+  "CosmosDBPrivateDNSZonesGremlin": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.gremlin.cosmos.azure.com"
+    }
+  },
+  "CosmosDBPrivateDNSZonesMongoDB": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.mongo.cosmos.azure.com"
+    }
+  },
+  "CosmosDBPrivateDNSZonesTable": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.table.cosmos.azure.com"
+    }
+  },
+  "CosmosDBPublicNetworkDisabledOrSelectedIPs": {
+    "allowedIPs": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "CosmosDBZoneRedundancyEnabled": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "DatabricksInfrastructureEncryptionMustBeEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DatabricksManagedResourceGroupName": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DatabricksPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DatabricksPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.azuredatabricks.net"
+    }
+  },
+  "DatabricksPublicIPMustBeDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DatabricksPublicNetworkMustBeDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DatabricksSupportedSKUs": {
+    "allowedSKU": {
+      "value": [
+        "Premium"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DatabricksVirtualNetworkInjection": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryLinkedServicesDontStoreSecretsConString": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryLinkedServicesMustStoreSecretsInKeyVault": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryLinkedServicesWhitelist": {
+    "allowedLinkedServiceResourceTypes": {
+      "value": [
+        "AmazonMWS",
+        "AmazonRdsForOracle",
+        "AmazonRdsForSqlServer",
+        "AmazonRedshift",
+        "AmazonS3",
+        "AmazonS3Compatible",
+        "AzureBatch",
+        "AzureBlobFS",
+        "AzureBlobStorage",
+        "AzureDatabricks",
+        "AzureDatabricksDeltaLake",
+        "AzureDataExplorer",
+        "AzureDataLakeAnalytics",
+        "AzureDataLakeStore",
+        "AzureFileStorage",
+        "AzureFunction",
+        "AzureKeyVault",
+        "AzureMariaDB",
+        "AzureML",
+        "AzureMLService",
+        "AzureMySql",
+        "AzurePostgreSql",
+        "AzureSearch",
+        "AzureSqlDatabase",
+        "AzureSqlDW",
+        "AzureSqlMI",
+        "AzureStorage",
+        "AzureSynapseArtifacts",
+        "AzureTableStorage",
+        "Cassandra",
+        "CommonDataServiceForApps",
+        "CosmosDb",
+        "CosmosDbMongoDbApi",
+        "Db2",
+        "Dynamics",
+        "DynamicsAX",
+        "DynamicsCrm",
+        "FileServer",
+        "FtpServer",
+        "HBase",
+        "Hdfs",
+        "HDInsight",
+        "Hive",
+        "HttpServer",
+        "Informix",
+        "Jira",
+        "Kusto",
+        "MicrosoftAccess",
+        "MongoDb",
+        "MongoDbAtlas",
+        "MongoDbV2",
+        "MySql",
+        "Odata",
+        "Odbc",
+        "Office365",
+        "Oracle",
+        "OracleCloudStorage",
+        "OracleServiceCloud",
+        "PostgreSql",
+        "RestService",
+        "Salesforce",
+        "SalesforceMarketingCloud",
+        "SalesforceServiceCloud",
+        "SapBw",
+        "SapCloudForCustomer",
+        "SapEcc",
+        "SapHana",
+        "SapOpenHub",
+        "SapTable",
+        "ServiceNow",
+        "Sftp",
+        "SharePointOnlineList",
+        "Snowflake",
+        "Spark",
+        "SqlServer",
+        "Sybase",
+        "Teradata",
+        "Web",
+        "WebConnection"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryNonOrgRepoNotAllowed": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedOrgs": {
+      "value": [
+        "{{adoCustomerOrg}}"
+      ]
+    }
+  },
+  "DataFactoryOnlySelfHostedIRisAllowed": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.datafactory.azure.net"
+    }
+  },
+  "DataFactoryPublicNetworkAccessMustbeDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryPurviewIntegrationNotAllowed": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DataFactoryRepoNotAllowed": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DiskCreationNotAllowed": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "DiskNetworkAccessAndExportNotAllowed": {
+    "effect": {
+      "value": "Deny"
+    },
+    "networkAccessPolicy": {
+      "value": "DenyAll"
+    }
+  },
+  "EventGridSystemTopicsEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventGridSysTopicEventSub": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubAuthorizationRules": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubBypassAzureServices": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubDisableLocalAuthTrue": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubInfrastructureEncryptionFalse": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "EventHubMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "1.2"
+    }
+  },
+  "EventHubPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.servicebus.windows.net"
+    }
+  },
+  "EventHubPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubRootManageSharedAccessKey": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "EventHubVirtualNetworkRules": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "GenericAllowedLocations": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedLocations": {
+      "value": [
+        "global",
+        "{{location}}"
+      ]
+    }
+  },
+  "GenericAllowedLocationsCosmosDB": {
+    "effect": {
+      "value": "Audit"
+    },
+    "listOfAllowedLocations": {
+      "value": [
+        "{{location}}"
+      ]
+    }
+  },
+  "GenericAllowedLocationsRG": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedLocations": {
+      "value": [
+        "{{location}}"
+      ]
+    }
+  },
+  "GenericAllowedResourceProviders": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "GenericARMDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "GenericBlockedResourceTypes": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "GenericBlockedResourceTypesAudit": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "GenericCloudPostureDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "notAllowedSettings": {
+      "value": [
+        "EntraPermissionsManagement",
+        "SensitiveDataDiscovery"
+      ]
+    },
+    "requiredSettings": {
+      "value": [
+        "AgentlessVmScanning",
+        "AgentlessDiscoveryForKubernetes",
+        "ContainerRegistriesVulnerabilityAssessments"
+      ]
+    }
+  },
+  "GenericContainersDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "requiredSettings": {
+      "value": [
+        "ContainerRegistriesVulnerabilityAssessments",
+        "AgentlessDiscoveryForKubernetes"
+      ]
+    }
+  },
+  "GenericDenyResourceDeletion": {
+    "cascadeEffect": {
+      "value": "Deny"
+    },
+    "effect": {
+      "value": "DenyAction"
+    },
+    "protectedResourceNames": {
+      "value": [
+        "{{customerActionGroupName}}",
+        "{{customerVNetName}}"
+      ]
+    }
+  },
+  "GenericDiagnosticSettings": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "listOfRequiredCategories": {
+      "value": [
+        "Administrative",
+        "Security",
+        "Recommendation",
+        "Alert",
+        "ServiceHealth"
+      ]
+    }
+  },
+  "GenericServersDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "requiredSettings": {
+      "value": [
+        "AgentlessVmScanning"
+      ]
+    }
+  },
+  "GenericServersDefenderEndpointEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "GenericSIEMDiagnosticSettings": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "logAnalytics": {
+      "value": "{{workSpaceId}}"
+    },
+    "logsEnabled": {
+      "value": "True"
+    }
+  },
+  "GenericSubscriptionTagInheritance": {
+    "effect": {
+      "value": "Modify"
+    },
+    "tagNameAS": {
+      "value": "ApplicationSystem"
+    },
+    "tagNameBU": {
+      "value": "BusinessUnit"
+    },
+    "tagNameENV": {
+      "value": "Environment"
+    },
+    "tagNameUSG": {
+      "value": "Usage"
+    }
+  },
+  "GenericVirtualMachines": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "KeyVaultDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "KeyVaultEnablePurgeProtectionDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "KeyVaultEnableRBACAuthorizationDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "KeyVaultEnableSoftDeleteDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "KeyVaultKMSEnabled": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "KeyVaultPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "KeyVaultPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.vaultcore.azure.net"
+    }
+  },
+  "KeyVaultPrivateDNSZonesVaultHSM": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.managedhsm.azure.net"
+    }
+  },
+  "KeyVaultPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "LMAActionGroupEnsureProperties": {
+    "customerActionGroupName": {
+      "value": "{{customerActionGroupName}}"
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "webhookAppObjectId": {
+      "value": "{{webhookAppObjectId}}"
+    },
+    "webhookAppServiceUri": {
+      "value": "{{webhookAppServiceUri}}"
+    },
+    "webhookIdentifierUri": {
+      "value": "{{webhookIdentifierUri}}"
+    }
+  },
+  "LogAnalyticsWorkspaceDisableDataExport": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "LogAnalyticsWorkspaceDisableLegacyDataSources": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "LogAnalyticsWorkspaceDisableLinkedSA": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "LogAnalyticsWorkspaceDisableWorkspaceContext": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorActionGroupRestrictEmailReceivers": {
+    "allowedEmailDomains": {
+      "value": [
+        "apg.nl",
+        "apg-am.nl",
+        "apg-am.com",
+        "apg-am.sg",
+        "apg-am.hk"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorActionGroupRestrictWebhookReceiversDomains": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorDataCollectionRulesDestinationAMW": {
+    "allowedSubscriptionIds": {
+      "value": [
+        "{{subscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorDataCollectionRulesDestinationLAW": {
+    "allowedSubscriptionIds": {
+      "value": [
+        "{{subscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorDataCollectionRulesDestinationSA": {
+    "allowedSubscriptionIds": {
+      "value": [
+        "{{subscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorDataCollectionRulesEndpoint": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaDisableEnterprise": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaDisablePublicNetwork": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaDisableServiceAccounts": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaDisableSMTP": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.grafana.azure.com"
+    }
+  },
+  "MonitorManagedGrafanaRestrictAMW": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "MonitorManagedGrafanaRestrictPlugins": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "MonitorManagedGrafanaVersionAudit": {
+    "allowedGrafanaMajorVersion": {
+      "value": "11"
+    },
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "NetworkAllowedPEPLServiceConnections": {
+    "allowedSubscriptionIds": {
+      "value": [
+        "{{subscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "NetworkDRCPVNetProtection": {
+    "effect": {
+      "value": "Deny"
+    },
+    "virtualNetworkName": {
+      "value": "{{customerVNetName}}"
+    }
+  },
+  "NetworkLoadBalancerPrivateIPFrontendEnabled": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "NetworkRTDefaultToVirtualAppliance": {
+    "effect": {
+      "value": "Modify"
+    },
+    "virtualApplianceIpAddress": {
+      "value": "10.250.4.254"
+    }
+  },
+  "NetworkRTDenyDefaultRouteDeletion": {
+    "effect": {
+      "value": "DenyAction"
+    },
+    "virtualApplianceIpAddress": {
+      "value": "10.250.4.254"
+    }
+  },
+  "NetworkRTNextHopTypeInternetBGP": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedRoutesAddressPrefixes": {
+      "value": [
+        "GatewayManager"
+      ]
+    }
+  },
+  "NetworkRTRoutePropagation": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "NetworkSubnetPENP": {
+    "effect": {
+      "value": "Deny"
+    },
+    "excludedSubnets": {
+      "value": []
+    },
+    "networkPolicy": {
+      "value": [
+        "RouteTableEnabled",
+        "Enabled"
+      ]
+    }
+  },
+  "NetworkVNetAddressSpaceSettings": {
+    "addressSpaceSettings": {
+      "value": [
+        "{{addressSpaceSetting}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "NetworkVNetPeerings": {
+    "effect": {
+      "value": "Deny"
+    },
+    "hubVirtualNetwork": {
+      "value": [
+        "{{centralHubVirtualNetworkId}}"
+      ]
+    }
+  },
+  "NetworkVNetSubnetNoNSG": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfNSGExceptions": {
+      "value": [
+        "GatewaySubnet",
+        "AzureFirewallSubnet",
+        "AzureFirewallManagementSubnet"
+      ]
+    }
+  },
+  "NetworkVNetSubnetNoRouteTable": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "NotificationHubsDefaultAccessPoliciesDisallowed": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "NotificationHubsPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "OpenAIAllowApprovedModels": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedModels": {
+      "value": [
+        "gpt-4o",
+        "text-embedding-ada-002",
+        "gpt-4o-mini",
+        "text-embedding-3-large",
+        "gpt-4.1",
+        "gpt-4.1-mini",
+        "gpt-4.1-nano",
+        "gpt-5.1",
+        "gpt-5.1-chat",
+        "gpt-5",
+        "gpt-5-mini",
+        "gpt-5-nano",
+        "gpt-5-chat"
+      ]
+    }
+  },
+  "OpenAIDisableCustomContentFilters": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "OpenAIGlobalDeploymentModelsDisabled": {
+    "effect": {
+      "value": "Deny"
+    },
+    "listOfAllowedSKUs": {
+      "value": [
+        "Standard",
+        "ProvisionedManaged"
+      ]
+    }
+  },
+  "OpenAITrustedServicesDisabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLBlockExtensions": {
+    "allowedExtensions": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "PostgreSQLDisableLocalAuthenticationMethods": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLDisableOtherPSQLSolutions": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLDisablePublicNetworkAccess": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLEnforceServiceManagedKeys": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLMinimumTlsVersionV2": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "minimumTlsVersion": {
+      "value": [
+        "TLSV1.2",
+        "TLSV1.3",
+        "TLSv1.2",
+        "TLSv1.3"
+      ]
+    }
+  },
+  "PostgreSQLMinimumVersion": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLRestrictAdministrator": {
+    "allowedPrincipalNames": {
+      "value": [
+        "{{engineerPrivilegedGroupName}}",
+        "{{deploymentPrincipalName}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "PostgreSQLSSLEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "PostgreSQLZoneRedundancyEnabled": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "RBACAllowedAdminRoles": {
+    "allowedPrincipalIds": {
+      "value": [
+        "{{engineerPrivilegedGroupId}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User",
+        "Group"
+      ]
+    }
+  },
+  "RBACAllowedBackupContributors": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionIdAcc": {
+      "value": "56a1245b-8666-4159-a0ec-ecf46c22db08"
+    },
+    "roleDefinitionIdDev": {
+      "value": "01d77227-9efc-4be0-8275-83533d139699"
+    },
+    "roleDefinitionIdPrd": {
+      "value": "9db26d14-6138-46e6-b547-69070b5cf5ff"
+    }
+  },
+  "RBACAllowedBuiltinRoles": {
+    "AllAzureBuiltInRoles": {
+      "value": [
+        "{{allAzureBuiltInRoles}}"
+      ]
+    },
+    "AllowedBuiltInRoles": {
+      "value": [
+        "{{allowedBuiltInRoles}}"
+      ]
+    },
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "RBACAllowedDataRoles": {
+    "effect": {
+      "value": "Deny"
+    },
+    "notAllowedPrincipalIds": {
+      "value": [
+        "{{readerGroupId}}",
+        "{{engineerGroupId}}"
+      ]
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User"
+      ]
+    }
+  },
+  "RBACAllowedDRCPContributor": {
+    "allowedDRCPContributorId": {
+      "value": "{{customDRCPContributorRoleId}}"
+    },
+    "DRCPContributorIds": {
+      "value": "{{customDRCPContributorUsageRoleIds}}"
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "RBACAllowedDRCPContributorTargets": {
+    "allowedPrincipalIds": {
+      "value": [
+        "{{deploymentPrincipalId}}",
+        "{{engineerPrivilegedGroupId}}"
+      ]
+    },
+    "DRCPContributorIds": {
+      "value": "{{customDRCPContributorUsageRoleIds}}"
+    },
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "RBACAllowedOperatorRoles": {
+    "allowedPrincipalIds": {
+      "value": [
+        "{{engineerPrivilegedGroupId}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User",
+        "Group"
+      ]
+    }
+  },
+  "RBACAllowedOwners": {
+    "allowedPrincipalIds": {
+      "value": [
+        "acb7577f-b917-41e8-85f5-c2a4722d268f",
+        "40d92bab-507a-43d3-9a53-30a16c0a3966",
+        "1bc73905-64fe-44c2-89df-1493881ddaa2",
+        "751f319e-cec8-4b7a-91a0-24daf0e0f99c",
+        "1a83ed0a-5ee2-4084-922c-3c73f9ec20ad",
+        "166e81a5-751e-4d3d-be2c-02cf8eae8065"
+      ]
+    },
+    "databricksResourceProviderId": {
+      "value": [
+        "81e997ed-bf74-46a4-8f7d-f205e8e23048"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "8e3af657-a8ff-443c-a75c-2fe8c4bcb635"
+    }
+  },
+  "RBACApplicationInsightsComponentContributor": {
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "ae349356-3a1b-4a5e-921d-050484c6347e"
+    }
+  },
+  "RBACAutomationContributor": {
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "f353d9bd-d4a6-484e-a77a-8050b599b867"
+    }
+  },
+  "RBACClassicNetworkContributor": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "b34d265f-36f7-4a0d-a4d4-e158ca92e90f"
+    }
+  },
+  "RBACClassicStorageAccountContributor": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "86e8f5dc-a6e9-4c67-9d15-de283e8eac25"
+    }
+  },
+  "RBACClassicStorageAccountKeyOperatorService": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "985d6b00-f706-48f5-a6fe-d0ca12fb668d"
+    }
+  },
+  "RBACClassicVirtualMachineContributor": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "d73bb868-a0df-4d4d-bd69-98a00b01fccb"
+    }
+  },
+  "RBACContributor": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+    }
+  },
+  "RBACMonitoringContributor": {
+    "allowedPrincipalIds": {
+      "value": [
+        "9fb924d5-ae5c-4085-8710-b444a499ef5d",
+        "67dfaacc-6eb5-489c-95e7-06cf31518c93"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "749f88d5-cbae-40b8-bcfc-e573ddc772fa"
+    }
+  },
+  "RBACReader": {
+    "effect": {
+      "value": "Audit"
+    },
+    "notAllowedPrincipalIds": {
+      "value": []
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User"
+      ]
+    },
+    "roleDefinitionId": {
+      "value": "acdd72a7-3385-48ef-bd42-f606fba81ae7"
+    }
+  },
+  "RBACResourcePolicyContributor": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "36243c78-bf99-498c-9df9-86d9f8d28608"
+    }
+  },
+  "RBACRoleAssignmentsPrincipalType": {
+    "effect": {
+      "value": "Deny"
+    },
+    "principalType": {
+      "value": "User"
+    }
+  },
+  "RBACSecurityAdmin": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "fb1c8493-542b-48eb-b624-b4c8fea62acd"
+    }
+  },
+  "RBACSecurityManager": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "e3d13bf0-dd5a-482e-ba6b-9b8433878d10"
+    }
+  },
+  "RBACSQLDBContributor": {
+    "allowedPrincipalIds": {
+      "value": [
+        "{{engineerPrivilegedGroupId}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User",
+        "Group"
+      ]
+    },
+    "roleDefinitionId": {
+      "value": "9b7fa17d-e63e-47b0-bb0a-15c516ac86ec"
+    }
+  },
+  "RBACSQLServerContributor": {
+    "allowedPrincipalIds": {
+      "value": [
+        "{{engineerPrivilegedGroupId}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User",
+        "Group"
+      ]
+    },
+    "roleDefinitionId": {
+      "value": "6d8ee4ec-f05a-4a1d-8b00-a9b17e38b437"
+    }
+  },
+  "RBACUserAccessAdministrator": {
+    "allowedPrincipalIds": {
+      "value": []
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "roleDefinitionId": {
+      "value": "18d7d88d-d35e-4fb5-a5c3-7773c20a72d9"
+    }
+  },
+  "RBACWebsiteContributorV2": {
+    "allowedPrincipalIds": {
+      "value": [
+        "{{engineerPrivilegedGroupId}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    },
+    "notAllowedPrincipalType": {
+      "value": [
+        "User",
+        "Group"
+      ]
+    },
+    "roleDefinitionId": {
+      "value": "de139f84-1756-47ae-9be6-808fbbe84772"
+    }
+  },
+  "RedisBlockRedisEnterprise": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "RedisDisablePublicNetworkAccess": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "RedisEnforceEntraIdAuthentication": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "RedisEnforceMicrosoftManagedKeys": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "redisEnforceMinimumTlsVersion": {
+    "effect": {
+      "value": "Audit"
+    },
+    "minimumTlsVersion": {
+      "value": [
+        "1.2",
+        "1.3"
+      ]
+    }
+  },
+  "RedisEnforceTlsAccess": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "RedisEnforceZoneRedundancy": {
+    "effect": {
+      "value": "Disabled"
+    }
+  },
+  "RedisPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "RedisPrivateDNSZone": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.redis.azure.net"
+    }
+  },
+  "ServiceBusDenyLocalAuthentication": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ServiceBusMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "1.2"
+    }
+  },
+  "ServiceBusPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "ServiceBusPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.servicebus.windows.net"
+    }
+  },
+  "ServiceBusPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "SQLAssessmentsStatus": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "SQLAzureADOnlyAuthenticationFalse": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "SQLBackupShortTermRetentionPolicy": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "retentionDays": {
+      "value": 5
+    }
+  },
+  "SQLDefenderEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "SQLMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "1.2"
+    }
+  },
+  "SQLPrivateDNSZones": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.database.windows.net"
+    }
+  },
+  "SQLPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "SQLSecurityAlertPolicies": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "SQLServerAdministrators": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "SQLServerPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}",
+        "23a8c420-c354-43f9-91f5-59d08c6b3dff",
+        "31ef391b-7908-48ec-8c74-e432113b607b",
+        "56beece1-dbc8-40ca-8520-e1d514fb2ccc",
+        "653c13e3-a85b-449b-9d14-e3e9c4b0d391",
+        "6c0d042c-6733-4420-a3cc-4175d0439b29",
+        "8453a5d5-9e9e-40c7-87a4-0ab4cc197f48",
+        "9d5fffc7-7640-44a1-ba2b-f77ada7731d4",
+        "b4f59749-ad17-4573-95ef-cc4c63a45bdf",
+        "b96a1dc5-559f-4249-a30c-5b5a98023c45",
+        "d31d7397-093d-4cc4-abd6-28b426c0c882"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "SQLServerRestrictOutboundNetworkAccess": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "SQLTransparentDataEncryptionEnabled": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    }
+  },
+  "StorageAccountAllowBlobPublicAccess": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "StorageAccountAllowCrossTenantReplication": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "StorageAccountAllowSharedKeyAccessNotFalse": {
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "StorageAccountDefenderEnabledV2": {
+    "effect": {
+      "value": "AuditIfNotExists"
+    },
+    "notAllowedSettings": {
+      "value": [
+        "SensitiveDataDiscovery"
+      ]
+    },
+    "requiredSettings": {
+      "value": [
+        "OnUploadMalwareScanning"
+      ]
+    }
+  },
+  "StorageAccountEncryptionAllServicesEnabledFalseV2": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "StorageAccountInfrastructureEncryptionFalse": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "StorageAccountMinimumTlsVersion": {
+    "effect": {
+      "value": "Deny"
+    },
+    "minimumTlsVersion": {
+      "value": "TLS1_2"
+    }
+  },
+  "StorageAccountNetworkAclBypass": {
+    "allowedBypass": {
+      "value": [
+        "None"
+      ]
+    },
+    "effect": {
+      "value": "Audit"
+    }
+  },
+  "StorageAccountPEPLServiceConnections_Inbound": {
+    "allowedInboundPrivateLinkServices": {
+      "value": [
+        "{{inboundSubscriptionIds}}",
+        "{{inboundDataSubscriptionIds}}",
+        "23a8c420-c354-43f9-91f5-59d08c6b3dff",
+        "31ef391b-7908-48ec-8c74-e432113b607b",
+        "56beece1-dbc8-40ca-8520-e1d514fb2ccc",
+        "653c13e3-a85b-449b-9d14-e3e9c4b0d391",
+        "6c0d042c-6733-4420-a3cc-4175d0439b29",
+        "8453a5d5-9e9e-40c7-87a4-0ab4cc197f48",
+        "9d5fffc7-7640-44a1-ba2b-f77ada7731d4",
+        "b4f59749-ad17-4573-95ef-cc4c63a45bdf",
+        "b96a1dc5-559f-4249-a30c-5b5a98023c45",
+        "d31d7397-093d-4cc4-abd6-28b426c0c882"
+      ]
+    },
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "StorageAccountPrivateDNSZonesBlob": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.blob.core.windows.net"
+    }
+  },
+  "StorageAccountPrivateDNSZonesDataLake": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.dfs.core.windows.net"
+    }
+  },
+  "StorageAccountPrivateDNSZonesFile": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.file.core.windows.net"
+    }
+  },
+  "StorageAccountPrivateDNSZonesQueue": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.queue.core.windows.net"
+    }
+  },
+  "StorageAccountPrivateDNSZonesTable": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.table.core.windows.net"
+    }
+  },
+  "StorageAccountPrivateDNSZonesWeb": {
+    "effect": {
+      "value": "DeployIfNotExists"
+    },
+    "privateDnsZoneId": {
+      "value": "{{centralPrivateDnsZonesIdPrefix}}privatelink.web.core.windows.net"
+    }
+  },
+  "StorageAccountPublicNetworkAccessEnabled": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "StorageAccountSftpEnabledTrue": {
+    "effect": {
+      "value": "Deny"
+    }
+  },
+  "StorageAccountSupportsHttpsTrafficOnlyFalse": {
+    "effect": {
+      "value": "Deny"
+    }
+  }
+}

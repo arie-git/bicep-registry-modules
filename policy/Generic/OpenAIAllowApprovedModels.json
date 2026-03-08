@@ -1,0 +1,83 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-ai-o03 - Allow approved models'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o03 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP OpenAI Allow approved models",
+    "description": "This policy prevents using unapproved models. Allowing approved models ensures that DevOps teams can deploy assessed and approved models from a security perspective.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI services",
+        "name": "OpenAIAllowApprovedModels",
+        "severity": 3,
+        "controlId": "drcp-ai-o03",
+        "controlDesc": "Allow approved models",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+services",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+services#IncidentremediationAIservices#drcp-ai-o03"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "listOfAllowedModels": {
+        "type": "Array",
+        "metadata": {
+          "description": "The list of Open AI models that can be deployed.",
+          "displayName": "Allowed Open AI models"
+        },
+        "allowedValues": [
+          "gpt-4o",
+          "text-embedding-ada-002",
+          "gpt-4o-mini",
+          "text-embedding-3-large",
+          "gpt-4.1",
+          "gpt-4.1-mini",
+          "gpt-4.1-nano",
+          "gpt-5.1",
+          "gpt-5.1-chat",
+          "gpt-5",
+          "gpt-5-mini",
+          "gpt-5-nano",
+          "gpt-5-chat"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Deny, Audit or Disabled the execution of the Policy"
+        },
+        "allowedValues": [
+          "Deny",
+          "Audit",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.CognitiveServices/accounts/deployments"
+          },
+          {
+            "field": "Microsoft.CognitiveServices/accounts/deployments/model.format",
+            "equals": "OpenAI"
+          },
+          {
+            "not": {
+              "field": "Microsoft.CognitiveServices/accounts/deployments/model.name",
+              "in": "[parameters('listOfAllowedModels')]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

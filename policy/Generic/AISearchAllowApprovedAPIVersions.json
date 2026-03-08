@@ -1,0 +1,78 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-srch-04 - Allow approved API versions'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-04 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP AI Search Allow approved API versions",
+    "description": "This policy prevents deploying AI Search using unapproved API versions. Using approved versions improves security by ensuring that data ex-filtration can be disabled.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "AI Search",
+        "name": "AISearchAllowApprovedAPIVersions",
+        "severity": 3,
+        "controlId": "drcp-srch-04",
+        "controlDesc": "Allow approved API versions",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+AI+Search",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+AI+Search#IncidentremediationAISearch#drcp-srch-04"
+      }
+    },
+    "mode": "Indexed",
+    "parameters": {
+      "listOfAllowedApiVersions": {
+        "type": "Array",
+        "metadata": {
+          "description": "The list of allowed API versions.",
+          "displayName": "Allowed API versions"
+        },
+        "allowedValues": [
+          "2024-06-01-preview",
+          "2021-04-01-Preview",
+          "2024-03-01-Preview",
+          "2025-02-01-Preview",
+          "2025-05-01"
+        ],
+        "defaultValue": [
+          "2024-06-01-preview",
+          "2021-04-01-Preview",
+          "2024-03-01-Preview",
+          "2025-02-01-Preview",
+          "2025-05-01"
+        ]
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Enable or disable the execution of the policy"
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Search/searchServices"
+          },
+          {
+            "not": {
+              "value": "[requestContext().apiVersion]",
+              "in": "[parameters('listOfAllowedApiVersions')]"
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

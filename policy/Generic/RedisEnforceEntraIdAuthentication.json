@@ -1,0 +1,55 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-redis-05 - Enforce Microsoft Entra ID authentication'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#IncidentremediationRedis#drcp-redis-05 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP Redis Enforce Microsoft Entra ID authentication",
+    "description": "This policy enforces Microsoft Entra ID authentication for Azure Managed Redis.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Redis",
+        "name": "RedisEnforceEntraIdAuthentication",
+        "severity": 3,
+        "controlId": "drcp-redis-05",
+        "controlDesc": "Enforce Microsoft Entra ID authentication.",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Redis",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Redis#/IncidentremediationRedis-drcp-redis-05"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Cache/redisEnterprise/databases"
+          },
+          {
+            "field": "Microsoft.Cache/redisEnterprise/databases/accessKeysAuthentication",
+            "equals": "Enabled"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

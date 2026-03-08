@@ -1,0 +1,11 @@
+.. contents::
+   Contents:
+   :local:
+   :depth: 2
+
+Introduction
+------------
+| This page describes the use cases and follow-up of the DRCP enabled components. Users may create enabled components for Application systems.
+| This ensures that there are reliable guardrails in place that adhere to the APG Policy, and tested in DRCP's test Subscriptions, making it ready for customer use.
+
+.. note:: APG security restrictions prevent Quick start guides from Microsoft and other vendors from being fully compatible with DRCP.

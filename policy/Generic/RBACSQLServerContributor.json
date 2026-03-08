@@ -1,0 +1,98 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "The SQL Server Contributor RBAC role is only allowed to be assigned to a given set of principals.For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Role+Based+Access+Control+policies ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP RBAC SQL Server Contributor role",
+    "description": "This policy ensures that the SQL Server Contributor RBAC role is only assigned to the environment admin group.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "Subscription",
+        "name": "RBACSQLServerContributor",
+        "severity": 3,
+        "controlId": "drcp-sub-11",
+        "controlDesc": "Role Based Access Control",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+Subscription",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Subscription#IncidentremediationSubscription-drcp-sub-11"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "roleDefinitionId": {
+        "type": "String",
+        "metadata": {
+          "description": "Role Definition Id of SQL Server Contributor Role.",
+          "displayName": "Role Definition Id of SQL Server Contributor Role."
+        },
+        "defaultValue": "6d8ee4ec-f05a-4a1d-8b00-a9b17e38b437"
+      },
+      "allowedPrincipalIds": {
+        "type": "Array",
+        "metadata": {
+          "description": "Allowed AAD principal Ids.",
+          "displayName": "Allowed AAD principal Ids."
+        },
+        "defaultValue": []
+      },
+      "notAllowedPrincipalType": {
+        "type": "Array",
+        "metadata": {
+          "description": "Which principal types to disallow, e.g. 'User, Group, ServicePrincipal.'",
+          "displayName": "Disallowed Principal Types"
+        },
+        "allowedValues": [
+          "User",
+          "Group",
+          "ServicePrincipal"
+        ],
+        "defaultValue": []
+      },
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "Audit",
+          "Deny",
+          "Disabled"
+        ],
+        "defaultValue": "Deny"
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Authorization/roleAssignments"
+          },
+          {
+            "field": "Microsoft.Authorization/roleAssignments/roleDefinitionId",
+            "contains": "[parameters('roleDefinitionId')]"
+          },
+          {
+            "not": {
+              "anyOf": [
+                {
+                  "field": "Microsoft.Authorization/roleAssignments/principalId",
+                  "in": "[parameters('allowedPrincipalIds')]"
+                },
+                {
+                  "field": "Microsoft.Authorization/roleAssignments/principalType",
+                  "notIn": "[parameters('notAllowedPrincipalType')]"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]"
+      }
+    }
+  }
+}

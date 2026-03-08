@@ -1,0 +1,83 @@
+{
+  "policyMetadata": {
+    "noncomplianceMessage": "DRCP control 'drcp-aps-17 - Audit for latest version of application framework'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService#drcp-aps-17 ."
+  },
+  "policyDefinition": {
+    "displayName": "APG DRCP App Service Function App Slot Linux .NET version",
+    "description": "This policy prevents the usage of older or outdated .NET versions. Periodically, newer versions are released for .NET software either due to security flaws or to include additional functionality. Using the latest .NET version for App Service Function apps is recommended in order to take advantage of security fixes and/or new functionalities. This policy only applies to Linux Function apps and requires the usage of a specific .NET version.",
+    "metadata": {
+      "category": "APG DRCP Policy",
+      "status": "active",
+      "drcp": {
+        "component": "App Service",
+        "name": "AppServiceFunctionSlotLinuxDotNETVersion",
+        "severity": 3,
+        "controlId": "drcp-aps-17",
+        "controlDesc": "Audit for latest version of application framework",
+        "baselineUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Security+baseline+App+Service",
+        "remediationUrl": "https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+App+Service#IncidentremediationAppService-drcp-aps-17"
+      }
+    },
+    "mode": "All",
+    "parameters": {
+      "effect": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Effect",
+          "description": "Effect of this Azure Policy - Audit, Deny or Disabled."
+        },
+        "allowedValues": [
+          "AuditIfNotExists",
+          "Disabled"
+        ],
+        "defaultValue": "AuditIfNotExists"
+      },
+      "allowedLinuxDotNETVersions": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed Linux .NET versions",
+          "description": "Specify the supported .NET versions for Linux Function App."
+        },
+        "defaultValue": []
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Web/sites/slots"
+          },
+          {
+            "field": "kind",
+            "contains": "functionapp"
+          },
+          {
+            "field": "kind",
+            "contains": "linux"
+          }
+        ]
+      },
+      "then": {
+        "effect": "[parameters('effect')]",
+        "details": {
+          "type": "Microsoft.Web/sites/slots/config",
+          "evaluationDelay": "AfterProvisioning",
+          "name": "web",
+          "existenceCondition": {
+            "anyOf": [
+              {
+                "field": "Microsoft.Web/sites/slots/config/web.linuxFxVersion",
+                "notContains": "DOTNET"
+              },
+              {
+                "field": "Microsoft.Web/sites/slots/config/web.linuxFxVersion",
+                "in": "[parameters('allowedLinuxDotNETVersions')]"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
