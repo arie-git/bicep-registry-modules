@@ -411,6 +411,55 @@ Each whitelisted module audited by Azure Policy Expert against `policy/Generic/*
 
 ---
 
+## FEATURE: Utils Tooling Tech Debt
+
+Comparison of `amavm/verified-modules/utils/` against `microsoft-avm/avm/` upstream tooling. The amavm utils use Azure DevOps pipelines (not GitHub Actions) and generate HTML from Markdown READMEs (using Python `markdown2` library → `placeholder.html` template → static HTML with `toc.json` → Azure Blob Static Sites).
+
+### FEAT-6: Bugs in Current Utils
+
+| # | File | Bug | Severity |
+|---|---|---|---|
+| 1 | `publishToBCR.ps1` | Hardcoded ACR name — should use pipeline variable | HIGH |
+| 2 | `mergeDocumentationTocs.ps1` | Hardcoded storage URL — should use pipeline variable | HIGH |
+| 3 | `convertreadmetohtml.py` | Version string appends `.0` unconditionally (e.g., `1.0` → `1.0.0`, but `1.0.0` → `1.0.0.0`) | MEDIUM |
+| 4 | `convertreadmetohtml.py` | No error handling for regex substitutions — silent failures on unexpected README format | MEDIUM |
+| 5 | `setModuleReadMe.ps1` | Outdated comment referencing upstream sync that no longer applies | LOW |
+| 6 | `buildBicepFiles.ps1` | Slow recursive file scanning — could use `-Filter` parameter for performance | LOW |
+
+- [ ] Fix hardcoded ACR name in `publishToBCR.ps1`
+- [ ] Fix hardcoded storage URL in `mergeDocumentationTocs.ps1`
+- [ ] Fix version `.0` appending bug in `convertreadmetohtml.py`
+- [ ] Add regex error handling in `convertreadmetohtml.py`
+- [ ] Clean up outdated comments in `setModuleReadMe.ps1`
+- [ ] Optimize file scanning in `buildBicepFiles.ps1`
+
+### FEAT-7: Missing Features vs Upstream
+
+| # | Feature | Upstream Location | Priority |
+|---|---|---|---|
+| 1 | Static analysis (PSRule) integration | `.github/workflows/platform.check.psrule.yml` | HIGH |
+| 2 | Deployment history cleanup | `.github/workflows/platform.deployment.history.cleanup.yml` | MEDIUM |
+| 3 | Module index publishing | `.github/workflows/platform.publish-module-index-json.yml` | MEDIUM |
+| 4 | PR label automation | `.github/workflows/platform.set-avm-github-pr-labels.yml` | LOW |
+| 5 | Workflow toggle automation | `.github/workflows/platform.toggle-avm-workflows.yml` | LOW |
+
+- [ ] Evaluate PSRule integration for Azure DevOps pipelines
+- [ ] Implement deployment history cleanup utility
+- [ ] Implement module index publishing for internal registry
+- [ ] Evaluate PR/pipeline label automation needs
+
+### FEAT-8: HTML-from-MD Pipeline Improvements
+
+The `convertreadmetohtml.py` pipeline converts Bicep module READMEs to static HTML for Azure DevOps wiki/documentation portal. Current issues:
+
+- [ ] Add unit tests for `convertreadmetohtml.py`
+- [ ] Add validation for generated HTML output
+- [ ] Support Bicep code syntax highlighting in generated HTML
+- [ ] Add table of contents depth configuration
+- [ ] Document the HTML generation pipeline in a dev guide
+
+---
+
 ## Completed Tasks
 
 - [x] Set up multi-agent task management structure
