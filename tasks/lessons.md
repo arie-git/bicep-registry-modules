@@ -37,3 +37,16 @@ When removing, renaming, or changing parameters in a module's `main.bicep`, ALWA
 
 ### 12. API version changes can remove or restructure properties
 When updating API versions (e.g., `Microsoft.Web/sites` `2024-04-01` -> `2025-03-01`), properties may be removed or consolidated. Example: `vnetContentShareEnabled`, `vnetImagePullEnabled`, `vnetRouteAllEnabled` were removed in `2025-03-01` and replaced by the `outboundVnetRouting` object. Always check BCP037 warnings after an API version bump to catch removed properties, then propagate changes to test files.
+
+### 13. Use upstream module + test cases as the reference implementation
+The upstream AVM module (`microsoft-avm/avm/res/`) contains the correct parameter types, names, and test usage patterns. When syncing:
+- **Parameter types**: Use `resourceInput<'...'>.properties.x?` for strongly-typed params, not loose `object?`. Copy the exact type from upstream.
+- **Test cases**: Upstream test cases show correct parameter usage. When replacing/removing params, check upstream tests for the equivalent new usage pattern and replicate it in AMAVM tests.
+- **Don't invent types**: If upstream uses `resourceInput<'Microsoft.Web/sites@2025-03-01'>.properties.outboundVnetRouting?`, use exactly that — not `object?`.
+
+### 14. Parameter defaults must be driven by compliance policy
+Input parameters (optional, required, conditional) and their defaults should be based on required compliance from `policy/Generic/`. The AMAVM fork's purpose is to enforce policy compliance by default:
+- If a policy requires a value, make the param `required` or set a compliant default
+- If a policy denies a value, exclude it from `@allowed` or set the default to the compliant option
+- Upstream defaults are permissive (general-purpose); AMAVM defaults must be restrictive (policy-compliant)
+- Document in `metadata compliance` which params affect compliance

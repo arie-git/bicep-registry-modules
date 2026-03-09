@@ -13,7 +13,7 @@ metadata compliance = '''Compliant usage of Storage account requires:
 - requireInfrastructureEncryption: true
 - supportsHttpsTrafficOnly: true
 '''
-metadata complianceVersion = '20240705'
+metadata complianceVersion = '20260309'
 
 @minLength(3)
 @maxLength(24)
@@ -52,6 +52,12 @@ param kind string = 'StorageV2'
   'Premium_ZRS'
   'Standard_GZRS'
   'Standard_RAGZRS'
+  'StandardV2_LRS'
+  'StandardV2_ZRS'
+  'StandardV2_GRS'
+  'StandardV2_GZRS'
+  'PremiumV2_LRS'
+  'PremiumV2_ZRS'
 ])
 @description('Optional. Storage Account Sku Name. Default: "Standard_ZRS"')
 param skuName string = 'Standard_ZRS'
@@ -60,6 +66,7 @@ param skuName string = 'Standard_ZRS'
   'Premium'
   'Hot'
   'Cool'
+  'Cold'
 ])
 @description('''Conditional. Required if the Storage Account kind is set to BlobStorage. The access tier is used for billing. Default: "Hot".
 
@@ -172,9 +179,8 @@ Setting this parameter to 'true' will make the resource non-compliant.
 param allowBlobPublicAccess bool = false
 
 @allowed([
-  'TLS1_0'
-  'TLS1_1'
   'TLS1_2'
+  'TLS1_3'
 ])
 @description('''Optional. Set the minimum TLS version on request to storage. Default: "TLS1_2".
 
@@ -257,6 +263,13 @@ param customerManagedKey customerManagedKeyType
 
 @description('Optional. The SAS expiration period. Format: DD.HH:MM:SS. Default: \'01.00:00:00\'')
 param sasExpirationPeriod string = '01.00:00:00'
+
+@description('Optional. The SAS expiration action. Can only be Log.')
+@allowed([
+  'Block'
+  'Log'
+])
+param sasExpirationAction string = 'Log'
 
 @description('Optional. The keyType to use with Queue & Table services. Default: \'Account\'')
 @allowed([

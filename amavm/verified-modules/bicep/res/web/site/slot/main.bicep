@@ -151,6 +151,9 @@ param redundancyMode string = 'None'
 @description('Optional. The site publishing credential policy names which are associated with the site slot.')
 param basicPublishingCredentialsPolicies array?
 
+@description('Optional. The outbound VNET routing configuration for the slot.')
+param outboundVnetRouting resourceInput<'Microsoft.Web/sites/slots@2025-03-01'>.properties.outboundVnetRouting?
+
 @description('Optional. Names of hybrid connection relays to connect app with.')
 param hybridConnectionRelays array?
 
@@ -243,6 +246,7 @@ resource slot 'Microsoft.Web/sites/slots@2025-03-01' = {
     hyperV: hyperV
     publicNetworkAccess: publicNetworkAccess
     redundancyMode: redundancyMode
+    outboundVnetRouting: outboundVnetRouting
   }
 }
 

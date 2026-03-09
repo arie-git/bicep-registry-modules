@@ -604,19 +604,19 @@ Every main.bicep (parent AND child) must have: `metadata owner`, `metadata compl
 - [ ] storage/storage-account/queue-service/main.bicep
 - [ ] storage/storage-account/table-service/main.bicep
 - [ ] storage/storage-account/table-service/table/main.bicep
-- [ ] web/site/basic-publishing-credentials-policy/main.bicep
-- [ ] web/site/config--appsettings/main.bicep
-- [ ] web/site/config--authsettingsv2/main.bicep
-- [ ] web/site/config--logs/main.bicep
-- [ ] web/site/config--web/main.bicep
-- [ ] web/site/extensions--msdeploy/main.bicep
-- [ ] web/site/hybrid-connection-namespace/relay/main.bicep
-- [ ] web/site/slot/basic-publishing-credentials-policy/main.bicep
-- [ ] web/site/slot/config--appsettings/main.bicep
-- [ ] web/site/slot/config--authsettingsv2/main.bicep
-- [ ] web/site/slot/extensions--msdeploy/main.bicep
-- [ ] web/site/slot/hybrid-connection-namespace/relay/main.bicep
-- [ ] web/site/slot/main.bicep
+- [x] web/site/basic-publishing-credentials-policy/main.bicep — N/A (no version.json, not independently deployable)
+- [x] web/site/config--appsettings/main.bicep — N/A
+- [x] web/site/config--authsettingsv2/main.bicep — N/A
+- [x] web/site/config--logs/main.bicep — N/A
+- [x] web/site/config--web/main.bicep — N/A
+- [x] web/site/extensions--msdeploy/main.bicep — N/A
+- [x] web/site/hybrid-connection-namespace/relay/main.bicep — N/A
+- [x] web/site/slot/basic-publishing-credentials-policy/main.bicep — N/A
+- [x] web/site/slot/config--appsettings/main.bicep — N/A
+- [x] web/site/slot/config--authsettingsv2/main.bicep — N/A
+- [x] web/site/slot/extensions--msdeploy/main.bicep — N/A
+- [x] web/site/slot/hybrid-connection-namespace/relay/main.bicep — N/A
+- [x] web/site/slot/main.bicep — N/A
 - [ ] web/static-site/config/main.bicep
 - [ ] web/static-site/custom-domain/main.bicep
 - [ ] web/static-site/linked-backend/main.bicep

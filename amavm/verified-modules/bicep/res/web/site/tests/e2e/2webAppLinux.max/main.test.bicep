@@ -258,6 +258,11 @@ module testDeployment '../../../main.bicep' = [
         ]
       }
       scmSiteAlsoStopped: true
+      outboundVnetRouting: {
+        allTraffic: true
+        contentShareTraffic: true
+        imagePullTraffic: true
+      }
       publicNetworkAccess: 'Disabled'
     }
     dependsOn: [

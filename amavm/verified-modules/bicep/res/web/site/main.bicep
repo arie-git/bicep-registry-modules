@@ -392,7 +392,7 @@ param workloadProfileName string?
 param hostNamesDisabled bool?
 
 @description('Optional. The outbound VNET routing configuration for the site.')
-param outboundVnetRouting object?
+param outboundVnetRouting resourceInput<'Microsoft.Web/sites@2025-03-01'>.properties.outboundVnetRouting?
 
 @description('Optional. Tags of the resource.')
 param tags object?
@@ -737,6 +737,7 @@ module app_slots 'slot/main.bicep' = [
         ? 'Disabled'
         : 'Enabled')
       redundancyMode: slot.?redundancyMode
+      outboundVnetRouting: slot.?outboundVnetRouting ?? outboundVnetRouting
       hybridConnectionRelays: slot.?hybridConnectionRelays
     }
   }
@@ -1065,6 +1066,9 @@ type slotType = {
 
   @description('Optional. Site redundancy mode.')
   redundancyMode: ('ActiveActive' | 'Failover' | 'GeoRedundant' | 'Manual' | 'None')?
+
+  @description('Optional. The outbound VNET routing configuration for the slot.')
+  outboundVnetRouting: resourceInput<'Microsoft.Web/sites/slots@2025-03-01'>.properties.outboundVnetRouting?
 
   @description('Optional. Names of hybrid connection relays to connect app with.')
   hybridConnectionRelays: array?
