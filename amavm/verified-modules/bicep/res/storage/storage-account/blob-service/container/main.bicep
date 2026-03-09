@@ -68,10 +68,10 @@ var specificBuiltInRoleNames = {
 var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
 
 #disable-next-line use-recent-api-versions
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 
-  resource blobServices 'blobServices@2023-05-01' existing = {
+  resource blobServices 'blobServices@2025-01-01' existing = {
     name: 'default'
   }
 }
@@ -98,7 +98,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+resource container 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-01-01' = {
   name: name
   parent: storageAccount::blobServices
   properties: {

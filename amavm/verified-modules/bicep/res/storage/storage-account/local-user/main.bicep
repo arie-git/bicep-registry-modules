@@ -27,11 +27,11 @@ param permissionScopes array
 @description('Optional. The local user SSH authorized keys for SFTP.')
 param sshAuthorizedKeys sshAuthorizedKeysType
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 }
 
-resource localUsers 'Microsoft.Storage/storageAccounts/localUsers@2023-05-01' = {
+resource localUsers 'Microsoft.Storage/storageAccounts/localUsers@2025-01-01' = {
   name: name
   parent: storageAccount
   properties: {

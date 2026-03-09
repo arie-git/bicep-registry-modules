@@ -25,20 +25,20 @@ The "allowProtectedAppendWrites" and "allowProtectedAppendWritesAll" properties 
 param allowProtectedAppendWritesAll bool = true
 
 #disable-next-line use-recent-api-versions
-resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 
-  resource blobServices 'blobServices@2023-05-01' existing = {
+  resource blobServices 'blobServices@2025-01-01' existing = {
     name: 'default'
 
     #disable-next-line use-recent-api-versions
-    resource container 'containers@2022-09-01' existing = {
+    resource container 'containers@2025-01-01' existing = {
       name: containerName
     }
   }
 }
 
-resource immutabilityPolicy 'Microsoft.Storage/storageAccounts/blobServices/containers/immutabilityPolicies@2023-05-01' = {
+resource immutabilityPolicy 'Microsoft.Storage/storageAccounts/blobServices/containers/immutabilityPolicies@2025-01-01' = {
   name: 'default'
   parent: storageAccount::blobServices::container
   properties: {

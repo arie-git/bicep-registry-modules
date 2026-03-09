@@ -61,15 +61,15 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 
-  resource queueServices 'queueServices@2023-05-01' existing = {
+  resource queueServices 'queueServices@2025-01-01' existing = {
     name: 'default'
   }
 }
 
-resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
+resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-01-01' = {
   name: name
   parent: storageAccount::queueServices
   properties: {

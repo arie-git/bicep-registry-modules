@@ -58,11 +58,11 @@ var defaultLogCategories = [for category in defaultLogCategoryNames ?? []: {
   category: category
 }]
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 }
 
-resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
+resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2025-01-01' = {
   name: name
   parent: storageAccount
   properties: {

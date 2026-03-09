@@ -44,15 +44,15 @@ param rootSquash string = 'NoRootSquash'
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 
-  resource fileService 'fileServices@2023-05-01' existing = {
+  resource fileService 'fileServices@2025-01-01' existing = {
     name: fileServicesName
   }
 }
 
-resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
+resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2025-01-01' = {
   name: name
   parent: storageAccount::fileService
   properties: {

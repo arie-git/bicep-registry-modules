@@ -489,7 +489,7 @@ For each module: diff upstream vs fork params, add new params/types/resources, r
 
 ### Critical Priority (>10 version gap)
 
-- [ ] SYNC-01: storage/storage-account — 0.10 → 0.32 (gap: 22)
+- [~] SYNC-01: storage/storage-account — 0.10 → 0.32 (gap: 22) — PARTIAL: API versions updated to 2025-01-01 (all child modules), new SKUs, Cold tier, TLS 1.3, sasExpirationAction. Remaining: secretsExport, objectReplicationPolicies, immutableStorageWithVersioning, resourceInput type refactoring
 - [ ] SYNC-02: sql/server — 0.4 → 0.21 (gap: 17)
 - [ ] SYNC-03: operational-insights/workspace — 0.3 → 0.15 (gap: 12)
 - [ ] SYNC-04: web/site — 0.11 → 0.22 (gap: 11)

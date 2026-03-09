@@ -57,15 +57,15 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
 
-  resource tableServices 'tableServices@2023-05-01' existing = {
+  resource tableServices 'tableServices@2025-01-01' existing = {
     name: 'default'
   }
 }
 
-resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01' = {
+resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2025-01-01' = {
   name: name
   parent: storageAccount::tableServices
   properties:{
