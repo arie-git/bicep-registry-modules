@@ -1,5 +1,8 @@
 metadata name = 'DocumentDB Database Account SQL Role Definitions.'
 metadata description = 'This module deploys a SQL Role Definision in a CosmosDB Account.'
+metadata owner = 'AMCCC'
+metadata complianceVersion = '20260309'
+metadata compliance = '''There are no special compliance requirements for SQL Role Definitions. Compliance is inherited from the parent Database Account.'''
 
 import { telemetryId } from '../../../../../bicep-shared/environments.bicep'
 
@@ -98,6 +101,9 @@ output resourceGroupName string = resourceGroup().name
 
 @description('The role name of the SQL Role Definition.')
 output roleName string = sqlRoleDefinition.properties.roleName
+
+@description('Is there evidence of usage in non-compliance with policies?')
+output evidenceOfNonCompliance bool = false
 
 // =============== //
 //   Definitions   //

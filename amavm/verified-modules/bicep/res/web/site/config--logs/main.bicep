@@ -8,11 +8,11 @@ param appName string
 @description('Optional. The logs settings configuration.')
 param logsConfiguration object?
 
-resource app 'Microsoft.Web/sites@2024-04-01' existing = {
+resource app 'Microsoft.Web/sites@2025-03-01' existing = {
   name: appName
 }
 
-resource webSettings 'Microsoft.Web/sites/config@2024-04-01' = {
+resource webSettings 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'logs'
   kind: 'string'
   parent: app

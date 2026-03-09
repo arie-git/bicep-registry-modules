@@ -242,15 +242,23 @@ All 9 modules share the same 2 issues: (10) telemetry name not wrapped with `tak
 | 1 | `reference()` uses `'2020-06-01'` for VNet lookup | Updated to `2024-05-01` | DONE |
 | 2 | Typo: `condtion` → `condition` in slot/main.bicep | Fixed | DONE |
 | 3 | Typo: double period in hybrid-connection relay output | Fixed in both main and slot | DONE |
-| 4 | API version inconsistency: main site `2024-04-01`, slot `2023-12-01` | Align slot to `2024-04-01` | TODO |
+| 4 | API version inconsistency: main site `2024-04-01`, slot `2023-12-01` | Updated all `Microsoft.Web/*` to `2025-03-01` | DONE |
 | 5 | `locks@2020-05-01`, `diagnosticSettings@2021-05-01-preview`, `roleAssignments@2022-04-01` | N/A — matches upstream AVM standard | WONTFIX |
 | 6 | Identity/role-assignment formatting duplicated between main and slot | Consider refactoring | TODO |
+| 7 | `vnetContentShareEnabled`, `vnetImagePullEnabled`, `vnetRouteAllEnabled` removed in `2025-03-01` | Replaced with `outboundVnetRouting` object | DONE |
 
 - [x] Fix VNet reference API version (`2020-06-01` → `2024-05-01`)
 - [x] Fix typo: `condtion` → `condition`
 - [x] Fix typo: double period in relay description
 - [x] `bicep build` passes (only BCP192 expected)
-- [x] Align slot API versions — all `Microsoft.Web/*` under `web/site/` now use `2024-04-01`
+- [x] Align all `Microsoft.Web/*` API versions to `2025-03-01` (latest stable, non-preview)
+- [x] Remove deprecated `vnetContentShareEnabled`, `vnetImagePullEnabled`, `vnetRouteAllEnabled` — replaced by `outboundVnetRouting`
+- [x] Add `sshEnabled` and `outboundVnetRouting` to resource properties (supported on `2025-03-01`)
+- [x] Update `list()` calls from `2024-04-01` to `2025-03-01`
+- [x] Update VNet `reference()` from `2020-06-01` to `2024-05-01` in slot PE module
+- [x] Update compliance metadata to reference `outboundVnetRouting`
+- [x] Update `evidenceOfNonCompliance` to check `outboundVnetRouting` instead of removed booleans
+- [x] `bicep build` passes (only BCP192 expected)
 - [x] Karen: re-audit — 18/18 PASS
 
 ### TD-16: container-service/managed-cluster — spelling, API versions, comment fixes
@@ -273,18 +281,23 @@ All 9 modules share the same 2 issues: (10) telemetry name not wrapped with `tak
 
 | # | Issue | Fix | Status |
 |---|---|---|---|
-| 1 | `ManagedIdentity@2023-01-31` outdated | Updated to `2024-11-30` | DONE |
-| 2 | `KeyVault/vaults@2023-02-01` outdated | Updated to `2024-11-01` | DONE |
-| 3 | `CognitiveServices/accounts/deployments@2023-05-01` misaligned | Updated to `2024-10-01` | DONE |
+| 1 | `ManagedIdentity@2023-01-31` outdated | Updated to `2025-01-31-preview` | DONE |
+| 2 | `KeyVault/vaults@2023-02-01` outdated | Updated to `2025-05-01` | DONE |
+| 3 | `CognitiveServices/accounts/deployments@2023-05-01` misaligned | Updated to `2025-06-01` | DONE |
 | 4 | `Resources/deployments@2023-07-01` outdated | Updated to `2024-03-01` | DONE |
 | 5 | SKU fallback accesses `.capacity`/`.tier` on string param | Simplified to `{ name: sku }` | DONE |
 | 6 | Typo: `condtion` → `condition` | Fixed | DONE |
 | 7 | Typo: missing space `null\`is` | Fixed | DONE |
 | 8 | `roleAssignments@2022-04-01` | N/A — matches upstream AVM standard | WONTFIX |
+| 9 | Upstream sync v0.9 → v0.14 | Added networkInjections, allowProjectManagement, commitmentPlans, DC0 SKU, HSM CMK support; removed amlWorkspace, raiMonitorConfig | DONE |
+| 10 | `kind` @allowed restricted to 3 policy-approved values | Per drcp-ai-04 | DONE |
 
 - [x] Update 4 outdated API versions
 - [x] Fix SKU fallback logic (removed invalid property access on string)
 - [x] Fix both typos
+- [x] Upstream sync: added 3 new params, 2 new types, commitment plans resource, HSM CMK support
+- [x] Restricted `kind` to policy-approved values (AIServices, OpenAI, TextAnalytics)
+- [x] Removed deprecated `amlWorkspace` and `raiMonitorConfig` params
 - [x] `bicep build` passes (only BCP192 expected)
 - [x] Karen: re-audit — 18/18 PASS
 
@@ -314,14 +327,14 @@ These are features from upstream AVM modules that are currently commented out in
 
 Commented-out code: `slots` parameter, `app_slots` module loop, slot outputs (slots, slotResourceIds, slotSystemAssignedMIPrincipalIds, slotPrivateEndpoints).
 
-- [ ] Uncomment and implement `slots` parameter
-- [ ] Uncomment and implement `app_slots` module loop
-- [ ] Uncomment and implement slot-related outputs
-- [ ] Implement `reserved: contains(kind,'linux')` property
-- [ ] Implement TODO properties: `endToEndEncryptionEnabled`, `vnetBackupRestoreEnabled`, `customDomainVerificationId`, `dnsConfiguration`, `daprConfig`
-- [ ] Resolve `functionAppConfiguration` and `storageAccountResourceId` TODO markers
+- [x] Uncomment and implement `slots` parameter (with `slotType` type definition)
+- [x] Uncomment and implement `app_slots` module loop
+- [x] Uncomment and implement slot-related outputs (slotNames, slotResourceIds, slotSystemAssignedMIPrincipalIds, slotPrivateEndpoints)
+- [x] Implement `reserved: contains(kind,'linux')` property
+- [x] Implement TODO properties: `endToEndEncryptionEnabled`, `dnsConfiguration`, `daprConfig`
+- [x] Add new upstream params: `e2eEncryptionEnabled`, `dnsConfiguration`, `daprConfig`, `sshEnabled`, `ipMode`, `resourceConfig`, `workloadProfileName`, `hostNamesDisabled`, `outboundVnetRouting`
 - [ ] Update tests to cover slots
-- [ ] `bicep build` passes
+- [x] `bicep build` passes (only BCP192 expected)
 - [ ] Karen: validate
 
 ### FEAT-2: container-service/managed-cluster — AutoScaler Profile
@@ -391,9 +404,9 @@ Each whitelisted module audited by Azure Policy Expert against `policy/Generic/*
 
 ### Non-compliant (4 modules — defaults may violate policies)
 
-- [x] AI-Services (cognitive-services/account) — 7 policies, 1 FAIL
-  - `kind` @allowed list includes 24 values; policy AIServicesAllowSupportedKinds only permits 3 (TextAnalytics, OpenAI, AIServices)
-  - Action: restrict @allowed list or add compliance documentation
+- [x] AI-Services (cognitive-services/account) — 7 policies, all PASS
+  - `kind` @allowed list restricted to 3 policy-approved values: TextAnalytics, OpenAI, AIServices (per drcp-ai-04)
+  - complianceVersion updated to 20260309
 - [x] App-Configuration (app-configuration/configuration-store) — 4 policies, 1 FAIL
   - `publicNetworkAccess` defaults to null → resolves to 'Enabled' without private endpoints
   - Action: default publicNetworkAccess to 'Disabled'
@@ -457,6 +470,178 @@ The `convertreadmetohtml.py` pipeline converts Bicep module READMEs to static HT
 - [ ] Support Bicep code syntax highlighting in generated HTML
 - [ ] Add table of contents depth configuration
 - [ ] Document the HTML generation pipeline in a dev guide
+
+---
+
+## SYNC: Upstream Parameter Sync (AVM → AMAVM)
+
+For each module: diff upstream vs fork params, add new params/types/resources, remove deprecated params, update API versions, verify evidenceOfNonCompliance output, update upstream.json version.
+
+**Checklist per module:**
+1. Compare all `param` declarations (new, removed, changed types/defaults/@allowed)
+2. Compare all `resource` blocks (new resources, API version drift)
+3. Compare child modules (`modules/` subdirectory)
+4. Compare type definitions
+5. Verify `evidenceOfNonCompliance` output exists and is correct
+6. Verify AMAVM metadata fields (owner, compliance, complianceVersion)
+7. Update `upstream.json` to match synced version
+8. `bicep build` passes
+
+### Critical Priority (>10 version gap)
+
+- [ ] SYNC-01: storage/storage-account — 0.10 → 0.32 (gap: 22)
+- [ ] SYNC-02: sql/server — 0.4 → 0.21 (gap: 17)
+- [ ] SYNC-03: operational-insights/workspace — 0.3 → 0.15 (gap: 12)
+- [ ] SYNC-04: web/site — 0.11 → 0.22 (gap: 11)
+
+### High Priority (5-10 version gap)
+
+- [ ] SYNC-05: container-service/managed-cluster — 0.3 → 0.12 (gap: 9)
+- [ ] SYNC-06: container-registry/registry — 0.3 → 0.11 (gap: 8)
+- [ ] SYNC-07: data-factory/factory — 0.3 → 0.11 (gap: 8)
+- [ ] SYNC-08: key-vault/vault — 0.6 → 0.13 (gap: 7)
+- [ ] SYNC-09: databricks/workspace — 0.5 → 0.12 (gap: 7)
+- [ ] SYNC-10: network/virtual-network — 0.2 → 0.7 (gap: 5)
+- [ ] SYNC-11: web/serverfarm — 0.2 → 0.7 (gap: 5)
+
+### Medium Priority (2-4 version gap)
+
+- [ ] SYNC-12: network/application-gateway — 0.5 → 0.9 (gap: 4)
+- [ ] SYNC-13: network/private-endpoint — 0.8 → 0.12 (gap: 4)
+- [ ] SYNC-14: insights/data-collection-rule — 0.6 → 0.10 (gap: 4)
+- [ ] SYNC-15: app-configuration/configuration-store — 0.6 → 0.9 (gap: 3)
+- [ ] SYNC-16: insights/action-group — 0.5 → 0.8 (gap: 3)
+- [ ] SYNC-17: insights/scheduled-query-rule — 0.3 → 0.6 (gap: 3)
+- [ ] SYNC-18: insights/component — 0.4 → 0.7 (gap: 3)
+- [ ] SYNC-19: search/search-service — 0.9 → 0.12 (gap: 3)
+- [ ] SYNC-20: managed-identity/user-assigned-identity — 0.2 → 0.5 (gap: 3)
+- [ ] SYNC-21: databricks/access-connector — 0.1 → 0.4 (gap: 3)
+- [ ] SYNC-22: network/route-table — 0.2 → 0.5 (gap: 3)
+- [ ] SYNC-23: web/static-site — 0.6 → 0.9 (gap: 3)
+- [ ] SYNC-24: db-for-postgre-sql/flexible-server — 0.13 → 0.15 (gap: 2)
+- [ ] SYNC-25: service-bus/namespace — 0.14 → 0.16 (gap: 2)
+- [ ] SYNC-26: network/network-security-group — 0.3 → 0.5 (gap: 2)
+
+### Low Priority (1 version gap)
+
+- [ ] SYNC-27: insights/activity-log-alert — 0.3 → 0.4 (gap: 1)
+- [ ] SYNC-28: insights/metric-alert — 0.3 → 0.4 (gap: 1)
+
+---
+
+## META: Child Module Metadata Compliance
+
+Every main.bicep (parent AND child) must have: `metadata owner`, `metadata compliance`, `metadata complianceVersion`, and `output evidenceOfNonCompliance`. Audit found 86 files missing at least one field.
+
+### META-1: Files missing ALL THREE fields (owner + compliance + evidenceOfNonCompliance) — 32 files
+
+**GAP module children (fixed):**
+- [x] document-db/database-account/sql-database/main.bicep
+- [x] document-db/database-account/sql-database/container/main.bicep
+- [x] document-db/database-account/sql-role-assignment/main.bicep
+- [x] document-db/database-account/sql-role-definition/main.bicep
+
+**Remaining (28 files):**
+- [ ] app-configuration/configuration-store/key-value/main.bicep
+- [ ] app-configuration/configuration-store/replica/main.bicep
+- [ ] container-registry/registry/credential/main.bicep
+- [ ] db-for-postgre-sql/flexible-server/administrator/main.bicep
+- [ ] db-for-postgre-sql/flexible-server/advanced-threat-protection-setting/main.bicep
+- [ ] db-for-postgre-sql/flexible-server/configuration/main.bicep
+- [ ] db-for-postgre-sql/flexible-server/database/main.bicep
+- [ ] db-for-postgre-sql/flexible-server/firewall-rule/main.bicep
+- [ ] event-hub/namespace/authorization-rule/main.bicep
+- [ ] event-hub/namespace/disaster-recovery-config/main.bicep
+- [ ] event-hub/namespace/eventhub/authorization-rule/main.bicep
+- [ ] event-hub/namespace/eventhub/consumergroup/main.bicep
+- [ ] event-hub/namespace/eventhub/main.bicep
+- [ ] event-hub/namespace/network-rule-set/main.bicep
+- [ ] cache/redis/access-policy-assignment/main.bicep
+- [ ] cache/redis/access-policy/main.bicep
+- [ ] cache/redis/firewall-rule/main.bicep
+- [ ] cache/redis/linked-servers/main.bicep
+- [ ] insights/private-link-scope/scoped-resource/main.bicep
+- [ ] search/search-service/shared-private-link-resource/main.bicep
+- [ ] service-bus/namespace/authorization-rule/main.bicep
+- [ ] service-bus/namespace/disaster-recovery-config/main.bicep
+- [ ] service-bus/namespace/migration-configuration/main.bicep
+- [ ] service-bus/namespace/network-rule-set/main.bicep
+- [ ] service-bus/namespace/queue/authorization-rule/main.bicep
+- [ ] service-bus/namespace/topic/authorization-rule/main.bicep
+- [ ] service-bus/namespace/topic/subscription/main.bicep
+- [ ] service-bus/namespace/topic/subscription/rule/main.bicep
+
+### META-2: Files missing compliance + evidenceOfNonCompliance (have owner) — 47 files
+
+- [ ] container-registry/registry/replication/main.bicep
+- [ ] container-registry/registry/scope-map/main.bicep
+- [ ] container-registry/registry/webhook/main.bicep
+- [ ] container-service/managed-cluster/agent-pool/main.bicep
+- [ ] container-service/managed-cluster/maintenance-configurations/main.bicep
+- [ ] insights/component/linkedStorageAccounts/main.bicep
+- [ ] managed-identity/user-assigned-identity/federated-identity-credential/main.bicep
+- [ ] operational-insights/workspace/data-export/main.bicep
+- [ ] operational-insights/workspace/data-source/main.bicep
+- [ ] operational-insights/workspace/linked-service/main.bicep
+- [ ] operational-insights/workspace/linked-storage-account/main.bicep
+- [ ] operational-insights/workspace/saved-search/main.bicep
+- [ ] operational-insights/workspace/storage-insight-config/main.bicep
+- [ ] operational-insights/workspace/table/main.bicep
+- [ ] sql/server/audit-settings/main.bicep
+- [ ] sql/server/database/backup-long-term-retention-policy/main.bicep
+- [ ] sql/server/database/backup-short-term-retention-policy/main.bicep
+- [ ] sql/server/elastic-pool/main.bicep
+- [ ] sql/server/encryption-protector/main.bicep
+- [ ] sql/server/firewall-rule/main.bicep
+- [ ] sql/server/key/main.bicep
+- [ ] sql/server/outbound-firewall-rule/main.bicep
+- [ ] sql/server/security-alert-policy/main.bicep
+- [ ] sql/server/sql-vulnerability-assessment/main.bicep
+- [ ] sql/server/virtual-network-rule/main.bicep
+- [ ] sql/server/vulnerability-assessment/main.bicep
+- [ ] storage/storage-account/blob-service/container/immutability-policy/main.bicep
+- [ ] storage/storage-account/local-user/main.bicep
+- [ ] storage/storage-account/queue-service/main.bicep
+- [ ] storage/storage-account/table-service/main.bicep
+- [ ] storage/storage-account/table-service/table/main.bicep
+- [ ] web/site/basic-publishing-credentials-policy/main.bicep
+- [ ] web/site/config--appsettings/main.bicep
+- [ ] web/site/config--authsettingsv2/main.bicep
+- [ ] web/site/config--logs/main.bicep
+- [ ] web/site/config--web/main.bicep
+- [ ] web/site/extensions--msdeploy/main.bicep
+- [ ] web/site/hybrid-connection-namespace/relay/main.bicep
+- [ ] web/site/slot/basic-publishing-credentials-policy/main.bicep
+- [ ] web/site/slot/config--appsettings/main.bicep
+- [ ] web/site/slot/config--authsettingsv2/main.bicep
+- [ ] web/site/slot/extensions--msdeploy/main.bicep
+- [ ] web/site/slot/hybrid-connection-namespace/relay/main.bicep
+- [ ] web/site/slot/main.bicep
+- [ ] web/static-site/config/main.bicep
+- [ ] web/static-site/custom-domain/main.bicep
+- [ ] web/static-site/linked-backend/main.bicep
+
+### META-3: Files missing only evidenceOfNonCompliance (have owner + compliance) — 7 files
+
+- [ ] data-factory/factory/managed-virtual-network/main.bicep
+- [ ] data-factory/factory/managed-virtual-network/managed-private-endpoint/main.bicep
+- [ ] network/private-endpoint/private-dns-zone-group/main.bicep
+- [ ] service-bus/namespace/queue/main.bicep
+- [ ] service-bus/namespace/topic/main.bicep
+- [ ] storage/storage-account/blob-service/main.bicep
+- [ ] storage/storage-account/file-service/main.bicep
+
+### Up-to-Date (no sync needed)
+
+- [x] SYNC-29: cognitive-services/account — 0.14 (synced)
+- [x] SYNC-30: document-db/database-account — 0.19 (synced)
+- [x] SYNC-31: event-hub/namespace — 0.14 (synced)
+- [x] SYNC-32: cache/redis — 0.16 (synced)
+- [x] SYNC-33: insights/data-collection-endpoint — 0.5 (synced)
+- [x] SYNC-34: insights/private-link-scope — 0.7 (synced)
+- [x] SYNC-35: insights/webtest — 0.3 (synced)
+- [x] SYNC-36: insights/diagnostic-setting — 0.1 (synced)
+- [x] SYNC-37: network/application-gateway-web-application-firewall-policy — 0.2 (synced)
 
 ---
 

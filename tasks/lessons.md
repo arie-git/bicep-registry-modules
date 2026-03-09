@@ -31,3 +31,9 @@ In the amavm fork, commented-out blocks (slots, autoscaler, addons, etc.) repres
 
 ### 10. Some modules use `@sys.description()` instead of `@description()`
 When a module imports a user-defined function named `description` (or has a naming conflict with the built-in), the bare `@description()` decorator fails with BCP265. Use `@sys.description()` in these modules. Check existing decorators in the file before adding new ones — match the convention already in use (e.g., `data-collection-endpoint` and `webtest` both use `@sys.description`).
+
+### 11. Always update test cases when changing module parameters
+When removing, renaming, or changing parameters in a module's `main.bicep`, ALWAYS immediately check and update the corresponding test cases under `tests/e2e/*/main.test.bicep`. Test cases validate parameter usage and will fail if they reference removed or renamed params. This must be done as part of the same change — not as a separate step or afterthought. Build ALL test cases to verify, not just the module itself.
+
+### 12. API version changes can remove or restructure properties
+When updating API versions (e.g., `Microsoft.Web/sites` `2024-04-01` -> `2025-03-01`), properties may be removed or consolidated. Example: `vnetContentShareEnabled`, `vnetImagePullEnabled`, `vnetRouteAllEnabled` were removed in `2025-03-01` and replaced by the `outboundVnetRouting` object. Always check BCP037 warnings after an API version bump to catch removed properties, then propagate changes to test files.

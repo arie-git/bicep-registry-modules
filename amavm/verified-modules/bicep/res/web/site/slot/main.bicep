@@ -151,15 +151,6 @@ param redundancyMode string = 'None'
 @description('Optional. The site publishing credential policy names which are associated with the site slot.')
 param basicPublishingCredentialsPolicies array?
 
-@description('Optional. To enable accessing content over virtual network.')
-param vnetContentShareEnabled bool = false
-
-@description('Optional. To enable pulling image over Virtual Network.')
-param vnetImagePullEnabled bool = false
-
-@description('Optional. Virtual Network Route All enabled. This causes all outbound traffic to have Virtual Network Security Groups and User Defined Routes applied.')
-param vnetRouteAllEnabled bool = false
-
 @description('Optional. Names of hybrid connection relays to connect app with.')
 param hybridConnectionRelays array?
 
@@ -215,11 +206,11 @@ var formattedRoleAssignments = [
   })
 ]
 
-resource app 'Microsoft.Web/sites@2024-04-01' existing = {
+resource app 'Microsoft.Web/sites@2025-03-01' existing = {
   name: appName
 }
 
-resource slot 'Microsoft.Web/sites/slots@2024-04-01' = {
+resource slot 'Microsoft.Web/sites/slots@2025-03-01' = {
   name: name
   parent: app
   location: location
@@ -252,9 +243,6 @@ resource slot 'Microsoft.Web/sites/slots@2024-04-01' = {
     hyperV: hyperV
     publicNetworkAccess: publicNetworkAccess
     redundancyMode: redundancyMode
-    vnetContentShareEnabled: vnetContentShareEnabled
-    vnetImagePullEnabled: vnetImagePullEnabled
-    vnetRouteAllEnabled: vnetRouteAllEnabled
   }
 }
 
@@ -268,7 +256,7 @@ module slot_appsettings 'config--appsettings/main.bicep' = if (!empty(appSetting
     storageAccountUseIdentityAuthentication: storageAccountUseIdentityAuthentication
     appInsightResourceId: appInsightResourceId
     appSettingsKeyValuePairs: appSettingsKeyValuePairs
-    currentAppSettings: !empty(slot.id) ? list('${slot.id}/config/appsettings', '2024-04-01').properties : {}
+    currentAppSettings: !empty(slot.id) ? list('${slot.id}/config/appsettings', '2025-03-01').properties : {}
   }
 }
 
@@ -408,7 +396,7 @@ module slot_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0' = [
       enableTelemetry: privateEndpoint.?enableTelemetry ?? enableTelemetry
       location: privateEndpoint.?location ?? reference(
         split(privateEndpoint.subnetResourceId, '/subnets/')[0],
-        '2020-06-01',
+        '2024-05-01',
         'Full'
       ).location
       lock: privateEndpoint.?lock ?? lock

@@ -1,5 +1,8 @@
 metadata name = 'DocumentDB Database Account SQL Database Containers'
 metadata description = 'This module deploys a SQL Database Container in a CosmosDB Account.'
+metadata owner = 'AMCCC'
+metadata complianceVersion = '20260309'
+metadata compliance = '''There are no special compliance requirements for SQL Database Containers. Compliance is inherited from the parent Database Account.'''
 
 @description('Conditional. The name of the parent Database Account. Required if the template is used in a standalone deployment.')
 param databaseAccountName string
@@ -111,3 +114,6 @@ output resourceId string = container.id
 
 @description('The name of the resource group the container was created in.')
 output resourceGroupName string = resourceGroup().name
+
+@description('Is there evidence of usage in non-compliance with policies?')
+output evidenceOfNonCompliance bool = false

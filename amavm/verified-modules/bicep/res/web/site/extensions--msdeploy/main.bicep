@@ -8,10 +8,10 @@ param appName string
 @description('Optional. Sets the MSDeployment Properties.')
 param msDeployConfiguration object?
 
-resource app 'Microsoft.Web/sites@2024-04-01' existing = {
+resource app 'Microsoft.Web/sites@2025-03-01' existing = {
   name: appName
 }
-resource msdeploy 'Microsoft.Web/sites/extensions@2024-04-01' = {
+resource msdeploy 'Microsoft.Web/sites/extensions@2025-03-01' = {
   name: 'MSDeploy'
   kind: 'MSDeploy'
   parent: app

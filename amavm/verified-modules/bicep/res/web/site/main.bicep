@@ -9,9 +9,7 @@ metadata compliance = '''Compliant usage of this module requires:
 - siteConfig.minTlsVersion: '1.2'
 - siteConfig.cors: should be either null, or cors.allowedOrigins array not to contain a value of '*'
 - either a virtualNetworkSubnetId or a appServiceEnvironmentResourceId need to be provided
-- vnetContentShareEnabled: true
-- vnetImagePullEnabled: true
-- vnetRouteAllEnabled: true
+- outboundVnetRouting: configured to route all traffic through the virtual network
 - siteConfig.ftpsState: 'Disabled' or 'FtpsOnly'
 - basicPublishingCredentialsPolicies: both ftp and scm must be allow=false
 - siteConfig.remoteDebuggingEnabled: false
@@ -19,7 +17,7 @@ metadata compliance = '''Compliant usage of this module requires:
 - authSettingV2Configuration.enabled: true and authSettingV2Configuration.platform.enabled: true
 - managedIdentities: not empty
 '''
-metadata complianceVersion = '20241112'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the site.')
 param name string
@@ -94,15 +92,6 @@ param storageAccountRequired bool = false
 Leaving this parameter empty when appServiceEnvironmentResourceId is also not provided will make the resource non-compliant.
 ''')
 param virtualNetworkSubnetId string?
-
-@description('Optional. To enable accessing content over virtual network.')
-param vnetContentShareEnabled bool = !empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)
-
-@description('Optional. To enable pulling image over Virtual Network.')
-param vnetImagePullEnabled bool = !empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)
-
-@description('Optional. Virtual Network Route All enabled. This causes all outbound traffic to have Virtual Network Security Groups and User Defined Routes applied.')
-param vnetRouteAllEnabled bool = !empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)
 
 @description('Optional. Stop SCM (KUDU) site when the app is stopped.')
 param scmSiteAlsoStopped bool = true
@@ -375,8 +364,35 @@ Default: sites is used if at least one subnetResourceId is provided but 'service
 ''')
 param privateEndpoints privateEndpointType
 
-// @description('Optional. Configuration for deployment slots for an app.')
-// param slots array?
+@description('Optional. Configuration for deployment slots for an app.')
+param slots slotType[]?
+
+@description('Optional. End to End Encryption Setting.')
+param e2eEncryptionEnabled bool?
+
+@description('Optional. Property to configure various DNS related settings for a site.')
+param dnsConfiguration object?
+
+@description('Optional. Dapr configuration of the app.')
+param daprConfig object?
+
+@description('Optional. Whether to enable SSH access.')
+param sshEnabled bool?
+
+@description('Optional. Specifies the IP mode of the app.')
+param ipMode string?
+
+@description('Optional. Function app resource requirements.')
+param resourceConfig object?
+
+@description('Optional. Workload profile name for function app to execute on.')
+param workloadProfileName string?
+
+@description('Optional. True to disable the public hostnames of the app; otherwise, false.')
+param hostNamesDisabled bool?
+
+@description('Optional. The outbound VNET routing configuration for the site.')
+param outboundVnetRouting object?
 
 @description('Optional. Tags of the resource.')
 param tags object?
@@ -571,7 +587,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource app 'Microsoft.Web/sites@2024-04-01' = {
+resource app 'Microsoft.Web/sites@2025-03-01' = {
   name: name
   location: location
   kind: kind
@@ -591,12 +607,13 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
     keyVaultReferenceIdentity: keyVaultAccessIdentityResourceId
     virtualNetworkSubnetId: virtualNetworkSubnetId
     siteConfig: union(siteConfiguration, siteConfigurationAdditional)
-    // TODO:
-    //endToEndEncryptionEnabled:
-    //vnetBackupRestoreEnabled:
-    //customDomainVerificationId:
-    //dnsConfiguration:
-    //daprConfig:
+    endToEndEncryptionEnabled: e2eEncryptionEnabled
+    dnsConfiguration: dnsConfiguration
+    daprConfig: daprConfig
+    ipMode: ipMode
+    resourceConfig: resourceConfig
+    workloadProfileName: workloadProfileName
+    hostNamesDisabled: hostNamesDisabled
     functionAppConfig: functionAppConfiguration
     clientCertEnabled: clientCertEnabled
     clientCertExclusionPaths: clientCertExclusionPaths
@@ -607,15 +624,14 @@ resource app 'Microsoft.Web/sites@2024-04-01' = {
     enabled: enabled
     hostNameSslStates: hostNameSslStates
     hyperV: hyperV
-    //reserved: contains(kind,'linux')
+    reserved: contains(kind, 'linux')
     redundancyMode: redundancyMode
     publicNetworkAccess: !empty(publicNetworkAccess)
       ? any(publicNetworkAccess)
       : (!empty(privateEndpoints) ? 'Disabled' : 'Enabled')
-    vnetContentShareEnabled: vnetContentShareEnabled
-    vnetImagePullEnabled: vnetImagePullEnabled
-    vnetRouteAllEnabled: vnetRouteAllEnabled
     scmSiteAlsoStopped: scmSiteAlsoStopped
+    sshEnabled: sshEnabled
+    outboundVnetRouting: outboundVnetRouting
   }
 }
 
@@ -628,7 +644,7 @@ module app_appsettings 'config--appsettings/main.bicep' = if (!empty(appSettings
     storageAccountUseIdentityAuthentication: storageAccountUseIdentityAuthentication
     appInsightResourceId: appInsightResourceId
     appSettingsKeyValuePairs: appSettingsKeyValuePairs ?? {}
-    currentAppSettings: !empty(app.id) ? list('${app.id}/config/appsettings', '2024-04-01').properties : {}
+    currentAppSettings: !empty(app.id) ? list('${app.id}/config/appsettings', '2025-03-01').properties : {}
   }
 }
 
@@ -675,59 +691,56 @@ module extension_msdeploy 'extensions--msdeploy/main.bicep' = if (!empty(msDeplo
   }
 }
 
-// @batchSize(1)
-// module app_slots 'slot/main.bicep' = [
-//   for (slot, index) in (slots ?? []): {
-//     name: '${uniqueString(deployment().name, location)}-slot-${slot.name}'
-//     params: {
-//       name: slot.name
-//       appName: app.name
-//       location: location
-//       kind: kind
-//       serverFarmResourceId: serverFarmResourceId
-//       httpsOnly: slot.?httpsOnly ?? httpsOnly
-//       appServiceEnvironmentResourceId: appServiceEnvironmentResourceId
-//       clientAffinityEnabled: slot.?clientAffinityEnabled ?? clientAffinityEnabled
-//       managedIdentities: slot.?managedIdentities ?? managedIdentities
-//       keyVaultAccessIdentityResourceId: slot.?keyVaultAccessIdentityResourceId ?? keyVaultAccessIdentityResourceId
-//       storageAccountRequired: slot.?storageAccountRequired ?? storageAccountRequired
-//       virtualNetworkSubnetId: slot.?virtualNetworkSubnetId ?? virtualNetworkSubnetId
-//       siteConfig: slot.?siteConfig ?? siteConfig
-//       functionAppConfig: slot.?functionAppConfig ?? functionAppConfig
-//       storageAccountResourceId: slot.?storageAccountResourceId ?? storageAccountResourceId
-//       storageAccountUseIdentityAuthentication: slot.?storageAccountUseIdentityAuthentication ?? storageAccountUseIdentityAuthentication
-//       appInsightResourceId: slot.?appInsightResourceId ?? appInsightResourceId
-//       authSettingV2Configuration: slot.?authSettingV2Configuration ?? authSettingV2Configuration
-//       msDeployConfiguration: slot.?msDeployConfiguration ?? msDeployConfiguration
-//       diagnosticSettings: slot.?diagnosticSettings
-//       roleAssignments: slot.?roleAssignments
-//       appSettingsKeyValuePairs: slot.?appSettingsKeyValuePairs ?? appSettingsKeyValuePairs
-//       basicPublishingCredentialsPolicies: slot.?basicPublishingCredentialsPolicies ?? basicPublishingCredentialsPolicies
-//       lock: slot.?lock ?? lock
-//       privateEndpoints: slot.?privateEndpoints ?? []
-//       tags: slot.?tags ?? tags
-//       clientCertEnabled: slot.?clientCertEnabled
-//       clientCertExclusionPaths: slot.?clientCertExclusionPaths
-//       clientCertMode: slot.?clientCertMode
-//       cloningInfo: slot.?cloningInfo
-//       containerSize: slot.?containerSize
-//       customDomainVerificationId: slot.?customDomainVerificationId
-//       dailyMemoryTimeQuota: slot.?dailyMemoryTimeQuota
-//       enabled: slot.?enabled
-//       enableTelemetry: slot.?enableTelemetry ?? enableTelemetry
-//       hostNameSslStates: slot.?hostNameSslStates
-//       hyperV: slot.?hyperV
-//       publicNetworkAccess: slot.?publicNetworkAccess ?? ((!empty(slot.?privateEndpoints) || !empty(privateEndpoints))
-//         ? 'Disabled'
-//         : 'Enabled')
-//       redundancyMode: slot.?redundancyMode
-//       vnetContentShareEnabled: slot.?vnetContentShareEnabled
-//       vnetImagePullEnabled: slot.?vnetImagePullEnabled
-//       vnetRouteAllEnabled: slot.?vnetRouteAllEnabled
-//       hybridConnectionRelays: slot.?hybridConnectionRelays
-//     }
-//   }
-// ]
+@batchSize(1)
+module app_slots 'slot/main.bicep' = [
+  for (slot, index) in (slots ?? []): {
+    name: '${uniqueString(deployment().name, location)}-slot-${slot.name}'
+    params: {
+      name: slot.name
+      appName: app.name
+      location: location
+      kind: kind
+      serverFarmResourceId: serverFarmResourceId
+      httpsOnly: slot.?httpsOnly ?? httpsOnly
+      appServiceEnvironmentResourceId: appServiceEnvironmentResourceId
+      clientAffinityEnabled: slot.?clientAffinityEnabled ?? clientAffinityEnabled
+      managedIdentities: slot.?managedIdentities ?? managedIdentities
+      keyVaultAccessIdentityResourceId: slot.?keyVaultAccessIdentityResourceId ?? keyVaultAccessIdentityResourceId
+      storageAccountRequired: slot.?storageAccountRequired ?? storageAccountRequired
+      virtualNetworkSubnetId: slot.?virtualNetworkSubnetId ?? virtualNetworkSubnetId
+      siteConfig: slot.?siteConfig ?? siteConfiguration
+      functionAppConfig: slot.?functionAppConfig ?? functionAppConfiguration
+      storageAccountResourceId: slot.?storageAccountResourceId ?? storageAccountResourceId
+      storageAccountUseIdentityAuthentication: slot.?storageAccountUseIdentityAuthentication ?? storageAccountUseIdentityAuthentication
+      appInsightResourceId: slot.?appInsightResourceId ?? appInsightResourceId
+      authSettingV2Configuration: slot.?authSettingV2Configuration ?? authSettingV2Configuration
+      msDeployConfiguration: slot.?msDeployConfiguration ?? msDeployConfiguration
+      diagnosticSettings: slot.?diagnosticSettings
+      roleAssignments: slot.?roleAssignments
+      appSettingsKeyValuePairs: slot.?appSettingsKeyValuePairs ?? appSettingsKeyValuePairs
+      basicPublishingCredentialsPolicies: slot.?basicPublishingCredentialsPolicies ?? basicPublishingCredentialsPolicies
+      lock: slot.?lock ?? lock
+      privateEndpoints: slot.?privateEndpoints ?? []
+      tags: slot.?tags ?? tags
+      clientCertEnabled: slot.?clientCertEnabled
+      clientCertExclusionPaths: slot.?clientCertExclusionPaths
+      clientCertMode: slot.?clientCertMode
+      cloningInfo: slot.?cloningInfo
+      containerSize: slot.?containerSize
+      customDomainVerificationId: slot.?customDomainVerificationId
+      dailyMemoryTimeQuota: slot.?dailyMemoryTimeQuota
+      enabled: slot.?enabled
+      enableTelemetry: slot.?enableTelemetry ?? enableTelemetry
+      hostNameSslStates: slot.?hostNameSslStates
+      hyperV: slot.?hyperV
+      publicNetworkAccess: slot.?publicNetworkAccess ?? ((!empty(slot.?privateEndpoints) || !empty(privateEndpoints))
+        ? 'Disabled'
+        : 'Enabled')
+      redundancyMode: slot.?redundancyMode
+      hybridConnectionRelays: slot.?hybridConnectionRelays
+    }
+  }
+]
 
 module app_basicPublishingCredentialsPolicies 'basic-publishing-credentials-policy/main.bicep' = [
   for (basicPublishingCredentialsPolicy, index) in (basicPublishingCredentialsPolicies ?? []): {
@@ -877,11 +890,11 @@ output name string = app.name
 @description('The resource ID of the site.')
 output resourceId string = app.id
 
-// @description('The list of the slots.')
-// output slots array = [for (slot, index) in (slots ?? []): app_slots[index].name]
+@description('The list of the slots.')
+output slotNames array = [for (slot, index) in (slots ?? []): app_slots[index].name]
 
-// @description('The list of the slot resource ids.')
-// output slotResourceIds array = [for (slot, index) in (slots ?? []): app_slots[index].outputs.resourceId]
+@description('The list of the slot resource ids.')
+output slotResourceIds array = [for (slot, index) in (slots ?? []): app_slots[index].outputs.resourceId]
 
 @description('The resource group the site was deployed into.')
 output resourceGroupName string = resourceGroup().name
@@ -889,10 +902,10 @@ output resourceGroupName string = resourceGroup().name
 @description('The principal ID of the system assigned identity.')
 output systemAssignedMIPrincipalId string = app.?identity.?principalId ?? ''
 
-// @description('The principal ID of the system assigned identity of slots.')
-// output slotSystemAssignedMIPrincipalIds array = [
-//   for (slot, index) in (slots ?? []): app_slots[index].outputs.systemAssignedMIPrincipalId
-// ]
+@description('The principal ID of the system assigned identity of slots.')
+output slotSystemAssignedMIPrincipalIds array = [
+  for (slot, index) in (slots ?? []): app_slots[index].outputs.systemAssignedMIPrincipalId
+]
 
 @description('The location the resource was deployed into.')
 output location string = app.location
@@ -914,11 +927,11 @@ output privateEndpoints array = [
   }
 ]
 
-// @description('The private endpoints of the slots.')
-// output slotPrivateEndpoints array = [for (slot, index) in (slots ?? []): app_slots[index].outputs.privateEndpoints]
+@description('The private endpoints of the slots.')
+output slotPrivateEndpoints array = [for (slot, index) in (slots ?? []): app_slots[index].outputs.privateEndpoints]
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = !(publicNetworkAccess == 'Disabled') || !httpsOnly || !(siteConfiguration.?http20Enabled ?? false) || !contains(['Disabled', 'FtpsOnly', ''],(siteConfiguration.?ftpsState ?? '')) || contains(['1.0', '1.1', ''], (siteConfiguration.?minTlsVersion ?? '')) || contains((siteConfiguration.?cors.?allowedOrigins ?? ['']),'*') || empty(virtualNetworkSubnetId ?? appServiceEnvironmentResourceId) || ((!empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)) && !(vnetContentShareEnabled && vnetImagePullEnabled && vnetRouteAllEnabled)) || siteConfiguration.remoteDebuggingEnabled || empty(managedIdentities) || ((authSettingV2Configuration.?enabled ?? false) && (authSettingV2Configuration.?platform.?enabled ?? false)) || contains(map(basicPublishingCredentialsPolicies, policy => (policy.?allow ?? true)),true)
+output evidenceOfNonCompliance bool = !(publicNetworkAccess == 'Disabled') || !httpsOnly || !(siteConfiguration.?http20Enabled ?? false) || !contains(['Disabled', 'FtpsOnly', ''],(siteConfiguration.?ftpsState ?? '')) || contains(['1.0', '1.1', ''], (siteConfiguration.?minTlsVersion ?? '')) || contains((siteConfiguration.?cors.?allowedOrigins ?? ['']),'*') || empty(virtualNetworkSubnetId ?? appServiceEnvironmentResourceId) || ((!empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)) && empty(outboundVnetRouting)) || siteConfiguration.remoteDebuggingEnabled || empty(managedIdentities) || ((authSettingV2Configuration.?enabled ?? false) && (authSettingV2Configuration.?platform.?enabled ?? false)) || contains(map(basicPublishingCredentialsPolicies, policy => (policy.?allow ?? true)),true)
 
 // =============== //
 //   Definitions   //
@@ -946,4 +959,113 @@ type connectionStringType = {
 
   @description('Required. Type of database.')
   type: 'ApiHub' | 'Custom' | 'DocDb' | 'EventHub' | 'MySql' | 'NotificationHub' | 'PostgreSQL' | 'RedisCache' | 'ServiceBus' | 'SQLAzure' | 'SQLServer'
+}
+
+@export()
+@description('The type of a deployment slot.')
+type slotType = {
+  @description('Required. Name of the slot.')
+  name: string
+
+  @description('Optional. Configures a slot to accept only HTTPS requests.')
+  httpsOnly: bool?
+
+  @description('Optional. If client affinity is enabled.')
+  clientAffinityEnabled: bool?
+
+  @description('Optional. The managed identity definition for this resource.')
+  managedIdentities: managedIdentitiesType?
+
+  @description('Optional. The resource ID of the assigned identity to be used to access a key vault with.')
+  keyVaultAccessIdentityResourceId: string?
+
+  @description('Optional. Checks if Customer provided storage account is required.')
+  storageAccountRequired: bool?
+
+  @description('Optional. Azure Resource Manager ID of the Virtual network and subnet to be joined by Regional VNET Integration.')
+  virtualNetworkSubnetId: string?
+
+  @description('Optional. The site config object.')
+  siteConfig: object?
+
+  @description('Optional. The Function App config object.')
+  functionAppConfig: object?
+
+  @description('Optional. Resource ID of the storage account to manage triggers and logging function executions.')
+  storageAccountResourceId: string?
+
+  @description('Optional. If the provided storage account requires Identity based authentication.')
+  storageAccountUseIdentityAuthentication: bool?
+
+  @description('Optional. Resource ID of the app insight to leverage for this resource.')
+  appInsightResourceId: string?
+
+  @description('Optional. The app settings-value pairs.')
+  appSettingsKeyValuePairs: object?
+
+  @description('Optional. The auth settings V2 configuration.')
+  authSettingV2Configuration: object?
+
+  @description('Optional. The extension MSDeployment configuration.')
+  msDeployConfiguration: object?
+
+  @description('Optional. The diagnostic settings of the service.')
+  diagnosticSettings: diagnosticSettingType?
+
+  @description('Optional. Array of role assignments to create.')
+  roleAssignments: roleAssignmentType?
+
+  @description('Optional. The site publishing credential policy names which are associated with the site slot.')
+  basicPublishingCredentialsPolicies: basicPublishingCredentialsPolicyType[]?
+
+  @description('Optional. The lock settings of the service.')
+  lock: lockType?
+
+  @description('Optional. Configuration details for private endpoints.')
+  privateEndpoints: privateEndpointType?
+
+  @description('Optional. Tags of the resource.')
+  tags: object?
+
+  @description('Optional. To enable client certificate authentication (TLS mutual authentication).')
+  clientCertEnabled: bool?
+
+  @description('Optional. Client certificate authentication comma-separated exclusion paths.')
+  clientCertExclusionPaths: string?
+
+  @description('Optional. This composes with ClientCertEnabled setting.')
+  clientCertMode: ('Optional' | 'OptionalInteractiveUser' | 'Required')?
+
+  @description('Optional. If specified during app creation, the app is cloned from a source app.')
+  cloningInfo: object?
+
+  @description('Optional. Size of the function container.')
+  containerSize: int?
+
+  @description('Optional. Unique identifier that verifies the custom domains assigned to the app.')
+  customDomainVerificationId: string?
+
+  @description('Optional. Maximum allowed daily memory-time quota (applicable on dynamic apps only).')
+  dailyMemoryTimeQuota: int?
+
+  @description('Optional. Setting this value to false disables the app (takes the app offline).')
+  enabled: bool?
+
+  @description('Optional. Enable/Disable usage telemetry for module.')
+  enableTelemetry: bool?
+
+  @description('Optional. Hostname SSL states are used to manage the SSL bindings for app\'s hostnames.')
+  hostNameSslStates: array?
+
+  @description('Optional. Hyper-V sandbox.')
+  hyperV: bool?
+
+  @description('Optional. Allow or block all public traffic.')
+  publicNetworkAccess: ('Enabled' | 'Disabled')?
+
+  @description('Optional. Site redundancy mode.')
+  redundancyMode: ('ActiveActive' | 'Failover' | 'GeoRedundant' | 'Manual' | 'None')?
+
+  @description('Optional. Names of hybrid connection relays to connect app with.')
+  hybridConnectionRelays: array?
 }

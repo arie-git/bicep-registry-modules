@@ -1,8 +1,9 @@
 metadata name = 'Cognitive Services'
 metadata description = 'This module deploys a Cognitive Service.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20250214'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of this module requires the following parameter values:
+- kind: 'AIServices', 'OpenAI', or 'TextAnalytics' (per drcp-ai-04)
 - disableLocalAuth: true
 - publicNetworkAccess: 'Disabled'
 - managedIdentities: not empty
@@ -11,32 +12,11 @@ metadata compliance = '''Compliant usage of this module requires the following p
 @description('Required. The name of Cognitive Services account.')
 param name string
 
-@description('Required. Kind of the Cognitive Services account. Use \'Get-AzCognitiveServicesAccountSku\' to determine a valid combinations of \'kind\' and \'SKU\' for your Azure region.')
+@description('Required. Kind of the Cognitive Services account. Restricted to policy-approved kinds per drcp-ai-04 (AIServicesAllowSupportedKinds).')
 @allowed([
   'AIServices'
-  'AnomalyDetector'
-  'CognitiveServices'
-  'ComputerVision'
-  'ContentModerator'
-  'ContentSafety'
-  'ConversationalLanguageUnderstanding'
-  'CustomVision.Prediction'
-  'CustomVision.Training'
-  'Face'
-  'FormRecognizer'
-  'HealthInsights'
-  'ImmersiveReader'
-  'Internal.AllInOne'
-  'LUIS'
-  'LUIS.Authoring'
-  'LanguageAuthoring'
-  'MetricsAdvisor'
   'OpenAI'
-  'Personalizer'
-  'QnAMaker.v2'
-  'SpeechServices'
   'TextAnalytics'
-  'TextTranslation'
 ])
 param kind string
 
@@ -59,6 +39,7 @@ param kind string
   'S7'
   'S8'
   'S9'
+  'DC0'
 ])
 param sku string = 'S0'
 
@@ -113,11 +94,14 @@ param allowedFqdnList array?
 @description('Optional. The API properties for special APIs.')
 param apiProperties object?
 
-@description('Optional. The user owned AML workspace properties.')
-param amlWorkspace object?
+@description('Optional. Specifies in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
+param networkInjections networkInjectionType?
 
-@description('Optional. The Cognitive Services Rai Monitor Config.')
-param raiMonitorConfig object?
+@description('Optional. Enable/Disable project management feature for AI Foundry.')
+param allowProjectManagement bool?
+
+@description('Optional. Commitment plans to deploy for the cognitive services account.')
+param commitmentPlans commitmentPlanType[]?
 
 @description('''Optional. Allow only Azure AD authentication. Should be enabled for security reasons.
 
@@ -327,27 +311,29 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
-  name: last(split((customerManagedKey.?keyVaultResourceId ?? 'dummyVault'), '/'))
+var isHSMManagedCMK = split(customerManagedKey.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
+
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
+  name: last(split(customerManagedKey.?keyVaultResourceId!, '/'))
   scope: resourceGroup(
-    split((customerManagedKey.?keyVaultResourceId ?? '//'), '/')[2],
-    split((customerManagedKey.?keyVaultResourceId ?? '////'), '/')[4]
+    split(customerManagedKey.?keyVaultResourceId!, '/')[2],
+    split(customerManagedKey.?keyVaultResourceId!, '/')[4]
   )
 
-  resource cMKKey 'keys@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
-    name: customerManagedKey.?keyName ?? 'dummyKey'
+  resource cMKKey 'keys@2025-05-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
+    name: customerManagedKey.?keyName!
   }
 }
 
-resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
-  name: last(split(customerManagedKey.?userAssignedIdentityResourceId ?? 'dummyMsi', '/'))
+resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
+  name: last(split(customerManagedKey.?userAssignedIdentityResourceId!, '/'))
   scope: resourceGroup(
-    split((customerManagedKey.?userAssignedIdentityResourceId ?? '//'), '/')[2],
-    split((customerManagedKey.?userAssignedIdentityResourceId ?? '////'), '/')[4]
+    split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[2],
+    split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[4]
   )
 }
 
-resource cognitiveService 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
+resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   name: name
   kind: kind
   identity: identity
@@ -357,27 +343,29 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
     name: sku
   }
   properties: {
+    allowProjectManagement: allowProjectManagement
     customSubDomainName: customSubDomainName
-    networkAcls: !empty(networkAcls)
-      ? union(
-          {
-            defaultAction: networkAcls.?defaultAction ?? 'Deny'
-            virtualNetworkRules: networkAcls.?virtualNetworkRules
-            ipRules: networkAcls.?ipRules
-          },
-          (contains(networkAcls!, 'bypass') ? { bypass: networkAcls.?bypass } : {}) // setting `bypass` to `null` is not supported
-        )
-      : {
-          // New default case that enables the firewall by default
-          bypass: 'None'
-          defaultAction: 'Deny'
+    networkAcls: !empty(networkAcls ?? {})
+      ? {
+          defaultAction: networkAcls.?defaultAction
+          virtualNetworkRules: networkAcls.?virtualNetworkRules ?? []
+          ipRules: networkAcls.?ipRules ?? []
         }
+      : null
+    #disable-next-line BCP036
+    networkInjections: !empty(networkInjections)
+      ? [
+          {
+            scenario: networkInjections.?scenario
+            subnetArmId: networkInjections.?subnetResourceId
+            useMicrosoftManagedNetwork: networkInjections.?useMicrosoftManagedNetwork ?? false
+          }
+        ]
+      : null
     publicNetworkAccess: publicNetworkAccess != null
       ? publicNetworkAccess
       : (!empty(networkAcls) ? 'Enabled' : 'Disabled')
     allowedFqdnList: allowedFqdnList
-    amlWorkspace: amlWorkspace
-    raiMonitorConfig: raiMonitorConfig
     apiProperties: apiProperties
     disableLocalAuth: disableLocalAuth
     encryption: !empty(customerManagedKey)
@@ -385,13 +373,17 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
           keySource: 'Microsoft.KeyVault'
           keyVaultProperties: {
             identityClientId: !empty(customerManagedKey.?userAssignedIdentityResourceId ?? '')
-              ? cMKUserAssignedIdentity.properties.clientId
+              ? cMKUserAssignedIdentity!.properties.clientId
               : null
-            keyVaultUri: cMKKeyVault.properties.vaultUri
+            keyVaultUri: !isHSMManagedCMK
+              ? cMKKeyVault!.properties.vaultUri
+              : 'https://${last(split((customerManagedKey!.keyVaultResourceId), '/'))}.managedhsm.azure.net/'
             keyName: customerManagedKey!.keyName
-            keyVersion: !empty(customerManagedKey.?keyVersion ?? '')
-              ? customerManagedKey!.keyVersion
-              : last(split(cMKKeyVault::cMKKey.properties.keyUriWithVersion, '/'))
+            keyVersion: !empty(customerManagedKey.?keyVersion)
+              ? customerManagedKey!.keyVersion!
+              : (!isHSMManagedCMK
+                  ? last(split(cMKKeyVault::cMKKey!.properties.keyUriWithVersion, '/'))
+                  : fail('Managed HSM CMK encryption requires specifying the \'keyVersion\'.'))
           }
         }
       : null
@@ -404,7 +396,7 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
 }
 
 @batchSize(1)
-resource cognitiveService_deployments 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = [
+resource cognitiveService_deployments 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = [
   for (deployment, index) in (deployments ?? []): {
     parent: cognitiveService
     name: deployment.?name ?? '${name}-deployments'
@@ -429,6 +421,14 @@ resource cognitiveService_lock 'Microsoft.Authorization/locks@2020-05-01' = if (
   }
   scope: cognitiveService
 }
+
+resource cognitiveService_commitmentPlans 'Microsoft.CognitiveServices/accounts/commitmentPlans@2025-06-01' = [
+  for plan in (commitmentPlans ?? []): {
+    parent: cognitiveService
+    name: '${plan.hostingModel}-${plan.planType}'
+    properties: plan
+  }
+]
 
 resource cognitiveService_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [
   for (diagnosticSetting, index) in (diagnosticSettings ?? []): {
@@ -609,8 +609,54 @@ type endpointsType = {
   endpoint: string?
 }?
 
+@export()
+@description('The type for a disconnected container commitment plan.')
+type commitmentPlanType = {
+  @description('Required. Whether the plan should auto-renew at the end of the current commitment period.')
+  autoRenew: bool
+
+  @description('Required. The current commitment configuration.')
+  current: {
+    @description('Required. The number of committed instances (e.g., number of containers or cores).')
+    count: int
+
+    @description('Required. The tier of the commitment plan (e.g., T1, T2).')
+    tier: string
+  }
+
+  @description('Required. The hosting model for the commitment plan. (e.g., DisconnectedContainer, ConnectedContainer, ProvisionedWeb, Web).')
+  hostingModel: string
+
+  @description('Required. The plan type indicating which capability the plan applies to (e.g., NTTS, STT, CUSTOMSTT, ADDON).')
+  planType: string
+
+  @description('Optional. The unique identifier of an existing commitment plan to update. Set to null to create a new plan.')
+  commitmentPlanGuid: string?
+
+  @description('Optional. The configuration of the next commitment period, if scheduled.')
+  next: {
+    @description('Required. The number of committed instances for the next period.')
+    count: int
+
+    @description('Required. The tier for the next commitment period.')
+    tier: string
+  }?
+}
+
+@export()
+@description('Type for network configuration in AI Foundry where virtual network injection occurs to secure scenarios like Agents entirely within a private network.')
+type networkInjectionType = {
+  @description('Required. The scenario for the network injection.')
+  scenario: 'agent' | 'none'
+
+  @description('Required. The Resource ID of the subnet on the Virtual Network on which to inject.')
+  subnetResourceId: string
+
+  @description('Optional. Whether to use Microsoft Managed Network. Defaults to false.')
+  useMicrosoftManagedNetwork: bool?
+}
+
 import {
-  customerManagedKeyManagedDiskType
   customerManagedKeyType
   diagnosticSettingType
   lockType

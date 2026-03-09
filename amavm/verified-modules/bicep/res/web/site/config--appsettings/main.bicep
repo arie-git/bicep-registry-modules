@@ -75,11 +75,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
   )
 }
 
-resource app 'Microsoft.Web/sites@2024-04-01' existing = {
+resource app 'Microsoft.Web/sites@2025-03-01' existing = {
   name: appName
 }
 
-resource appSettings 'Microsoft.Web/sites/config@2024-04-01' = {
+resource appSettings 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   kind: kind
   parent: app
