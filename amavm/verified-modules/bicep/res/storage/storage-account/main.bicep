@@ -279,7 +279,22 @@ param sasExpirationAction string = 'Log'
 ])
 param keyType string = 'Account'
 
+@description('Optional. The property is immutable and can only be set to true at the account creation time. When set to true, it enables object level immutability for all the new containers in the account by default. Cannot be enabled for ADLS Gen2 storage accounts.')
+param immutableStorageWithVersioning object?
+
+@description('Optional. Configuration for exporting storage account keys and connection strings to a Key Vault.')
+param secretsExportConfiguration secretsExportConfigurationType?
+
+import { objectReplicationPolicyRuleType } from 'object-replication-policy/policy/main.bicep'
+@description('Optional. Object replication policies to configure on this storage account.')
+param objectReplicationPolicies objectReplicationPolicyType[]?
+
 // ------------------------------------------------------------------------------------------------------------------------------
+
+#disable-next-line no-unused-vars
+var immutabilityValidation = enableHierarchicalNamespace == true && !empty(immutableStorageWithVersioning)
+  ? fail('Configuration error: Immutable storage with versioning cannot be enabled when hierarchical namespace is enabled.')
+  : null
 
 var supportsBlobService = kind == 'BlockBlobStorage' || kind == 'BlobStorage' || kind == 'StorageV2' || kind == 'Storage'
 var supportsFileService = kind == 'FileStorage' || kind == 'StorageV2' || kind == 'Storage'
@@ -480,6 +495,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
     azureFilesIdentityBasedAuthentication: !empty(azureFilesIdentityBasedAuthentication)
       ? azureFilesIdentityBasedAuthentication
       : null
+    immutableStorageWithVersioning: immutableStorageWithVersioning
   }
 }
 
@@ -694,6 +710,69 @@ module storageAccount_tableServices 'table-service/main.bicep' = if (!empty(tabl
   }
 }
 
+// Secrets Export
+module secretsExport 'modules/keyVaultExport.bicep' = if (secretsExportConfiguration != null) {
+  name: '${uniqueString(deployment().name, location)}-secrets-kv'
+  scope: resourceGroup(
+    split(secretsExportConfiguration.?keyVaultResourceId!, '/')[2],
+    split(secretsExportConfiguration.?keyVaultResourceId!, '/')[4]
+  )
+  params: {
+    keyVaultName: last(split(secretsExportConfiguration.?keyVaultResourceId!, '/'))
+    secretsToSet: union(
+      [],
+      contains(secretsExportConfiguration!, 'accessKey1Name')
+        ? [
+            {
+              name: secretsExportConfiguration!.?accessKey1Name
+              value: storageAccount.listKeys().keys[0].value
+            }
+          ]
+        : [],
+      contains(secretsExportConfiguration!, 'connectionString1Name')
+        ? [
+            {
+              name: secretsExportConfiguration!.?connectionString1Name
+              value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+            }
+          ]
+        : [],
+      contains(secretsExportConfiguration!, 'accessKey2Name')
+        ? [
+            {
+              name: secretsExportConfiguration!.?accessKey2Name
+              value: storageAccount.listKeys().keys[1].value
+            }
+          ]
+        : [],
+      contains(secretsExportConfiguration!, 'connectionString2Name')
+        ? [
+            {
+              name: secretsExportConfiguration!.?connectionString2Name
+              value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[1].value};EndpointSuffix=${environment().suffixes.storage}'
+            }
+          ]
+        : []
+    )
+  }
+}
+
+// Object Replication Policies
+module storageAccount_objectReplicationPolicies 'object-replication-policy/main.bicep' = [
+  for (policy, index) in (objectReplicationPolicies ?? []): {
+    name: '${uniqueString(deployment().name, location)}-Storage-ObjRepPolicy-${index}'
+    params: {
+      storageAccountName: storageAccount.name
+      destinationAccountResourceId: policy.destinationStorageAccountResourceId
+      enableMetrics: policy.?enableMetrics ?? false
+      rules: policy.?rules
+    }
+    dependsOn: [
+      storageAccount_blobServices
+    ]
+  }
+]
+
 @description('The resource ID of the deployed storage account.')
 output resourceId string = storageAccount.id
 
@@ -740,6 +819,11 @@ output systemAssignedMIPrincipalId string = storageAccount.?identity.?principalI
 @description('The location the resource was deployed into.')
 output location string = storageAccount.location
 
+@description('A hashtable of references to the secrets exported to the provided Key Vault. The key of each reference is each secret\'s name.')
+output exportedSecrets object = (secretsExportConfiguration != null)
+  ? toObject(secretsExport!.outputs.secretsSet, secret => last(split(secret.secretResourceId, '/')), secret => secret)
+  : {}
+
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = allowSharedKeyAccess || !requireInfrastructureEncryption || allowBlobPublicAccess || contains(['TLS1_0','TLS1_1'],minimumTlsVersion) || (publicNetworkAccess!='Disabled') || !supportsHttpsTrafficOnly || !empty(localUsers) || isLocalUserEnabled || allowCrossTenantReplication || enableSftp || (!empty(networkAcls) && ((networkAcls.?defaultAction ?? 'Deny') != 'Deny'))
 
@@ -763,3 +847,37 @@ import { fileServiceType } from 'file-service/main.bicep'
 import { queueServiceType } from 'queue-service/main.bicep'
 import { tableServiceType } from 'table-service/main.bicep'
 import { storageManagementPolicyRuleType } from 'management-policy/main.bicep'
+
+@description('Configuration for exporting storage account keys and connection strings to a Key Vault.')
+type secretsExportConfigurationType = {
+  @description('Required. The resource ID of the Key Vault where to store the keys and connection strings.')
+  keyVaultResourceId: string
+
+  @description('Optional. The accessKey1 secret name to create.')
+  accessKey1Name: string?
+
+  @description('Optional. The connectionString1 secret name to create.')
+  connectionString1Name: string?
+
+  @description('Optional. The accessKey2 secret name to create.')
+  accessKey2Name: string?
+
+  @description('Optional. The connectionString2 secret name to create.')
+  connectionString2Name: string?
+}
+
+@export()
+@description('The type of an object replication policy.')
+type objectReplicationPolicyType = {
+  @description('Optional. The name of the object replication policy. If not provided, a GUID will be generated.')
+  name: string?
+
+  @description('Required. The resource ID of the destination storage account.')
+  destinationStorageAccountResourceId: string
+
+  @description('Optional. Indicates whether metrics are enabled for the object replication policy.')
+  enableMetrics: bool?
+
+  @description('Required. The storage account object replication rules.')
+  rules: objectReplicationPolicyRuleType[]
+}

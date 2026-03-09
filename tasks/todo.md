@@ -489,7 +489,7 @@ For each module: diff upstream vs fork params, add new params/types/resources, r
 
 ### Critical Priority (>10 version gap)
 
-- [~] SYNC-01: storage/storage-account — 0.10 → 0.32 (gap: 22) — PARTIAL: API versions updated to 2025-01-01 (all child modules), new SKUs, Cold tier, TLS 1.3, sasExpirationAction. Remaining: secretsExport, objectReplicationPolicies, immutableStorageWithVersioning, resourceInput type refactoring
+- [x] SYNC-01: storage/storage-account — 0.10 → 0.32 (gap: 22) — DONE: API versions to 2025-01-01 (all child modules), new SKUs, Cold tier, TLS 1.3, sasExpirationAction, secretsExport (keyVaultExport module), objectReplicationPolicies (policy child modules), immutableStorageWithVersioning (with HNS validation), upstream.json updated to 0.32
 - [x] SYNC-02: sql/server — 0.4 → 0.21 (gap: 17) — DONE: API versions updated to 2023-08-01 (all 13 child modules), added isIPv6Enabled + connectionPolicy params, connection policy resource, removed TLS 1.0/1.1/None, updated VNet ref to 2024-05-01, updated deployments API, removed unused imports, storage refs in nested modules updated to 2025-01-01
 - [x] SYNC-03: operational-insights/workspace — 0.3 → 0.15 (gap: 12) — DONE: API versions updated to 2025-02-01 (all 7 child modules), deployments API to 2024-07-01, storage ref in storage-insight-config to 2025-01-01
 - [x] SYNC-04: web/site — 0.11 → 0.22 (gap: 11) — DONE: API versions updated to 2025-03-01 (all 14 child modules), removed deprecated vnet booleans, added outboundVnetRouting with resourceInput typing
