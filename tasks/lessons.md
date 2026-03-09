@@ -44,6 +44,15 @@ The upstream AVM module (`microsoft-avm/avm/res/`) contains the correct paramete
 - **Test cases**: Upstream test cases show correct parameter usage. When replacing/removing params, check upstream tests for the equivalent new usage pattern and replicate it in AMAVM tests.
 - **Don't invent types**: If upstream uses `resourceInput<'Microsoft.Web/sites@2025-03-01'>.properties.outboundVnetRouting?`, use exactly that — not `object?`.
 
+### 15. Local PE/ACR reference switching for dev builds
+When modules reference other modules via ACR (`br/amavm:res/network/private-endpoint:0.2.0`), builds fail with BCP192 without `az login`. For local development/CI validation:
+1. Switch ACR refs to local relative paths (e.g., `../../network/private-endpoint/main.bicep`)
+2. Run `buildBicepFiles.ps1` to validate all modules build
+3. Fix any output property name mismatches (the local PE module uses `customDnsConfigs` and `networkInterfaceResourceIds`, not the old ACR module's `customDnsConfig` and `networkInterfaceIds`)
+4. **IMPORTANT: Restore ACR references before committing** — the local paths are for dev only
+5. Same applies to other ACR refs: WAF policy (`application-gateway-web-application-firewall-policy`), private-dns-zone, kubernetes-configuration/extension
+6. You can build a single module with: `./utils/buildBicepFiles.ps1 -modulesSubpath 'res/<provider>/<resource>' -moduleName 'res/<provider>/<resource>'`
+
 ### 14. Parameter defaults must be driven by compliance policy
 Input parameters (optional, required, conditional) and their defaults should be based on required compliance from `policy/Generic/`. The AMAVM fork's purpose is to enforce policy compliance by default:
 - If a policy requires a value, make the param `required` or set a compliant default

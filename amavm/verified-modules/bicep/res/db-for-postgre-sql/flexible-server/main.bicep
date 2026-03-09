@@ -19,8 +19,6 @@ param administratorLogin string?
 @secure()
 param administratorLoginPassword string?
 
-@description('Optional. Tenant id of the server.')
-param tenantId string?
 
 @description('Optional. The Azure AD administrators when AAD authentication enabled. This is the only copmliant authentication method.')
 param administrators administratorType[]?

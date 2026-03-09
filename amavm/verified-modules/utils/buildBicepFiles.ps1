@@ -43,7 +43,8 @@ Write-Host "Building modules under $resolvedPath"
 # Capture errors while building
 $build_errors = New-Object System.Collections.ArrayList
 # Each folder 3 levels and below the root can contain modules (<res|ptn|utl>/<provider>/<resource>/[<subresource>]/[<subresource>]/[...] etc )
-$modules = Get-ChildItem -Path $resolvedPath -Recurse -Include *.bicep
+# Using -Filter instead of -Include for better performance (single-pass filesystem filtering)
+$modules = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'main.bicep'
 foreach ($filename in $modules) {
     # Module name is a directory path between the bicep repository root and the main.bicep of the module
     $currentModuleName = (Split-Path $filename -Parent).Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")

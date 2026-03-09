@@ -436,8 +436,8 @@ output privateEndpoints array = [
     name: slot_privateEndpoints[i].outputs.name
     resourceId: slot_privateEndpoints[i].outputs.resourceId
     groupId: slot_privateEndpoints[i].outputs.groupId
-    customDnsConfig: slot_privateEndpoints[i].outputs.customDnsConfig
-    networkInterfaceIds: slot_privateEndpoints[i].outputs.networkInterfaceIds
+    customDnsConfigs: slot_privateEndpoints[i].outputs.customDnsConfigs
+    networkInterfaceResourceIds: slot_privateEndpoints[i].outputs.networkInterfaceResourceIds
   }
 ]
 

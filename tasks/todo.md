@@ -382,6 +382,37 @@ Commented-out: podIdentityProfile parameters (allowNetworkPluginKubenet, enable,
 
 ---
 
+## BUILD-VALIDATE: Local Build Validation (dev-only PE/ACR ref switch)
+
+Temporarily switch ACR module references to local paths, run `buildBicepFiles.ps1`, fix errors, then **restore ACR refs before committing**.
+
+### BV-1: Switch private-endpoint ACR refs to local paths
+
+- [x] Grep all `br/amavm:res/network/private-endpoint:0.2.0` references (20 files)
+- [x] Replace with relative local paths (`../../network/private-endpoint/main.bicep`, etc.)
+- [x] Fix PE output property name mismatches: `customDnsConfig` → `customDnsConfigs`, `networkInterfaceIds` → `networkInterfaceResourceIds` (5 modules: cognitive-services, web/site, web/site/slot, web/static-site, network/application-gateway)
+- [x] Switch WAF policy ACR ref to local path in network/application-gateway
+- [x] Remove unused `tenantId` param in db-for-postgre-sql/flexible-server
+- [x] Full `buildBicepFiles.ps1` passes (only 2 BCP192 remain: kubernetes-configuration/extension and private-dns-zone — not in fork)
+- [ ] Restore all ACR refs before committing (PE, WAF policy)
+
+### BV-2: Remaining ACR refs (modules not in fork)
+
+These 2 modules reference ACR modules that don't exist locally. They need either the module to be forked or `az login` for validation:
+
+| Module | ACR Reference | Status |
+|---|---|---|
+| container-service/managed-cluster | `br/amavm:avm/res/kubernetes-configuration/extension:0.3.8` | NOT IN FORK — BCP192 expected |
+| web/static-site | `br/amavm:res/network/private-dns-zone:0.2.0` | NOT IN FORK — BCP192 expected |
+
+### BV-3: README generation validation
+
+- [ ] Run `buildBicepFiles.ps1 -buildReadme 'True'` to generate READMEs
+- [ ] Run `compareReadMe.ps1` to validate README consistency
+- [ ] Fix any README mismatches
+
+---
+
 ## POLICY: Compliance Audits
 
 Each whitelisted module audited by Azure Policy Expert against `policy/Generic/*.json` and `policy/knowledge_base/`.
@@ -432,19 +463,36 @@ Comparison of `amavm/verified-modules/utils/` against `microsoft-avm/avm/` upstr
 
 | # | File | Bug | Severity |
 |---|---|---|---|
+| # | File | Bug | Severity |
+|---|---|---|---|
 | 1 | `publishToBCR.ps1` | Hardcoded ACR name — should use pipeline variable | HIGH |
 | 2 | `mergeDocumentationTocs.ps1` | Hardcoded storage URL — should use pipeline variable | HIGH |
 | 3 | `convertreadmetohtml.py` | Version string appends `.0` unconditionally (e.g., `1.0` → `1.0.0`, but `1.0.0` → `1.0.0.0`) | MEDIUM |
 | 4 | `convertreadmetohtml.py` | No error handling for regex substitutions — silent failures on unexpected README format | MEDIUM |
 | 5 | `setModuleReadMe.ps1` | Outdated comment referencing upstream sync that no longer applies | LOW |
 | 6 | `buildBicepFiles.ps1` | Slow recursive file scanning — could use `-Filter` parameter for performance | LOW |
+| 7 | `publishToBCR.ps1` | `$filename` variable leak — `az bicep restore` uses outer loop var instead of `$moduleFileFullPath` | HIGH |
+| 8 | `setBCRinLinter.ps1` | Hardcoded ACR name — should use env variable | HIGH |
 
-- [ ] Fix hardcoded ACR name in `publishToBCR.ps1`
-- [ ] Fix hardcoded storage URL in `mergeDocumentationTocs.ps1`
-- [ ] Fix version `.0` appending bug in `convertreadmetohtml.py`
-- [ ] Add regex error handling in `convertreadmetohtml.py`
-- [ ] Clean up outdated comments in `setModuleReadMe.ps1`
-- [ ] Optimize file scanning in `buildBicepFiles.ps1`
+- [x] Fix hardcoded ACR name in `publishToBCR.ps1` — now uses `$env:AMAVM_ACR_NAME` with validation
+- [x] Fix hardcoded ACR name in `setBCRinLinter.ps1` — now uses `$env:AMAVM_ACR_NAME` with validation
+- [x] Fix hardcoded storage URL in `mergeDocumentationTocs.ps1` — now uses `$env:AMAVM_DOCUMENTATION_STORAGE_URL`
+- [x] Fix version `.0` appending bug in `convertreadmetohtml.py` — now pads to exactly 3 segments
+- [x] Add regex error handling in `convertreadmetohtml.py` — fallback module name on parse failure
+- [x] Clean up outdated comments in `setModuleReadMe.ps1` — updated upstream sync date
+- [x] Optimize file scanning in `buildBicepFiles.ps1` — `-Filter 'main.bicep'` instead of `-Include *.bicep`
+- [x] Optimize file scanning in `publishToBCR.ps1` — same `-Filter 'main.bicep'` optimization
+- [x] Fix `$filename` variable leak in `publishToBCR.ps1` — changed to `$moduleFileFullPath`
+- [x] Fix hardcoded `$documentationUri` in `publishToBCR.ps1` — now uses `$env:AMAVM_DOCUMENTATION_URI` with fallback
+
+### FEAT-6b: Upstream Sync for Shared Utils
+
+- [x] Sync `Get-SpecsAlignedResourceName.ps1` — added `service/product/policy` case from upstream
+- [x] Partial sync `setModuleReadMe.ps1` — applied safe upstream improvements:
+  - Variable extraction for `$isDeprecated`/`$isOrphaned`/`$isMovedToAVM` (cleaner code)
+  - `.Trim()` on orphaned content lines (bug fix)
+  - Test folder reference path in usage examples
+  - Note: AMAVM-specific customizations preserved (private ACR, compliance section, telemetry text, specificBuiltInRoleNames)
 
 ### FEAT-7: Missing Features vs Upstream
 

@@ -391,8 +391,8 @@ output privateEndpoints array = [
     name: staticSite_privateEndpoints[i].outputs.name
     resourceId: staticSite_privateEndpoints[i].outputs.resourceId
     groupId: staticSite_privateEndpoints[i].outputs.groupId
-    customDnsConfig: staticSite_privateEndpoints[i].outputs.customDnsConfig
-    networkInterfaceIds: staticSite_privateEndpoints[i].outputs.networkInterfaceIds
+    customDnsConfigs: staticSite_privateEndpoints[i].outputs.customDnsConfigs
+    networkInterfaceResourceIds: staticSite_privateEndpoints[i].outputs.networkInterfaceResourceIds
   }
 ]
 

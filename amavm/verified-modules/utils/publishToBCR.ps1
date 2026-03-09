@@ -1,15 +1,20 @@
 param(
     [Parameter(Mandatory=$false)]
-    [string]$acrName= "s2amavmdevsecacr",
+    [string]$acrName= $env:AMAVM_ACR_NAME,
     [Parameter(Mandatory=$false)]
     [string]$modulesRootPath= "./bicep/",
     [Parameter(Mandatory=$false)]
     [string]$modulesSubpath= "",
     [Parameter(Mandatory=$false)]
-    [string]$documentationUri = "https://dev.azure.com/connectdrcpapg1/S02-App-AMAVM/_git/verified-modules?path=/bicep",
+    [string]$documentationUri = $env:AMAVM_DOCUMENTATION_URI ?? "https://dev.azure.com/connectdrcpapg1/S02-App-AMAVM/_git/verified-modules?path=/bicep",
     [Parameter(Mandatory=$false)]
     [string]$moduleName= ""
 )
+
+# Validate required parameters
+if ([string]::IsNullOrEmpty($acrName)) {
+    throw "ACR name is required. Set the AMAVM_ACR_NAME environment variable or pass -acrName parameter."
+}
 
 # Capture errors while building
 $global:publish_errors = New-Object System.Collections.ArrayList
@@ -78,7 +83,7 @@ function Publish-Module-To-AMAVM([string]$module, [string]$resolvedPath, [string
 
         # Publish the module
         Write-Host "=> ${module}:${version}.${patch}"
-        az bicep restore --file $filename --force
+        az bicep restore --file $moduleFileFullPath --force
         if ($LASTEXITCODE -gt 0) {
             throw "Code:$LASTEXITCODE. Error restoring bicep modules."
         }
@@ -124,7 +129,7 @@ catch {
 Write-Host "Publishing modules under $resolvedSubpath to $acrName"
 
 # Each folder 3 levels and below the root can contain modules (<res|ptn>/<provider>/<resource>/[<subresource>]/[<subresource>]/[...] etc )
-$modules = Get-ChildItem -Path $resolvedSubpath -Include *.bicep -Recurse
+$modules = Get-ChildItem -Path $resolvedSubpath -Filter 'main.bicep' -Recurse
 foreach ($filename in $modules) {
     # Module name is a string between repo root and main.bicep
     $currentModuleName = (Split-Path $filename -Parent).Replace($resolvedPath,"").Replace("\","/").TrimStart("/")

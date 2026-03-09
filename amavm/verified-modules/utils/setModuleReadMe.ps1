@@ -1,6 +1,6 @@
 ﻿#requires -version 7.3
 
-# UPSTREAM as of: 2025-09-12
+# UPSTREAM as of: 2026-03-09 (partial sync — AMAVM-specific customizations preserved)
 
 #region helper functions
 <#
@@ -1656,6 +1656,13 @@ function Set-UsageExamplesSection {
             )
         }
 
+        # Adding folder reference
+        $relativeTestFilePath = '/tests/e2e/{0}' -f (Split-Path (Split-Path $testFilePath -Parent) -Leaf)
+        $testFilesContent += @(
+            "You can find the full example and the setup of its dependencies in the deployment test folder path [$relativeTestFilePath]"
+            ''
+        )
+
         # If the deployment of the test is skipped, add a note
         $e2eIgnoreFilePath = Join-Path (Split-Path -Path $testFilePath -Parent) '.e2eignore'
         if (Test-Path $e2eIgnoreFilePath) {
@@ -2014,31 +2021,34 @@ function Initialize-ReadMe {
 
     # Deprecation file existing?
     $deprecatedModuleFilePath = Join-Path (Split-Path $ReadMeFilePath -Parent) 'DEPRECATED.md'
-    if (Test-Path $deprecatedModuleFilePath) {
+    $isDeprecated = Test-Path $deprecatedModuleFilePath
+    if ($isDeprecated) {
         $deprecatedModuleFileContent = Get-Content -Path $deprecatedModuleFilePath | ForEach-Object { "> $_" }
     }
 
     # Orphaned readme existing?
     $orphanedReadMeFilePath = Join-Path (Split-Path $ReadMeFilePath -Parent) 'ORPHANED.md'
-    if (Test-Path $orphanedReadMeFilePath) {
-        $orphanedReadMeContent = Get-Content -Path $orphanedReadMeFilePath | ForEach-Object { "> $_" }
+    $isOrphaned = Test-Path $orphanedReadMeFilePath
+    if ($isOrphaned) {
+        $orphanedReadMeContent = Get-Content -Path $orphanedReadMeFilePath | ForEach-Object { "> $_".Trim() }
     }
 
     # Moved readme existing?
     $movedReadMeFilePath = Join-Path (Split-Path $ReadMeFilePath -Parent) 'MOVED-TO-AVM.md'
-    if (Test-Path $movedReadMeFilePath) {
+    $isMovedToAVM = Test-Path $movedReadMeFilePath
+    if ($isMovedToAVM) {
         $movedReadMeContent = Get-Content -Path $movedReadMeFilePath | ForEach-Object { "> $_" }
     }
 
     $initialContent = @(
         "# $moduleName ``[$headerType]``",
         '',
-        ((Test-Path $deprecatedModuleFilePath) ? $deprecatedModuleFileContent : $null),
-        ((Test-Path $deprecatedModuleFilePath) ? '' : $null),
-        ((Test-Path $orphanedReadMeFilePath) ? $orphanedReadMeContent : $null),
-        ((Test-Path $orphanedReadMeFilePath) ? '' : $null),
-        ((Test-Path $movedReadMeFilePath) ? $movedReadMeContent : $null),
-        ((Test-Path $movedReadMeFilePath) ? '' : $null),
+        ($isDeprecated ? $deprecatedModuleFileContent : $null),
+        ($isDeprecated ? '' : $null),
+        ($isOrphaned ? $orphanedReadMeContent : $null),
+        ($isOrphaned ? '' : $null),
+        ($isMovedToAVM ? $movedReadMeContent : $null),
+        ($isMovedToAVM ? '' : $null),
         $moduleDescription,
         ''
         '## Compliance',

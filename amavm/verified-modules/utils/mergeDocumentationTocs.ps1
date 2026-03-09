@@ -19,7 +19,7 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$sourcesTocPath="utils/html-assets/readmePublisher/menu/toc.json",
     [Parameter(Mandatory=$false)]
-    [string]$additionalTocPath="https://s2amavmdevsecsta.z1.web.core.windows.net/menu/toc.json",
+    [string]$additionalTocPath=$env:AMAVM_DOCUMENTATION_STORAGE_URL ? "$($env:AMAVM_DOCUMENTATION_STORAGE_URL)/menu/toc.json" : "",
     [Parameter(Mandatory=$false)]
     [string]$resultsPath="newtoc.json"
 )

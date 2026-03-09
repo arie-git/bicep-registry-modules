@@ -515,8 +515,8 @@ output privateEndpoints array = [
     name: applicationGateway_privateEndpoints[i].outputs.name
     resourceId: applicationGateway_privateEndpoints[i].outputs.resourceId
     groupId: applicationGateway_privateEndpoints[i].outputs.groupId
-    customDnsConfig: applicationGateway_privateEndpoints[i].outputs.customDnsConfig
-    networkInterfaceIds: applicationGateway_privateEndpoints[i].outputs.networkInterfaceIds
+    customDnsConfigs: applicationGateway_privateEndpoints[i].outputs.customDnsConfigs
+    networkInterfaceResourceIds: applicationGateway_privateEndpoints[i].outputs.networkInterfaceResourceIds
   }
 ]
 

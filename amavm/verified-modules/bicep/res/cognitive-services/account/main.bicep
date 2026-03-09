@@ -547,8 +547,8 @@ output privateEndpoints array = [
     name: cognitiveService_privateEndpoints[i].outputs.name
     resourceId: cognitiveService_privateEndpoints[i].outputs.resourceId
     groupId: cognitiveService_privateEndpoints[i].outputs.groupId
-    customDnsConfig: cognitiveService_privateEndpoints[i].outputs.customDnsConfig
-    networkInterfaceIds: cognitiveService_privateEndpoints[i].outputs.networkInterfaceIds
+    customDnsConfigs: cognitiveService_privateEndpoints[i].outputs.customDnsConfigs
+    networkInterfaceResourceIds: cognitiveService_privateEndpoints[i].outputs.networkInterfaceResourceIds
   }
 ]
 

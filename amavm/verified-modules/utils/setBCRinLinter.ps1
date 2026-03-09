@@ -1,9 +1,13 @@
 param(
     [Parameter(Mandatory=$false)]
-    [string]$acrName= "s2amavmdevsecacr",
+    [string]$acrName= $env:AMAVM_ACR_NAME,
     [Parameter(Mandatory=$false)]
     [string]$modulesRootPath= "./bicep/"
 )
+
+if ([string]::IsNullOrEmpty($acrName)) {
+    throw "ACR name is required. Set the AMAVM_ACR_NAME environment variable or pass -acrName parameter."
+}
 
 $settingsFileName = Join-Path $modulesRootPath "../" "bicepconfig.json"
 if(!(Test-Path $settingsFileName -PathType Leaf)) {

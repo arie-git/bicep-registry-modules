@@ -98,8 +98,12 @@ def main():
             print(f"File [{module_version_file_path}] does not exist. Not a module. Skipping...")
             continue
 
-        # Get the current version
-        module_version: str = read_json_file(module_version_file_path)['version'] + ".0"
+        # Get the current version — ensure exactly 3 segments (major.minor.patch)
+        raw_version: str = read_json_file(module_version_file_path)['version']
+        version_parts = raw_version.split(".")
+        while len(version_parts) < 3:
+            version_parts.append("0")
+        module_version: str = ".".join(version_parts[:3])
         module_page_id: str = module_version.replace(".","-")
 
         # Get the contents of Markdown README file
@@ -154,7 +158,13 @@ def main():
             # create the complete file path if it doesn't exist
             os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
             # Get the full name of the module from the first line of the Markdown file
-            module_full_name = re.search(r'#\s*(.*?)\s*`', md_file_contents.splitlines()[0]).group(1)
+            first_line_match = re.search(r'#\s*(.*?)\s*`', md_file_contents.splitlines()[0])
+            if first_line_match:
+                module_full_name = first_line_match.group(1)
+            else:
+                # Fallback: use module path as name if README header doesn't match expected format
+                module_full_name = module_relative_path.replace("/", " / ").replace("-", " ").title()
+                print(f"  Warning: Could not parse module name from README header in {md_file_path}. Using fallback: {module_full_name}")
             
             # Now perform all replacements on the layout
             final_html = (

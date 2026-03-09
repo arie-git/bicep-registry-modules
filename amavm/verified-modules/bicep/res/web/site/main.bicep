@@ -923,8 +923,8 @@ output privateEndpoints array = [
     name: app_privateEndpoints[i].outputs.name
     resourceId: app_privateEndpoints[i].outputs.resourceId
     groupId: app_privateEndpoints[i].outputs.groupId
-    customDnsConfig: app_privateEndpoints[i].outputs.customDnsConfig
-    networkInterfaceIds: app_privateEndpoints[i].outputs.networkInterfaceIds
+    customDnsConfigs: app_privateEndpoints[i].outputs.customDnsConfigs
+    networkInterfaceResourceIds: app_privateEndpoints[i].outputs.networkInterfaceResourceIds
   }
 ]
 
