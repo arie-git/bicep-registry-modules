@@ -33,10 +33,10 @@ param managedIdentities managedIdentitiesType?
 ])
 param databaseAccountOfferType string = 'Standard'
 
-@description('Optional. The set of locations enabled for the account. Defaults to the location where the account is deployed.')
+@description('Optional. The set of locations enabled for the account. Defaults to the location where the account is deployed. [Policy: drcp-cosmos-10]')
 param failoverLocations failoverLocationType[]?
 
-@description('Optional. Indicates whether the single-region account is zone redundant. Defaults to true. This property is ignored for multi-region accounts.')
+@description('Optional. Indicates whether the single-region account is zone redundant. Defaults to true. This property is ignored for multi-region accounts. [Policy: drcp-cosmos-10]')
 param zoneRedundant bool = true
 
 @allowed([
@@ -49,7 +49,7 @@ param zoneRedundant bool = true
 @description('Optional. The default consistency level of the account. Defaults to "Session".')
 param defaultConsistencyLevel string = 'Session'
 
-@description('Optional. Opt-out of local authentication and ensure that only Microsoft Entra can be used exclusively for authentication. Defaults to true.')
+@description('Optional. Opt-out of local authentication and ensure that only Microsoft Entra can be used exclusively for authentication. Defaults to true. [Policy: drcp-cosmos-02]')
 param disableLocalAuthentication bool = true
 
 @description('Optional. Flag to indicate whether to enable storage analytics. Defaults to false.')
@@ -64,7 +64,7 @@ param enableFreeTier bool = false
 @description('Optional. Enables the account to write in multiple locations. Periodic backup must be used if enabled. Defaults to false.')
 param enableMultipleWriteLocations bool = false
 
-@description('Optional. Disable write operations on metadata resources (databases, containers, throughput) via account keys. Defaults to true.')
+@description('Optional. Disable write operations on metadata resources (databases, containers, throughput) via account keys. Defaults to true. [Policy: drcp-cosmos-03]')
 param disableKeyBasedMetadataWriteAccess bool = true
 
 @minValue(1)
@@ -151,7 +151,7 @@ param diagnosticSettings diagnosticSettingType
   'EnableMaterializedViews'
   'DeleteAllItemsByPartitionKey'
 ])
-@description('Optional. A list of Azure Cosmos DB specific capabilities for the account.')
+@description('Optional. A list of Azure Cosmos DB specific capabilities for the account. [Policy: drcp-cosmos-06]')
 param capabilitiesToAdd string[]?
 
 @allowed([
@@ -186,10 +186,10 @@ param backupRetentionIntervalInHours int = 8
 @description('Optional. Setting that indicates the type of backup residency. This setting only applies to the periodic backup type. Defaults to "Local".')
 param backupStorageRedundancy string = 'Local'
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is advised to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is advised to use private endpoints whenever possible. [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType
 
-@description('Optional. The network configuration of this module. Defaults to `{ ipRules: [], virtualNetworkRules: [], publicNetworkAccess: \'Disabled\' }`.')
+@description('Optional. The network configuration of this module. Defaults to `{ ipRules: [], virtualNetworkRules: [], publicNetworkAccess: \'Disabled\' }`. [Policy: drcp-cosmos-01]')
 param networkRestrictions networkRestrictionType = {
   ipRules: []
   virtualNetworkRules: []
@@ -199,7 +199,7 @@ param networkRestrictions networkRestrictionType = {
 @allowed([
   'Tls12'
 ])
-@description('Optional. Setting that indicates the minimum allowed TLS version. Defaults to "Tls12" (TLS 1.2).')
+@description('Optional. Setting that indicates the minimum allowed TLS version. Defaults to "Tls12" (TLS 1.2). [Policy: drcp-cosmos-05]')
 param minimumTlsVersion string = 'Tls12'
 
 @description('Optional. Flag to indicate enabling/disabling of Burst Capacity feature on the account. Cannot be enabled for serverless accounts.')
@@ -732,8 +732,8 @@ output secondaryReadWriteConnectionString string = databaseAccount.listConnectio
 @description('The secondary read-only connection string.')
 output secondaryReadOnlyConnectionString string = databaseAccount.listConnectionStrings().connectionStrings[3].connectionString
 
-@description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (databaseAccount.properties.publicNetworkAccess != 'Disabled' || !disableLocalAuthentication || !disableKeyBasedMetadataWriteAccess)
+@description('Is there evidence of usage in non-compliance with policies? Checks: drcp-cosmos-01 (publicNetworkAccess), drcp-cosmos-02 (disableLocalAuth), drcp-cosmos-03 (disableKeyBasedMetadataWriteAccess), drcp-cosmos-05 (minimumTlsVersion), drcp-cosmos-10 (zoneRedundant).')
+output evidenceOfNonCompliance bool = (databaseAccount.properties.publicNetworkAccess != 'Disabled' || !disableLocalAuthentication || !disableKeyBasedMetadataWriteAccess || minimumTlsVersion != 'Tls12' || (empty(failoverLocations) && !zoneRedundant))
 
 // =============== //
 //   Definitions   //

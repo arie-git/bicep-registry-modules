@@ -43,6 +43,7 @@ param enableVaultForDiskEncryption bool = true
 @description('''Optional. Switch to enable/disable Key Vault\'s soft delete feature.
 
 Setting this parameter to false is not supported for new Key Vault deployments in Azure anymore.
+[Policy: drcp-kv-05]
 ''')
 param enableSoftDelete bool = true
 
@@ -56,6 +57,7 @@ param softDeleteRetentionInDays int = 90
 When false, the key vault will use the access policies specified in vault properties, and any policy stored on Azure Resource Manager will be ignored. Note that management actions are always authorized with RBAC.
 
 Setting this parameter value to 'false' will make the resource non-compliant.
+[Policy: drcp-kv-02]
 ''')
 param enableRbacAuthorization bool = true
 
@@ -69,6 +71,7 @@ param createMode string = 'default'
 @description('''Optional. Provide 'true' to enable Key Vault\'s purge protection feature.
 
 Setting this parameter value to 'false' will make the resource non-compliant.
+[Policy: drcp-kv-04]
 ''')
 param enablePurgeProtection bool = true
 
@@ -88,6 +91,7 @@ param networkAcls networkAclsType?
 @description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set and networkAcls are not set.
 
 Setting this parameter to any other than Disabled will make the key-vault resource non-compliant.
+[Policy: drcp-kv-01]
 ''')
 @allowed([
   ''
@@ -102,7 +106,7 @@ param lock lockType
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07] [Policy: drcp-kv-11]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. Resource tags.')
@@ -432,7 +436,7 @@ output keys array = [for (key, index) in (keys ?? []): {
 }]
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (sku != 'premium' || keyVault.properties.publicNetworkAccess != 'Disabled' || !enablePurgeProtection || !empty(accessPolicies ?? []))
+output evidenceOfNonCompliance bool = (sku != 'premium' || keyVault.properties.publicNetworkAccess != 'Disabled' || !enablePurgeProtection || !enableRbacAuthorization || !enableSoftDelete || !empty(accessPolicies ?? []))
 
 // ================ //
 // Definitions      //

@@ -7,26 +7,23 @@
       "Grep",
       "Agent",
 
-      "Edit(tasks/*.md)",
-      "Write(tasks/*.md)",
+      "Edit(tasks/**)",
+      "Write(tasks/**)",
 
-      "Edit(amavm/verified-modules/**/*.bicep)",
-      "Edit(amavm/verified-modules/**/*.md)",
-      "Write(amavm/verified-modules/**/*.bicep)",
-      "Write(amavm/verified-modules/**/*.md)",
-      "Write(amavm/verified-modules/**/upstream.json)",
-      "Write(amavm/verified-modules/**/version.json)",
+      "Edit(amavm/verified-modules/**)",
+      "Write(amavm/verified-modules/**)",
+
+      "Edit(/home/node/.claude/**)",
+      "Write(/home/node/.claude/**)",
 
       "Bash(bicep build *)",
       "Bash(bicep lint *)",
       "Bash(az bicep build *)",
       "Bash(az bicep lint *)",
 
-      "Bash(pwsh -Command *)",
-      "Bash(pwsh -File *)",
-      "Bash(pwsh -c *)",
+      "Bash(pwsh *)",
 
-      "Bash(cd /workspaces/bicep-registry-modules/amavm/verified-modules && pwsh *)",
+      "Bash(python3 *)",
 
       "Bash(ls *)",
       "Bash(ls)",
@@ -48,10 +45,9 @@
       "Bash(git diff *)",
       "Bash(git diff)",
       "Bash(git log *)",
-      "Bash(git add amavm/verified-modules/*)",
-      "Bash(git add tasks/*)",
-      "Bash(git add .claude/*)",
+      "Bash(git add **)",
       "Bash(git commit *)",
+      "Bash(mkdir -p **)",
 
       "Read(/tmp/**)",
       "Write(/tmp/**)",
@@ -61,12 +57,10 @@
     "deny": [
       "Edit(microsoft-avm/**)",
       "Write(microsoft-avm/**)",
-      "Edit(policy/**)",
-      "Write(policy/**)",
+      "Edit(policy/Generic/**)",
+      "Write(policy/Generic/**)",
       "Edit(amavm/pipelines/**)",
       "Write(amavm/pipelines/**)",
-      "Edit(amavm/utils/**)",
-      "Write(amavm/utils/**)",
 
       "Bash(git push *)",
       "Bash(git push)",

@@ -3,27 +3,34 @@ metadata description = 'This module deploys a DBforPostgreSQL Flexible Server.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of this module requires the following parameter values:
-- publicNetworkAccess = 'Disabled'
-- delegatedSubnetResourceId = not empty
-- activeDirectoryAuth = true
-- minimalVersion >= 16
+- publicNetworkAccess = 'Disabled' [drcp-psql-01]
+- delegatedSubnetResourceId = not empty [drcp-psql-01]
+- authConfig.activeDirectoryAuth = 'Enabled', passwordAuth = 'Disabled' [drcp-psql-02]
+- administrators restricted to allowed principals [drcp-psql-03]
+- customerManagedKey = empty (service-managed keys enforced) [drcp-psql-04]
+- version >= '16' [drcp-psql-06]
+- configurations: require_secure_transport = 'ON' [drcp-psql-07]
+- configurations: ssl_min_protocol_version >= 'TLSv1.2' [drcp-psql-08]
+- enableAdvancedThreatProtection = true, serverThreatProtection = 'Enabled' [drcp-psql-09]
+- highAvailability = 'ZoneRedundant' [drcp-psql-10]
+- configurations: azure.extensions restricted [drcp-psql-11]
 '''
 
 @description('Required. The name of the PostgreSQL flexible server.')
 param name string
 
-@description('Optional. The administrator login name of the server. Can only be specified when the PostgreSQL server is being created. Setting AdministratorLogin will result in non-compliancy.')
+@description('Optional. [Policy: drcp-psql-02] The administrator login name of the server. Can only be specified when the PostgreSQL server is being created. Setting AdministratorLogin will result in non-compliancy.')
 param administratorLogin string?
 
-@description('Optional. The administrator login password. Setting administratorLoginPassword will result in non-compliancy.')
+@description('Optional. [Policy: drcp-psql-02] The administrator login password. Setting administratorLoginPassword will result in non-compliancy.')
 @secure()
 param administratorLoginPassword string?
 
 
-@description('Optional. The Azure AD administrators when AAD authentication enabled. This is the only copmliant authentication method.')
+@description('Optional. [Policy: drcp-psql-02, drcp-psql-03] The Azure AD administrators when AAD authentication enabled. This is the only compliant authentication method.')
 param administrators administratorType[]?
 
-@description('Optional. The authentication configuration for the server.')
+@description('Optional. [Policy: drcp-psql-02] The authentication configuration for the server.')
 param authConfig resourceInput<'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-preview'>.properties.authConfig = {
   activeDirectoryAuth: 'Enabled'
   passwordAuth: 'Disabled'
@@ -66,7 +73,7 @@ param highAvailabilityZone int = -1
   'SameZone'
   'ZoneRedundant'
 ])
-@description('Optional. The mode for high availability. Default ZoneRedundant. Compliant usage requires ZoneRedundant.')
+@description('Optional. [Policy: drcp-psql-10] The mode for high availability. Default ZoneRedundant. Compliant usage requires ZoneRedundant.')
 param highAvailability string = 'ZoneRedundant'
 
 @minValue(7)
@@ -113,7 +120,7 @@ param autoGrow string?
   '17'
   '18'
 ])
-@description('Optional. PostgreSQL Server version. Version lower than 16 will result in non-compliancy')
+@description('Optional. [Policy: drcp-psql-06] PostgreSQL Server version. Version lower than 16 will result in non-compliancy.')
 param version string = '17'
 
 @allowed([
@@ -135,10 +142,10 @@ param managedIdentities managedIdentitiesType = {
   'Disabled'
   'Enabled'
 ])
-@description('Optional. Specifies the state of the Threat Protection, whether it is enabled or disabled or a state has not been applied yet on the specific server. Compliant usage requires this to be enabled.')
+@description('Optional. [Policy: drcp-psql-09] Specifies the state of the Threat Protection, whether it is enabled or disabled or a state has not been applied yet on the specific server. Compliant usage requires this to be enabled.')
 param serverThreatProtection string = 'Enabled'
 
-@description('Optional. The customer managed key definition to use for the managed service.')
+@description('Optional. [Policy: drcp-psql-04] The customer managed key definition to use for the managed service. Policy enforces service-managed keys; using CMK will violate drcp-psql-04.')
 param customerManagedKey customerManagedKeyType
 
 
@@ -156,7 +163,7 @@ param pointInTimeUTC string = ''
 @description('Conditional. Required if \'createMode\' is set to \'PointInTimeRestore\'.')
 param sourceServerResourceId string = ''
 
-@description('Optional. Delegated subnet arm resource ID. Used when the desired connectivity mode is \'Private Access\' - virtual network integration.')
+@description('Optional. [Policy: drcp-psql-01] Delegated subnet arm resource ID. Used when the desired connectivity mode is \'Private Access\' - virtual network integration. Required for policy compliance.')
 param delegatedSubnetResourceId string?
 
 @description('Optional. Private dns zone arm resource ID. Used when the desired connectivity mode is \'Private Access\' and required when \'delegatedSubnetResourceId\' is used. The Private DNS Zone must be linked to the Virtual Network referenced in \'delegatedSubnetResourceId\'.')
@@ -165,7 +172,7 @@ param privateDnsZoneArmResourceId string = '/subscriptions/44fc7c46-cf47-4a29-aa
 @description('Optional. The firewall rules to create in the PostgreSQL flexible server.')
 param firewallRules firewallRuleType[]?
 
-@description('Optional. Determines whether or not public network access is enabled or disabled. Compliant (and recommended) usage requires this to be enabled.')
+@description('Optional. [Policy: drcp-psql-01] Determines whether or not public network access is enabled or disabled. Compliant (and recommended) usage requires this to be Disabled.')
 @allowed([
   'Disabled'
   'Enabled'
@@ -181,7 +188,7 @@ param databases databaseType[]=[
   // }
 ]
 
-@description('''Optional. The configurations to create in the server. Default and compliant configuration includes:
+@description('''Optional. [Policy: drcp-psql-07, drcp-psql-08, drcp-psql-11] The configurations to create in the server. Default and compliant configuration includes:
 {
   name: 'require_secure_transport'
   source: 'user-override'
@@ -223,7 +230,7 @@ param replica replicaType?
 ])
 param replicationRole string = 'None'
 
-@description('Optional. Enable/Disable advanced threat protection. Compliant usage requires this option be True.')
+@description('Optional. [Policy: drcp-psql-09] Enable/Disable advanced threat protection. Compliant usage requires this option be True.')
 param enableAdvancedThreatProtection bool = true
 
 @description('Optional. Array of role assignments to create.')
@@ -610,7 +617,7 @@ output fqdn string? = flexibleServer.properties.?fullyQualifiedDomainName
 output systemAssignedMIPrincipalId string? = flexibleServer.?identity.?principalId
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || empty(delegatedSubnetResourceId ?? '') || flexibleServer.properties.authConfig.activeDirectoryAuth != 'Enabled' || int(version) < 16)
+output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || empty(delegatedSubnetResourceId ?? '') || flexibleServer.properties.authConfig.activeDirectoryAuth != 'Enabled' || flexibleServer.properties.authConfig.?passwordAuth != 'Disabled' || int(version) < 16 || !empty(customerManagedKey) || highAvailability != 'ZoneRedundant')
 
 
 

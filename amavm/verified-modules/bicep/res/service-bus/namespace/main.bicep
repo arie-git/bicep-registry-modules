@@ -30,7 +30,7 @@ param zoneRedundant bool = true
   '1.1'
   '1.2'
 ])
-@description('''Optional. The minimum TLS version for the cluster to support.
+@description('''Optional. The minimum TLS version for the cluster to support. [Policy: drcp-sbns-01]
 
 Setting this parameter to values lower than "TLS1_2" will make the resource non-compliant.
 ''')
@@ -79,7 +79,7 @@ param managedIdentities managedIdentitiesType = {
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-@description('''Optional. Whether or not public network access is allowed for this resource.
+@description('''Optional. Whether or not public network access is allowed for this resource. [Policy: drcp-sbns-03]
 For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.
 
 Setting this parameter to 'Enabled' will make the resource non-compliant.
@@ -92,7 +92,7 @@ Setting this parameter to 'Enabled' will make the resource non-compliant.
 ])
 param publicNetworkAccess string = 'Disabled'
 
-@description('''Required. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.
+@description('''Required. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sbns-04, drcp-sub-07]
 
 Available values for 'service' are:
 - namespace
@@ -105,7 +105,7 @@ param privateEndpoints privateEndpointType
 This object contains IPs/Subnets to allow or restrict access to private endpoints only. For security reasons, it is recommended to configure this object on the Namespace.''')
 param networkRuleSets networkRuleSetType?
 
-@description('''Optional. This property disables SAS authentication for the Service Bus namespace.
+@description('''Optional. This property disables SAS authentication for the Service Bus namespace. [Policy: drcp-sbns-02]
 
 Setting this parameter to values to false will make the resource non-compliant.
 ''')
@@ -617,7 +617,7 @@ type migrationConfigurationType = {
 @export()
 @description('The type for a network rule set.')
 type networkRuleSetType = {
-  @description('''Optional. This determines if traffic is allowed over public network. Default is "Enabled".
+  @description('''Optional. This determines if traffic is allowed over public network. Default is "Enabled". [Policy: drcp-sbns-03]
   If set to "Disabled", traffic to this namespace will be restricted over Private Endpoints only and network rules will not be applied.
 
   Setting this parameter to 'Enabled' will make the resource non-compliant.

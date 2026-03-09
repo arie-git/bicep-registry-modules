@@ -28,7 +28,9 @@ param skuName string = 'PerGB2018'
 @description('Optional. The capacity reservation level in GB for this workspace, when CapacityReservation sku is selected. Must be in increments of 100 between 100 and 5000.')
 param skuCapacityReservationLevel int = 100
 
-@description('Optional. List of storage accounts to be read by the workspace.')
+@description('''Optional. List of storage accounts to be read by the workspace.
+
+Setting this parameter to any value other than empty array (or null), will make the resource non-compliant. [Policy: drcp-log-04]''')
 param storageInsightsConfigs array = []
 
 @description('Optional. List of services to be linked.')
@@ -37,7 +39,7 @@ param linkedServices array = []
 @description('''Conditional. List of Storage Accounts to be linked.
 Required if \'forceCmkForQuery\' is set to \'true\' and \'savedSearches\' is not empty.
 
-Setting this parameter to any value other than empty array (or null), will make the resource non-compliant.''')
+Setting this parameter to any value other than empty array (or null), will make the resource non-compliant. [Policy: drcp-log-03]''')
 param linkedStorageAccounts array = []
 
 @description('Optional. Kusto Query Language searches to save.')
@@ -45,10 +47,12 @@ param savedSearches array = []
 
 @description('''Optional. Data export instances to be deployed.
 
-Setting this parameter to any value other than empty array (or null), will make the resource non-compliant.''')
+Setting this parameter to any value other than empty array (or null), will make the resource non-compliant. [Policy: drcp-log-02]''')
 param dataExports array = []
 
-@description('Optional. Data sources to configure.')
+@description('''Optional. Data sources to configure.
+
+Setting this parameter to any value other than empty array (or null), will make the resource non-compliant. [Policy: drcp-log-04]''')
 param dataSources array = []
 
 @description('Optional. Custom tables to be deployed.')
@@ -91,7 +95,7 @@ param managedIdentities managedIdentitiesType = {
 
 @description('''Optional. Set to \'true\' to use resource or workspace permissions. and \'false\' (or leave empty) to require workspace permissions. Default: true
 
-Setting this parameter to 'false' will make the resource non-compliant.
+Setting this parameter to 'false' will make the resource non-compliant. [Policy: drcp-log-05]
 ''')
 param useResourcePermissions bool = true
 
@@ -104,7 +108,7 @@ param disableLocalAuth bool = true
 
 @description('''Optional. Set to 'true' to allow exporting data. Default: false
 
-Setting this parameter to 'true' will make the resource non-compliant.
+Setting this parameter to 'true' will make the resource non-compliant. [Policy: drcp-log-02]
 ''')
 param enableDataExport bool = false
 
@@ -417,7 +421,7 @@ output location string = logAnalyticsWorkspace.location
 output systemAssignedMIPrincipalId string = logAnalyticsWorkspace.?identity.?principalId ?? ''
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = !useResourcePermissions || !disableLocalAuth || enableDataExport || !empty(linkedStorageAccounts)
+output evidenceOfNonCompliance bool = !useResourcePermissions || !disableLocalAuth || enableDataExport || !empty(linkedStorageAccounts) || !empty(dataExports) || !empty(dataSources) || !empty(storageInsightsConfigs)
 
 // =============== //
 //   Definitions   //

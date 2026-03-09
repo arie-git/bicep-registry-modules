@@ -33,16 +33,16 @@ param sku string = 'Standard'
 @description('Optional. Indicates whether the configuration store need to be recovered.')
 param createMode string = 'Default'
 
-@description('''Optional. Disables all authentication methods other than AAD authentication.
+@description('''Optional. Disables all authentication methods other than AAD authentication. [Policy: drcp-appcs-02]
 
-Setting this parameter to 'false' will make the resource non-compliant
+Setting this parameter to 'false' will make the resource non-compliant.
 ''')
 param disableLocalAuth bool = true
 
 @description('Optional. Property specifying whether protection against purge is enabled for this configuration store. Defaults to true unless sku is set to Free, since purge protection is not available in Free tier.')
 param enablePurgeProtection bool = true
 
-@description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.
+@description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set. [Policy: drcp-appcs-01]
 
 Setting this parameter to 'Enabled' will make the resource non-compliant.
 ''')
@@ -87,7 +87,7 @@ param dataPlaneProxy dataPlaneProxyType?
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-appcs-03, drcp-sub-07]')
 param privateEndpoints privateEndpointType?
 
 var versionInfo = loadJsonContent('version.json')
@@ -396,8 +396,11 @@ output privateEndpoints privateEndpointOutputType[] = [
   }
 ]
 
-@description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || !disableLocalAuth)
+// Effective publicNetworkAccess mirrors the resource property logic (line 219-221)
+var effectivePublicNetworkAccess = !empty(publicNetworkAccess) ? publicNetworkAccess! : (!empty(privateEndpoints) ? 'Disabled' : 'Enabled')
+
+@description('Is there evidence of usage in non-compliance with policies? Checks drcp-appcs-01 (public network access) and drcp-appcs-02 (local auth).')
+output evidenceOfNonCompliance bool = (effectivePublicNetworkAccess != 'Disabled' || !disableLocalAuth)
 
 
 // =============== //

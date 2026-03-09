@@ -20,13 +20,13 @@ param authOptions resourceInput<'Microsoft.Search/searchServices@2025-05-01'>.pr
 
 @description('''Optional. A list of data exfiltration scenarios that are explicitly disallowed for the search service. Default [`All`]
 
-Setting this parameter to any other value will make the resource non-compliant.
+Setting this parameter to any other value will make the resource non-compliant. [Policy: drcp-srch-03]
 ''')
 param dataExfiltrationProtections array = ['All']
 
 @description('''Optional. When set to true, calls to the search service will not be permitted to utilize API keys for authentication. This cannot be set to true if \'authOptions\' are defined.
 
-Setting this parameter to 'False' will make the resource non-compliant.
+Setting this parameter to 'False' will make the resource non-compliant. [Policy: drcp-srch-01]
 ''')
 param disableLocalAuth bool = true
 
@@ -70,7 +70,7 @@ param networkRuleSet resourceInput<'Microsoft.Search/searchServices@2025-05-01'>
 @maxValue(12)
 param partitionCount int = 1
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-srch-02] [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. The sharedPrivateLinkResources to create as part of the search Service. These are managed private endpoints to support private access to other resources in your subscription. Your request must be approved by the resource owner before you can connect.')
@@ -90,7 +90,7 @@ param sharedPrivateLinkResources array = []
 
 @description('''Optional. If set to \'Disabled\', traffic over public interface is not allowed, and private endpoint connections would be the exclusive access method.
 
-Setting this parameter to 'Enabled' will make the resource non-compliant.
+Setting this parameter to 'Enabled' will make the resource non-compliant. [Policy: drcp-srch-02]
 ''')
 @allowed([
   'Enabled'

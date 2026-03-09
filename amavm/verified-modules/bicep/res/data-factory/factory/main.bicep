@@ -16,31 +16,31 @@ metadata compliance = '''Compliant usage of Azure Data Factory requires:
 @maxLength(24)
 param name string
 
-@description('''Optional. The name of the Managed Virtual Network.
+@description('''Optional. The name of the Managed Virtual Network. [Policy: drcp-adf-01]
 
 Configuring Data Factory with Managed Virtual Network will make the resource non-compliant.
 ''')
 param managedVirtualNetworkName string = ''
 
-@description('''Optional. An array of managed private endpoints objects created in the Data Factory managed virtual network.
+@description('''Optional. An array of managed private endpoints objects created in the Data Factory managed virtual network. [Policy: drcp-adf-01]
 
 Adding managed private endpoints will make the Data Factory resource non-compliant.
 ''')
 param managedPrivateEndpoints array = []
 
-@description('''Optional. An array of objects for the configuration of an Integration Runtime.
+@description('''Optional. An array of objects for the configuration of an Integration Runtime. [Policy: drcp-adf-01]
 
 Managed Virtual Network, Azure-SSIS and Airflow type Integration runtime will make the Data Factory resource non-compliant.
 ''')
 param integrationRuntimes integrationRuntimeType
 
-@description('Optional. An array of objects for the configuration of Linked Services.')
+@description('Optional. An array of objects for the configuration of Linked Services. [Policy: drcp-adf-04, drcp-adf-05]')
 param linkedServices linkedServiceType
 
 @description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
 
-@description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.
+@description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set. [Policy: drcp-adf-02]
 
 Setting this parameter to any other than 'Disabled' will make the Data Factory resource non-compliant.
 ''')
@@ -51,13 +51,13 @@ Setting this parameter to any other than 'Disabled' will make the Data Factory r
 ])
 param publicNetworkAccess string = 'Disabled'
 
-@description('''Optional. Boolean to define whether or not to configure git during template deployment.
+@description('''Optional. Boolean to define whether or not to configure git during template deployment. [Policy: drcp-adf-06]
 
 Setting this parameter to 'false' in non-development usages will make the Data Factory resource non-compliant.
 ''')
 param gitConfigureLater bool = true
 
-@description('''Optional. Object to define git configuration for Data Factory.
+@description('''Optional. Object to define git configuration for Data Factory. [Policy: drcp-adf-06]
 
 Setting this object in non-Dev enviroment will make the Data Factory resource non-compliant.
 ''')
@@ -66,7 +66,7 @@ param gitconfiguration gitRepoConfig
 @description('Optional. List of Global Parameters for the factory.')
 param globalParameters resourceInput<'Microsoft.DataFactory/factories@2018-06-01'>.properties.globalParameters?
 
-@description('Optional. Purview Account resource identifier.')
+@description('Optional. Purview Account resource identifier. [Policy: drcp-adf-07]')
 param purviewResourceId string?
 
 @description('''Optional. The diagnostic settings of the service.
@@ -99,7 +99,7 @@ param managedIdentities managedIdentitiesType = {
   systemAssigned: true
 }
 
-@description('Optional. Configuration Details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration Details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. The customer managed key definition.')
@@ -461,7 +461,7 @@ output systemAssignedMIPrincipalId string = dataFactory.?identity.?principalId ?
 output location string = dataFactory.location
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = !empty(managedVirtualNetworkName) || !empty(managedPrivateEndpoints) || publicNetworkAccess != 'Disabled' || (!gitConfigureLater && gitconfiguration.?gitRepoType != gitRepoType && gitconfiguration.?gitAccountName != adoOrgnization) || !empty(purviewResourceId)
+output evidenceOfNonCompliance bool = !empty(managedVirtualNetworkName) || !empty(managedPrivateEndpoints) || publicNetworkAccess != 'Disabled' || (!gitConfigureLater && (gitconfiguration.?gitRepoType != gitRepoType || gitconfiguration.?gitAccountName != adoOrgnization)) || !empty(purviewResourceId) || length(filter(integrationRuntimes ?? [], ir => ir.type != 'SelfHosted')) > 0
 
 @description('The private endpoints of the Data Factory.')
 output privateEndpoints privateEndpointOutputType[] = [

@@ -90,7 +90,7 @@ param defaultToOAuthAuthentication bool = true
 
 @description('''Optional. Indicates whether the storage account permits requests to be authorized with the account access key via Shared Key. If false, then all requests, including shared access signatures, must be authorized with Azure Active Directory (Azure AD). Default: false.
 
-Setting this parameter to 'true' will make the resource non-compliant
+Setting this parameter to 'true' will make the resource non-compliant. [Policy: drcp-st-04]
 ''')
 param allowSharedKeyAccess bool = false
 
@@ -103,7 +103,7 @@ Available values for 'service' are:
 - File (file, file_secondary)
 - Web (web, web_secondary)
 
-Default: 'blob' and 'dfs' are used if at least one subnetResourceId is provided but 'service' is not specified.
+Default: 'blob' and 'dfs' are used if at least one subnetResourceId is provided but 'service' is not specified. [Policy: drcp-st-10, drcp-sub-07]
 ''')
 param privateEndpoints privateEndpointType
 
@@ -112,7 +112,7 @@ param managementPolicyRules storageManagementPolicyRuleType[]?
 
 @description('''Optional. Networks ACLs, this value contains IPs to whitelist and/or Subnet information. If in use, bypass needs to be supplied. For security reasons, it is recommended to set the DefaultAction Deny. By default, bypass is 'AzureServices' and defaultAction is 'Deny'.
 
-Setting defaultAction to 'Allow' will make the resource non-compliant.
+Setting defaultAction to 'Allow' will make the resource non-compliant. [Policy: drcp-st-15]
 ''')
 param networkAcls networkAclsType = { //maybe in the future the baseline will be updated to prohibit ipRules and networkRules
   bypass: 'None'
@@ -121,13 +121,13 @@ param networkAcls networkAclsType = { //maybe in the future the baseline will be
 
 @description('''Optional. A Boolean indicating whether or not the service applies a secondary layer of encryption with platform managed keys for data at rest. For security reasons, it is recommended to set it to true. Default: true.
 
-Setting this parameter to 'false' will make the resource non-compliant.
+Setting this parameter to 'false' will make the resource non-compliant. [Policy: drcp-st-05]
 ''')
 param requireInfrastructureEncryption bool = true
 
 @description('''Optional. Allow or disallow cross AAD tenant object replication. Default: false.
 
-Setting this paramter to 'true' will make the resource non-compliant.
+Setting this paramter to 'true' will make the resource non-compliant. [Policy: drcp-st-07]
 ''')
 param allowCrossTenantReplication bool = false
 
@@ -174,7 +174,7 @@ param enableStaticWebsite bool = false
 
 @description('''Optional. Indicates whether public access is enabled for all blobs or containers in the storage account. For security reasons, it is recommended to set it to false. Default: false
 
-Setting this parameter to 'true' will make the resource non-compliant.
+Setting this parameter to 'true' will make the resource non-compliant. [Policy: drcp-st-02]
 ''')
 param allowBlobPublicAccess bool = false
 
@@ -184,7 +184,7 @@ param allowBlobPublicAccess bool = false
 ])
 @description('''Optional. Set the minimum TLS version on request to storage. Default: "TLS1_2".
 
-Setting this parameter to values lower than "TLS1_2" will make the resource non-compliant.
+Setting this parameter to values lower than "TLS1_2" will make the resource non-compliant. [Policy: drcp-st-06]
 ''')
 param minimumTlsVersion string = 'TLS1_2'
 
@@ -195,19 +195,19 @@ param enableHierarchicalNamespace bool = false
 
 @description('''Optional. If true, enables Secure File Transfer Protocol for the storage account. Requires enableHierarchicalNamespace to be true. Default: false.
 
-Setting this parameter to 'true' will make the resource non-compliant.
+Setting this parameter to 'true' will make the resource non-compliant. [Policy: drcp-st-09]
 ''')
 param enableSftp bool = false
 
 @description('''Optional. Local users to deploy for SFTP authentication.
 
-Specifying local users will make this resource non-compliant.
+Specifying local users will make this resource non-compliant. [Policy: drcp-st-09]
 ''')
 param localUsers array = []
 
 @description('''Optional. Enables local users feature, if set to true. Default: false.
 
-Setting this parameter to 'true' will make the resource non-compliant.
+Setting this parameter to 'true' will make the resource non-compliant. [Policy: drcp-st-09]
 ''')
 param isLocalUserEnabled bool = false
 
@@ -244,7 +244,7 @@ param allowedCopyScope string = 'AAD'
 
 @description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. Default: Disabled.
 
-Setting this parameter to 'Enabled' will make the resource non-compliant.
+Setting this parameter to 'Enabled' will make the resource non-compliant. [Policy: drcp-st-01]
 ''')
 @allowed([
   'Enabled'
@@ -254,7 +254,7 @@ param publicNetworkAccess string = 'Disabled'
 
 @description('''Optional. Allows only the HTTPS traffic to reach storage service, if set to true. Default: true.
 
-Setting this parameter to 'false' will make the resource non-compliant.
+Setting this parameter to 'false' will make the resource non-compliant. [Policy: drcp-st-03]
 ''')
 param supportsHttpsTrafficOnly bool = true
 
@@ -271,7 +271,7 @@ param sasExpirationPeriod string = '01.00:00:00'
 ])
 param sasExpirationAction string = 'Log'
 
-@description('Optional. The keyType to use with Queue & Table services. Default: \'Account\'')
+@description('Optional. The keyType to use with Queue & Table services. Default: \'Account\'. [Policy: drcp-st-08]')
 @allowed([
   'Account'
   'Service'
@@ -825,7 +825,7 @@ output exportedSecrets object = (secretsExportConfiguration != null)
   : {}
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = allowSharedKeyAccess || !requireInfrastructureEncryption || allowBlobPublicAccess || contains(['TLS1_0','TLS1_1'],minimumTlsVersion) || (publicNetworkAccess!='Disabled') || !supportsHttpsTrafficOnly || !empty(localUsers) || isLocalUserEnabled || allowCrossTenantReplication || enableSftp || (!empty(networkAcls) && ((networkAcls.?defaultAction ?? 'Deny') != 'Deny'))
+output evidenceOfNonCompliance bool = allowSharedKeyAccess /* drcp-st-04 */ || !requireInfrastructureEncryption /* drcp-st-05 */ || allowBlobPublicAccess /* drcp-st-02 */ || contains(['TLS1_0','TLS1_1'],minimumTlsVersion) /* drcp-st-06 */ || (publicNetworkAccess!='Disabled') /* drcp-st-01 */ || !supportsHttpsTrafficOnly /* drcp-st-03 */ || !empty(localUsers) /* drcp-st-09 */ || isLocalUserEnabled /* drcp-st-09 */ || allowCrossTenantReplication /* drcp-st-07 */ || enableSftp /* drcp-st-09 */ || (!empty(networkAcls) && ((networkAcls.?defaultAction ?? 'Deny') != 'Deny')) /* drcp-st-15 */ || (keyType != 'Account' && keyType != '') /* drcp-st-08 */ || (!empty(networkAcls) && ((networkAcls.?bypass ?? 'None') != 'None')) /* drcp-st-15 */
 
 
 // =============== //

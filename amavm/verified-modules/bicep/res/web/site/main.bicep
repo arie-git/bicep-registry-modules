@@ -65,18 +65,21 @@ param serverFarmResourceId string
 param managedEnvironmentId string?
 
 @description('''Optional. Configures a site to accept only HTTPS requests, and issues redirect for HTTP requests. Default: true.
-
-Setting this parameter to 'false' will make the resource non-compliant.
+[Policy: drcp-aps-02] Setting this parameter to 'false' will make the resource non-compliant.
 ''')
 param httpsOnly bool = true
 
 @description('Optional. If client affinity is enabled. Default: false')
 param clientAffinityEnabled bool = false
 
-@description('Optional. The resource ID of the app service environment to use for this resource.')
+@description('''Optional. The resource ID of the app service environment to use for this resource.
+[Policy: drcp-aps-08] Either this or virtualNetworkSubnetId must be provided.
+''')
 param appServiceEnvironmentResourceId string?
 
-@description('Optional. The managed identity definition for this resource. Default: systemAssigned is true.')
+@description('''Optional. The managed identity definition for this resource. Default: systemAssigned is true.
+[Policy: drcp-aps-19] A managed identity must be configured.
+''')
 param managedIdentities managedIdentitiesType = {
   systemAssigned: true
 }
@@ -88,8 +91,7 @@ param keyVaultAccessIdentityResourceId string?
 param storageAccountRequired bool = false
 
 @description('''Optional. Azure resource ID of the Virtual network subnet to be joined by Regional VNET Integration.
-
-Leaving this parameter empty when appServiceEnvironmentResourceId is also not provided will make the resource non-compliant.
+[Policy: drcp-aps-08] Leaving this parameter empty when appServiceEnvironmentResourceId is also not provided will make the resource non-compliant.
 ''')
 param virtualNetworkSubnetId string?
 
@@ -124,11 +126,11 @@ param pythonVersion string?
 Please refer to the Microsoft documentation for available parameters https://learn.microsoft.com/en-gb/azure/templates/microsoft.web/sites?pivots=deployment-language-bicep#siteconfig
 
 To maintain compliant state, the following values are required and configured by default:
-- http20Enabled: true
-- ftpsState: 'Disabled' or 'FtpsOnly' (default: 'Disabled')
-- minTlsVersion: '1.3'
-- cors: must be either null, or cors.allowedOrigins contains an array of values other than '*' (default: null)
-- remoteDebuggingEnabled: false
+- [Policy: drcp-aps-03] http20Enabled: true
+- [Policy: drcp-aps-11] ftpsState: 'Disabled' or 'FtpsOnly' (default: 'Disabled')
+- [Policy: drcp-aps-04] minTlsVersion: '1.3'
+- [Policy: drcp-aps-07] cors: must be either null, or cors.allowedOrigins contains an array of values other than '*' (default: null)
+- [Policy: drcp-aps-16] remoteDebuggingEnabled: false
 ''')
 param siteConfiguration object = {
   alwaysOn: true
@@ -212,8 +214,7 @@ param appSettingsKeyValuePairs object?
 
 @description('''Optional. The auth settings V2 configuration.
 When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.
-
-Leaving this parameter empty will make the resource non-compliant.
+[Policy: drcp-aps-18] Leaving this parameter empty will make the resource non-compliant.
 ''')
 param authSettingV2Configuration object = startsWith(kind, 'app')
   ? {
@@ -356,6 +357,7 @@ param logsConfiguration object = {
 
 @description('''Optional. Configuration details for private endpoints.
 For security reasons, it is recommended to use private endpoints whenever possible.
+[Policy: drcp-sub-07] Private endpoint connections must not cross subscription boundaries.
 
 Available values for 'service' are:
 - sites
@@ -391,7 +393,9 @@ param workloadProfileName string?
 @description('Optional. True to disable the public hostnames of the app; otherwise, false.')
 param hostNamesDisabled bool?
 
-@description('Optional. The outbound VNET routing configuration for the site.')
+@description('''Optional. The outbound VNET routing configuration for the site.
+[Policy: drcp-aps-10] All outbound traffic must be routed through the virtual network.
+''')
 param outboundVnetRouting resourceInput<'Microsoft.Web/sites@2025-03-01'>.properties.outboundVnetRouting?
 
 @description('Optional. Tags of the resource.')
@@ -469,8 +473,7 @@ param hyperV bool = false
 param redundancyMode string = 'None'
 
 @description('''Optional. The site publishing credential policy names which are associated with the sites.
-
-Providing empty values for this parameter or setting allow to 'true' will make the resource non-compliant.
+[Policy: drcp-aps-12] Providing empty values for this parameter or setting allow to 'true' will make the resource non-compliant.
 ''')
 param basicPublishingCredentialsPolicies basicPublishingCredentialsPolicyType[] = [
   {
@@ -488,8 +491,7 @@ param hybridConnectionRelays array?
 
 @description('''Optional. Whether or not public network access is allowed for this resource.
 For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.
-
-Setting this parameter to 'Enabled' will make the resource non-compliant.''')
+[Policy: drcp-aps-01] Setting this parameter to 'Enabled' will make the resource non-compliant.''')
 @allowed([
   'Enabled'
   'Disabled'
@@ -932,7 +934,7 @@ output privateEndpoints array = [
 output slotPrivateEndpoints array = [for (slot, index) in (slots ?? []): app_slots[index].outputs.privateEndpoints]
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = !(publicNetworkAccess == 'Disabled') || !httpsOnly || !(siteConfiguration.?http20Enabled ?? false) || !contains(['Disabled', 'FtpsOnly', ''],(siteConfiguration.?ftpsState ?? '')) || contains(['1.0', '1.1', ''], (siteConfiguration.?minTlsVersion ?? '')) || contains((siteConfiguration.?cors.?allowedOrigins ?? ['']),'*') || empty(virtualNetworkSubnetId ?? appServiceEnvironmentResourceId) || ((!empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)) && empty(outboundVnetRouting)) || siteConfiguration.remoteDebuggingEnabled || empty(managedIdentities) || ((authSettingV2Configuration.?enabled ?? false) && (authSettingV2Configuration.?platform.?enabled ?? false)) || contains(map(basicPublishingCredentialsPolicies, policy => (policy.?allow ?? true)),true)
+output evidenceOfNonCompliance bool = !(publicNetworkAccess == 'Disabled') || !httpsOnly || !(siteConfiguration.?http20Enabled ?? false) || !contains(['Disabled', 'FtpsOnly', ''],(siteConfiguration.?ftpsState ?? '')) || contains(['1.0', '1.1', ''], (siteConfiguration.?minTlsVersion ?? '')) || contains((siteConfiguration.?cors.?allowedOrigins ?? ['']),'*') || empty(virtualNetworkSubnetId ?? appServiceEnvironmentResourceId) || ((!empty(virtualNetworkSubnetId) || !empty(appServiceEnvironmentResourceId)) && empty(outboundVnetRouting)) || siteConfiguration.remoteDebuggingEnabled || empty(managedIdentities) || !((authSettingV2Configuration.?enabled ?? false) && (authSettingV2Configuration.?platform.?enabled ?? false)) || contains(map(basicPublishingCredentialsPolicies, policy => (policy.?allow ?? true)),true)
 
 // =============== //
 //   Definitions   //

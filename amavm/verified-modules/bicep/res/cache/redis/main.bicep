@@ -34,13 +34,13 @@ param managedIdentities managedIdentitiesType?
 
 @description('''Optional. Disable authentication via access keys.
 
-Setting this parameter to false will make the resource non-compliant (drcp-redis-05).
+Setting this parameter to false will make the resource non-compliant (drcp-redis-05). [Policy: drcp-redis-05]
 ''')
 param disableAccessKeyAuthentication bool = true
 
 @description('''Optional. Specifies whether the non-ssl Redis server port (6379) is enabled.
 
-Setting this parameter to true will make the resource non-compliant (drcp-redis-07).
+Setting this parameter to true will make the resource non-compliant (drcp-redis-07). [Policy: drcp-redis-07]
 ''')
 param enableNonSslPort bool = false
 
@@ -51,13 +51,13 @@ param enableNonSslPort bool = false
 ])
 @description('''Optional. Requires clients to use a specified TLS version (or higher) to connect.
 
-Setting this parameter to less than 1.2 will make the resource non-compliant (drcp-redis-08).
+Setting this parameter to less than 1.2 will make the resource non-compliant (drcp-redis-08). [Policy: drcp-redis-08]
 ''')
 param minimumTlsVersion string = '1.2'
 
 @description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.
 
-Setting this parameter to Enabled will make the resource non-compliant (drcp-redis-02).
+Setting this parameter to Enabled will make the resource non-compliant (drcp-redis-02). [Policy: drcp-redis-02]
 ''')
 @allowed([
   'Enabled'
@@ -118,7 +118,7 @@ param tenantSettings object = {}
 
 @description('''Optional. When true, replicas will be provisioned in availability zones specified in the zones parameter.
 
-Setting this parameter to false will make the resource non-compliant for production workloads (drcp-redis-09).
+Setting this parameter to false will make the resource non-compliant for production workloads (drcp-redis-09). [Policy: drcp-redis-09]
 ''')
 param zoneRedundant bool = true
 
@@ -134,7 +134,7 @@ param availabilityZones int[] = [1, 2, 3]
 ])
 param zonalAllocationPolicy string?
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-redis-04] [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. The geo-replication settings of the service. Requires a Premium SKU. Geo-replication is not supported on a cache with multiple replicas per primary. Secondary cache VM Size must be same or higher as compared to the primary cache VM Size. Geo-replication between a vnet and non vnet cache (and vice-a-versa) not supported.')

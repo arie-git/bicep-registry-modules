@@ -12,7 +12,7 @@ metadata compliance = '''Compliant usage of this module requires the following p
 @description('Required. The name of Cognitive Services account.')
 param name string
 
-@description('Required. Kind of the Cognitive Services account. Restricted to policy-approved kinds per drcp-ai-04 (AIServicesAllowSupportedKinds).')
+@description('Required. Kind of the Cognitive Services account. Restricted to policy-approved kinds. [Policy: drcp-ai-04]')
 @allowed([
   'AIServices'
   'OpenAI'
@@ -69,7 +69,7 @@ param tags object?
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
-@description('''Optional. Whether or not public network access is allowed for this resource. If not specified, it will be disabled by default if private endpoints are set and networkAcls are not set.
+@description('''Optional. Whether or not public network access is allowed for this resource. If not specified, it will be disabled by default if private endpoints are set and networkAcls are not set. [Policy: drcp-ai-03]
 
 Setting this parameter to 'Enabled' will make the resource non-compliant.
 ''')
@@ -103,7 +103,7 @@ param allowProjectManagement bool?
 @description('Optional. Commitment plans to deploy for the cognitive services account.')
 param commitmentPlans commitmentPlanType[]?
 
-@description('''Optional. Allow only Azure AD authentication. Should be enabled for security reasons.
+@description('''Optional. Allow only Azure AD authentication. Should be enabled for security reasons. [Policy: drcp-ai-01]
 
 Setting this parameter to 'False' will make the resource non-compliant. Default: true
 ''')
@@ -131,14 +131,14 @@ param userOwnedStorage array?
 @description('Optional. Array of deployments about cognitive service accounts to create.')
 param deployments deploymentsType
 
-@description('''Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.
+@description('''Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-ai-03, drcp-sub-07]
 Available values for 'service' are: 'account'.
 
 Default: 'account' is used if  subnetResourceId is provided but 'service' is not specified.
 ''')
 param privateEndpoints privateEndpointType
 
-@description('Optional. The managed identity definition for this resource. Default: { systemAssigned: true }.')
+@description('Optional. The managed identity definition for this resource. Default: { systemAssigned: true }. [Policy: drcp-ai-02]')
 param managedIdentities managedIdentitiesType = {
   systemAssigned: true
 }

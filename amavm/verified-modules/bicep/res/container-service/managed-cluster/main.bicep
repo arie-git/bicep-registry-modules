@@ -31,7 +31,9 @@ param nodeResourceGroup string = 'AKS-Node-${name}-rg'
 @description('Optional. Specifies the DNS prefix specified when creating the managed cluster.')
 param dnsPrefix string = name
 
-@description('Optional. The managed identity definition for this resource. Only one type of identity is supported: system-assigned or user-assigned, but not both.')
+@description('''Optional. The managed identity definition for this resource. Only one type of identity is supported: system-assigned or user-assigned, but not both.
+
+[Policy: drcp-aks-03] A managed identity must be used (not a service principal).''')
 param managedIdentities managedIdentitiesType = {
   systemAssigned: true
 }
@@ -61,20 +63,20 @@ param supportPlan string = 'KubernetesOfficial' // TODO: check
 @description('''Optional. Version of Kubernetes specified when creating the managed cluster.
 By default the latest LTS supported version will be used.
 
-Setting this parameter to a version that is no longer supported by Microsoft will make the resource non-compliant.''')
+[Policy: drcp-aks-12] Setting this parameter to a version that is no longer supported by Microsoft will make the resource non-compliant.''')
 param kubernetesVersion string?
 
 // ----- Authentication parameters -----
 
 @description('''Optional. Whether to enable Kubernetes Role-Based Access Control. Default: true.
 
-Setting this parameter to 'false' will make the resource non-compliant.''')
+[Policy: drcp-aks-03] Setting this parameter to 'false' will make the resource non-compliant.''')
 param enableRBAC bool = true
 
 @description('''Optional. If set to true, getting static credentials will be disabled for this cluster.
 This must only be used on Managed Clusters that are AAD enabled. Default: true.
 
-Setting this parameter to 'false' will make the resource non-compliant.''')
+[Policy: drcp-aks-03] Setting this parameter to 'false' will make the resource non-compliant.''')
 param disableLocalAccounts bool = true
 
 @description('''Optional. The Entra ID (Azure Active Directory) integration configuration.
@@ -84,7 +86,7 @@ The default is:
 - managed: true
 - tenantID: subscription().tenantId
 
-Compliant use of this resource requires certain parameter values:
+[Policy: drcp-aks-03] Compliant use of this resource requires certain parameter values:
 - enableAzureRBAC: true
 - managed: true
 - tenantID: current tenant
@@ -105,9 +107,8 @@ The default is:
 // - enableVnetIntegration: false
 - privateDNSZone: 'none'
 
-Compliant use of this resource requires certain parameter values:
-- apiServerAccessProfile.disableRunCommand: true
-- apiServerAccessProfile.enablePrivateCluster: true''')
+[Policy: drcp-aks-02] enablePrivateCluster must be true.
+[Policy: drcp-aks-16] disableRunCommand must be true.''')
 param apiServerAccessProfile apiServerAccessProfileType = {
   disableRunCommand: true
   enablePrivateCluster: true
@@ -120,7 +121,7 @@ param apiServerAccessProfile apiServerAccessProfileType = {
 
 @description('''Optional. Allow or deny public network access for AKS. Default: Disabled.
 
-Setting this parameter to any value other than 'Disabled' will make the resource non-compliant.''')
+[Policy: drcp-aks-02] Setting this parameter to any value other than 'Disabled' will make the resource non-compliant.''')
 @allowed([
   'Enabled'
   'Disabled'
@@ -224,7 +225,7 @@ param networkLoadBalancerProfile loadBalancerProfileType = (networkOutboundType 
 
 @description('''Optional. Specifies outbound (egress) routing method. Default is 'userDefinedRouting'.
 
-Setting this parameter to values other than 'userDefinedRouting' may make the resource non-compliant.
+[Policy: drcp-aks-02] Setting this parameter to 'loadBalancer' will make the resource non-compliant.
 
 Setting outboundType requires AKS clusters with a vm-set-type of VirtualMachineScaleSets and load-balancer-sku of Standard.
 
@@ -265,7 +266,9 @@ param primaryAgentPoolSubnetResourceId string? // TODO: make this part of the pr
 
 // https://learn.microsoft.com/en-gb/azure/aks/quotas-skus-regions#supported-vm-sizes
 // https://learn.microsoft.com/en-us/azure/aks/use-system-pools?tabs=azure-cli#system-and-user-node-pools
-@description('Optional. Properties of the primary agent pool.')
+@description('''Optional. Properties of the primary agent pool.
+
+[Policy: drcp-aks-02] enableNodePublicIP must be false (or absent) on all agent pools.''')
 param primaryAgentPoolProfile array = [
   {
     enableNodePublicIP: false
@@ -295,7 +298,9 @@ param primaryAgentPoolProfile array = [
   }
 ]
 
-@description('Optional. Define one or more secondary/additional agent pools.')
+@description('''Optional. Define one or more secondary/additional agent pools.
+
+[Policy: drcp-aks-02] enableNodePublicIP must be false (or absent) on all agent pools.''')
 param agentPools agentPoolType[]?
 
 @description('Optional. Specifies the administrator username of Linux virtual machines.')
@@ -454,7 +459,7 @@ param enableWorkloadIdentity bool = false
 @description('''Optional. Specifies the configuration of Azure Policy add-on.
 Default is enabled=true and config.version=v2.
 
-Compliant use of this resource requires 'enabled' to be true.''')
+[Policy: drcp-aks-11] Compliant use of this resource requires 'enabled' to be true.''')
 param addonAzurePolicy addonAzurePolicyType = {
   enabled: true
   config:{
@@ -464,7 +469,7 @@ param addonAzurePolicy addonAzurePolicyType = {
 
 @description('''Optional. Azure Defender profile settings. By default the securityMonitoring.enabled is true
 
-Setting securityMonitoring.enabled to a value other than 'true' will make this resource non-compliant.''')
+[Policy: drcp-aks-18] Setting securityMonitoring.enabled to a value other than 'true' will make this resource non-compliant.''')
 param securityProfileDefender securityProfileDefenderType = !empty(logAnalyticsWorkspaceResourceId) ? {
   securityMonitoring: {
     enabled: true
@@ -1171,10 +1176,17 @@ output addonProfiles object = managedCluster.properties.?addonProfiles ?? {}
 @description('The Object ID of Web Application Routing.')
 output webAppRoutingIdentityObjectId string = managedCluster.properties.?ingressProfile.?webAppRouting.?identity.?objectId ?? ''
 
-@description('''Is there evidence of usage in non-compliance with policies? Returns 'true' is a non-compliance is identified.
+@description('''Is there evidence of usage in non-compliance with policies? Returns 'true' if a non-compliance is identified.
 
-Note: 'kubernetesVersion' is not analyzed.''')
-output evidenceOfNonCompliance bool = (publicNetworkAccess!='Disabled') || !disableLocalAccounts || !enableRBAC || !(apiServerAccessProfile.?disableRunCommand ?? false) || !(apiServerAccessProfile.?enablePrivateCluster ?? false) || !(aadProfile.?enableAzureRBAC ?? false) || !(addonAzurePolicy.?enabled ?? false) || !(securityProfileDefender.?securityMonitoring.?enabled ?? false) || empty(diagnosticSettings[?0].?workspaceResourceId) || length(configuredRequiredLogCategoryNames)!=length(requiredLogCategoryNames) || (networkOutboundType == 'loadBalancer')
+Policies checked:
+- [drcp-aks-02] publicNetworkAccess must be 'Disabled', enablePrivateCluster must be true, networkOutboundType must not be 'loadBalancer', enableNodePublicIP must be false on all agent pools
+- [drcp-aks-03] disableLocalAccounts must be true, enableRBAC must be true, aadProfile.enableAzureRBAC must be true
+- [drcp-aks-11] addonAzurePolicy.enabled must be true
+- [drcp-aks-16] apiServerAccessProfile.disableRunCommand must be true
+- [drcp-aks-18] securityProfileDefender.securityMonitoring.enabled must be true
+
+Note: 'kubernetesVersion' (drcp-aks-12) is not analyzed as it depends on the supported version list at deployment time.''')
+output evidenceOfNonCompliance bool = (publicNetworkAccess!='Disabled') || !disableLocalAccounts || !enableRBAC || !(apiServerAccessProfile.?disableRunCommand ?? false) || !(apiServerAccessProfile.?enablePrivateCluster ?? false) || !(aadProfile.?enableAzureRBAC ?? false) || !(addonAzurePolicy.?enabled ?? false) || !(securityProfileDefender.?securityMonitoring.?enabled ?? false) || empty(diagnosticSettings[?0].?workspaceResourceId) || length(configuredRequiredLogCategoryNames)!=length(requiredLogCategoryNames) || (networkOutboundType == 'loadBalancer') || length(filter(primaryAgentPoolProfile, pool => pool.?enableNodePublicIP == true)) > 0 || length(filter(agentPools ?? [], pool => pool.?enableNodePublicIP == true)) > 0
 
 @description('The list of diagnostic settings log categories that were configured to log analytics.')
 output configuredLogCategoriesLogAnalytics array = flatten(map((diagnosticSettings ?? []),

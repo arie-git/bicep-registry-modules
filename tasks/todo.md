@@ -453,6 +453,62 @@ Each whitelisted module audited by Azure Policy Expert against `policy/Generic/*
   - `delegatedSubnetResourceId` optional → VNet integration not guaranteed (drcp-psql-01 Deny)
   - Action: make `administrators` required or always enable AD auth; make `delegatedSubnetResourceId` required
 
+### POLICY-IMPL-1: Validate `evidenceOfNonCompliance` output accuracy
+
+The `evidenceOfNonCompliance` output should actually validate the relevant policies for each module. Currently many modules have `= false` (hardcoded) or incomplete checks. For each module, verify the output expression checks ALL applicable deny/audit policies.
+
+**Per module:**
+- [x] cognitive-services/account — validated: already correct (5 policy checks)
+- [x] app-configuration/configuration-store — fixed: nullable publicNetworkAccess null-safety bug
+- [x] cache/redis — validated: already correct (6 policy checks)
+- [x] container-registry/registry — fixed: SKU case bug ('premium' vs 'Premium'), rewrote with proper per-policy vars
+- [x] container-service/managed-cluster — fixed: added enableNodePublicIP checks for primary + agent pools
+- [x] data-factory/factory — fixed: added IR type check, fixed git config AND→OR logic bug
+- [x] databricks/workspace — validated: already correct (6 policy checks)
+- [x] db-for-postgre-sql/flexible-server — fixed: added passwordAuth, CMK, zone redundancy checks
+- [x] document-db/database-account — fixed: added TLS and zone redundancy checks
+- [x] event-hub/namespace — fixed: added zoneRedundant and trustedServiceAccess checks
+- [x] insights/component — fixed: added sourcemap tag and forbidden diagnostics checks
+- [x] key-vault/vault — fixed: added RBAC and soft delete checks
+- [x] network/application-gateway — fixed: rewrote broken contains() checks with proper filter() logic
+- [x] operational-insights/workspace — fixed: added dataExports, dataSources, storageInsights checks
+- [x] search/search-service — validated: already correct (3 policy checks)
+- [x] service-bus/namespace — validated: already correct (3 policy checks)
+- [x] sql/server — fixed: added TLS and advanced threat protection checks
+- [x] storage/storage-account — fixed: added keyType and networkAcls bypass checks
+- [x] web/site — fixed: inverted auth settings check (was flagging compliant state as non-compliant)
+
+### POLICY-IMPL-2: Add policy IDs to parameter descriptions
+
+For each parameter that is constrained by a policy, add the policy ID (e.g., `drcp-ai-03`) to the parameter's `@description()` decorator. This creates traceability from module parameters to the policies they satisfy.
+
+**Format**: Append `[Policy: drcp-xxx-nn]` to the description, e.g.:
+```
+@description('Optional. Whether or not public network access is allowed. [Policy: drcp-ai-03]')
+param publicNetworkAccess string = 'Disabled'
+```
+
+**Per module:**
+- [x] cognitive-services/account — 5 policy tags (drcp-ai-01/02/03/04), drcp-sub-07
+- [x] app-configuration/configuration-store — 3 policy tags (drcp-appcs-01/02/03), drcp-sub-07
+- [x] cache/redis — 6 policy tags (drcp-redis-02/04/05/07/08/09), drcp-sub-07
+- [x] container-registry/registry — 7 policy tags (drcp-cr-01/03/04), drcp-sub-07
+- [x] container-service/managed-cluster — 12 policy tags (drcp-aks-02/03/11/12/16/18)
+- [x] data-factory/factory — 9 policy tags (drcp-adf-01/02/04/05/06/07), drcp-sub-07
+- [x] databricks/workspace — 9 policy tags (drcp-adb-r01/r02/r03/r04/w10/w22), drcp-sub-07
+- [x] db-for-postgre-sql/flexible-server — 12 policy tags (drcp-psql-01 through -11)
+- [x] document-db/database-account — 8 policy tags (drcp-cosmos-01/02/03/05/06/10), drcp-sub-07
+- [x] event-hub/namespace — 7 policy tags (drcp-evh-01/03/04/05/06/07/08)
+- [x] insights/component — 3 policy tags (drcp-appi-01/04/05)
+- [x] key-vault/vault — 5 policy tags (drcp-kv-01/02/04/05/11), drcp-sub-07
+- [x] network/application-gateway — 12 policy tags (drcp-agw-01/02/03/04/05/06/11), drcp-sub-07
+- [x] operational-insights/workspace — 5 policy tags (drcp-log-02/03/04/05)
+- [x] search/search-service — 4 policy tags (drcp-srch-01/02/03), drcp-sub-07
+- [x] service-bus/namespace — 5 policy tags (drcp-sbns-01/02/03/04), drcp-sub-07
+- [x] sql/server — 10 policy tags (drcp-sql-01 through -10), drcp-sub-07
+- [x] storage/storage-account — 13 policy tags (drcp-st-01 through -10/15), drcp-sub-07
+- [x] web/site — 13 policy tags (drcp-aps-01 through -19), drcp-sub-07
+
 ---
 
 ## FEATURE: Utils Tooling Tech Debt

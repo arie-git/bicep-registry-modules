@@ -37,10 +37,10 @@ param autoscaleMaxCapacity int = 2
 @minValue(1)
 param autoscaleMinCapacity int = 1
 
-@description('''Optional. Backend address pool of the application gateway resource. Compliant usage requires 'https' protocol''')
+@description('''Optional. Backend address pool of the application gateway resource. [Policy: drcp-agw-02] Compliant usage requires 'https' protocol.''')
 param backendAddressPools backendAddressPoolType
 
-@description('''Optional. Backend http settings of the application gateway resource. Compliant usage requires 'https' protocol''')
+@description('''Optional. Backend http settings of the application gateway resource. [Policy: drcp-agw-02] Compliant usage requires 'https' protocol.''')
 param backendHttpSettingsCollection backendHttpSettingsCollectionType
 
 @description('Optional. Backend settings of the application gateway resource. For default limits, see [Application Gateway limits](https://learn.microsoft.com/en-us/azure/azure-subscription-service-limits#application-gateway-limits).')
@@ -55,10 +55,10 @@ param enableFips bool = false
 @description('Optional. Whether HTTP2 is enabled on the application gateway resource. Default is true')
 param enableHttp2 bool = true
 
-@description('Optional. The resource ID of an associated firewall policy. This will override the compliant by default WAF policy')
+@description('Optional. The resource ID of an associated firewall policy. [Policy: drcp-agw-05] This will override the compliant by default WAF policy.')
 param firewallPolicyResourceId string = ''
 
-@description('Optional. Frontend IP addresses of the application gateway resource.')
+@description('Optional. Frontend IP addresses of the application gateway resource. [Policy: drcp-agw-01] No public IP address should be attached.')
 param frontendIPConfigurations frontendIPConfigurationType
 
 @description('Optional. Frontend ports of the application gateway resource.')
@@ -76,13 +76,13 @@ param enableResponseBuffering bool = false
 @description('Optional. Entra JWT validation configurations.')
 param entraJWTValidationConfigs array = []
 
-@description('Optional. Http listeners of the application gateway resource. Compliant usage requires HTTPS protocol, additionally Public IP address in frontend IP configuration results in non-compliance.')
+@description('Optional. Http listeners of the application gateway resource. [Policy: drcp-agw-03] Compliant usage requires HTTPS protocol. [Policy: drcp-agw-01] Public IP address in frontend IP configuration results in non-compliance.')
 param httpListeners httpListenerType
 
 @description('Optional. Load distribution policies of the application gateway resource.')
 param loadDistributionPolicies array = []
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. [Policy: drcp-sub-07] For security reasons, it is recommended to use private endpoints whenever possible.')
 param privateEndpoints privateEndpointType = []
 
 @description('Optional. PrivateLink configurations on application gateway.')
@@ -94,13 +94,13 @@ param probes probeType
 @description('Optional. Redirect configurations of the application gateway resource.')
 param redirectConfigurations redirectConfigurationsType
 
-@description('Optional. Request routing rules of the application gateway resource. Compliant usage requires at least one request routing rule configured.')
+@description('Optional. Request routing rules of the application gateway resource. [Policy: drcp-agw-02] Compliant usage requires at least one request routing rule configured with backend settings.')
 param requestRoutingRules requestRoutingRuleType
 
 @description('Optional. Rewrite rules for the application gateway resource.')
 param rewriteRuleSets rewriteRuleSetType
 
-@description('Optional. The name of the SKU for the Application Gateway. Defaults to WAF_v2. Compliant usage requires Standard_v2 or WAF_v2')
+@description('Optional. The name of the SKU for the Application Gateway. [Policy: drcp-agw-04] Defaults to WAF_v2. Compliant usage requires Standard_v2 or WAF_v2.')
 @allowed([
   'Basic'
   'Standard_v2'
@@ -152,7 +152,7 @@ param sslPolicyCipherSuites array = [
   'TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256'
 ]
 
-@description('Optional. Ssl protocol enums. Compliant usage requires at least TLSv1_2.')
+@description('Optional. Ssl protocol enums. [Policy: drcp-agw-11] Compliant usage requires at least TLSv1_2.')
 @allowed([
   'TLSv1_0'
   'TLSv1_1'
@@ -161,7 +161,7 @@ param sslPolicyCipherSuites array = [
 ])
 param sslPolicyMinProtocolVersion string = 'TLSv1_2'
 
-@description('Optional. Ssl predefined policy name enums. Compliant usage requires (default) AppGwSslPolicy20220101 or AppGwSslPolicy20170401S or AppGwSslPolicy20220101S')
+@description('Optional. Ssl predefined policy name enums. [Policy: drcp-agw-11] Compliant usage requires (default) AppGwSslPolicy20220101 or AppGwSslPolicy20170401S or AppGwSslPolicy20220101S.')
 @allowed([
   'AppGwSslPolicy20150501'
   'AppGwSslPolicy20170401'
@@ -172,7 +172,7 @@ param sslPolicyMinProtocolVersion string = 'TLSv1_2'
 ])
 param sslPolicyName string = 'AppGwSslPolicy20220101'
 
-@description('Optional. Type of Ssl Policy. Compliant usage requires (default) Predefined')
+@description('Optional. Type of Ssl Policy. [Policy: drcp-agw-11] Compliant usage requires (default) Predefined.')
 @allowed([
   'Custom'
   'CustomV2'
@@ -192,7 +192,7 @@ param trustedRootCertificates trustedRootCertificatesType
 @description('Optional. URL path map of the application gateway resource.')
 param urlPathMaps urlPathMapType
 
-@description('Optional. Application gateway web application firewall configuration. This will override the compliant by default WAF policy.')
+@description('Optional. Application gateway web application firewall configuration. [Policy: drcp-agw-05, drcp-agw-06] This will override the compliant by default WAF policy.')
 param webApplicationFirewallConfiguration wafConfigurationType?
 
 @description('Optional. Zones for the resource. For example: [1, 2, 3]. Default: []')
@@ -520,14 +520,18 @@ output privateEndpoints array = [
   }
 ]
 
-//check all arrays for compliancy
-var backendProtocolsValidation = [for setting in (backendHttpSettingsCollection ?? []) : setting.?properties.protocol]
-var httpListenersProtocolsValidation = [for setting in (httpListeners ?? []) : setting.?properties.protocol]
-var requestRoutingRulesValidation =  [for setting in (requestRoutingRules ?? []) : setting.?properties.backendHttpSettings.id]
-var httpListenerPublic = [for setting in (httpListeners ?? []) : setting.?properties.frontendIPConfiguration]
+// Policy compliance validation arrays
+// [drcp-agw-02] Backend HTTP settings must use HTTPS protocol
+var hasNonHttpsBackend = length(filter(backendHttpSettingsCollection ?? [], setting => setting.?properties.protocol != 'https')) > 0
+// [drcp-agw-03] HTTP listeners must use HTTPS protocol
+var hasNonHttpsListener = length(filter(httpListeners ?? [], listener => listener.?properties.protocol != 'https')) > 0
+// [drcp-agw-02] Request routing rules must have backend HTTP settings
+var hasRoutingRuleWithoutBackendSettings = length(filter(requestRoutingRules ?? [], rule => empty(rule.?properties.?backendHttpSettings.?id ?? ''))) > 0
+// [drcp-agw-01] Frontend IP configurations must not have public IP
+var hasPublicFrontend = length(filter(frontendIPConfigurations ?? [], fip => fip.?properties.?publicIPAddress.?id != null)) > 0
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (sku == 'Basic') || empty(applicationGateway.properties.firewallPolicy.id) || (sslPolicyType != 'Predefined') || contains(['', 'AppGwSslPolicy20150501', 'AppGwSslPolicy20170401'],sslPolicyName) || contains(['TLSv1_0', 'TLSv1_1'], sslPolicyMinProtocolVersion) || contains(httpListenerPublic, 'Public') || empty(requestRoutingRulesValidation) || !contains(httpListenersProtocolsValidation, 'https') || !contains(backendProtocolsValidation, 'https')
+output evidenceOfNonCompliance bool = (sku == 'Basic') || empty(applicationGateway.properties.firewallPolicy.id) || (sslPolicyType != 'Predefined') || contains(['', 'AppGwSslPolicy20150501', 'AppGwSslPolicy20170401'], sslPolicyName) || contains(['TLSv1_0', 'TLSv1_1'], sslPolicyMinProtocolVersion) || hasPublicFrontend || empty(requestRoutingRules ?? []) || hasRoutingRuleWithoutBackendSettings || hasNonHttpsListener || hasNonHttpsBackend
 
 // =============== //
 //   Definitions   //

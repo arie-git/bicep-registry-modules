@@ -12,7 +12,7 @@ Cache for Azure Container Registry (Preview) feature allows users to cache conta
 
 ## Compliance
 
-Version: 20240805
+Version: 20260309
 
 There are no special compliance requirements for Cache Rules.
 
@@ -20,7 +20,7 @@ There are no special compliance requirements for Cache Rules.
 
 | Resource Type | API Version | References |
 | :-- | :-- | :-- |
-| `Microsoft.ContainerRegistry/registries/cacheRules` | 2023-01-01-preview | <ul style="padding-left: 0px;"><li>[AzAdvertizer](https://www.azadvertizer.net/azresourcetypes/microsoft.containerregistry_registries_cacherules.html)</li><li>[Template reference](https://learn.microsoft.com/en-us/azure/templates/Microsoft.ContainerRegistry/2023-01-01-preview/registries/cacheRules)</li></ul> |
+| `Microsoft.ContainerRegistry/registries/cacheRules` | 2023-06-01-preview | <ul style="padding-left: 0px;"><li>[AzAdvertizer](https://www.azadvertizer.net/azresourcetypes/microsoft.containerregistry_registries_cacherules.html)</li><li>[Template reference](https://learn.microsoft.com/en-us/azure/templates/Microsoft.ContainerRegistry/2023-06-01-preview/registries/cacheRules)</li></ul> |
 
 ## Parameters
 
@@ -75,7 +75,7 @@ The name of the cache rule. Will be derived from the source repository name if n
 
 - Required: No
 - Type: string
-- Default: `[replace(replace(parameters('sourceRepository'), '/', 'rule'), '.', '-')]`
+- Default: `[replace(replace(replace(parameters('sourceRepository'), '/', '-'), '.', '-'), '*', '')]`
 
 ### Parameter: `targetRepository`
 

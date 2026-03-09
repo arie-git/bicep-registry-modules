@@ -34,6 +34,7 @@ param workspaceResourceId string
 param disableIpMasking bool = true
 
 @description('''Optional. Disable Non-AAD based Auth. Default value is set to true.
+[Policy: drcp-appi-01] Must be true to prevent API key access.
 ''')
 param disableLocalAuth bool = true
 
@@ -96,15 +97,16 @@ param ingestionMode string?
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-@description('Optional. Tags of the resource.')
+@description('''Optional. Tags of the resource.
+[Policy: drcp-appi-05] Must not contain a tag named 'hidden-link:Insights.Sourcemap.Storage'.
+''')
 param tags object?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
 @description('''Optional. The diagnostic settings of the service.
-
-Use of any of the following categories will make this resource non-compliant: "AppEvents", "AppExceptions", "AppRequests", "AppTraces"
+[Policy: drcp-appi-04] Must not enable disallowed categories ("AppEvents", "AppExceptions", "AppRequests", "AppTraces") or the 'allLogs' category group.
 ''')
 param diagnosticSettings diagnosticSettingType?
 
@@ -294,8 +296,24 @@ output instrumentationKey string = appInsights.properties.InstrumentationKey
 @description('Application Insights Connection String.')
 output connectionString string = appInsights.properties.ConnectionString
 
+// --- Policy violation detection ---
+// drcp-appi-05: forbidden tag
+var hasSourcemapTag = contains(tags ?? {}, 'hidden-link:Insights.Sourcemap.Storage')
+
+// drcp-appi-04: forbidden diagnostic log categories or allLogs category group
+var forbiddenLogCategories = [
+  'AppEvents'
+  'AppExceptions'
+  'AppRequests'
+  'AppTraces'
+]
+var allLogCategoryGroups = flatten(map(diagnosticSettings ?? [], ds => map(ds.?logCategoriesAndGroups ?? [], lcg => lcg)))
+var hasForbiddenDiagnostics = length(filter(allLogCategoryGroups, lcg =>
+  contains(forbiddenLogCategories, lcg.?category ?? '') || (lcg.?categoryGroup ?? '') == 'allLogs'
+)) > 0
+
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = !disableLocalAuth
+output evidenceOfNonCompliance bool = !disableLocalAuth || hasSourcemapTag || hasForbiddenDiagnostics
 
 
 // =============== //

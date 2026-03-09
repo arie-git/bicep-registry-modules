@@ -51,7 +51,7 @@ This can only be used at server create time. If used for server update, it will 
 For updates individual APIs will need to be used.
 
 Setting administrators.azureADOnlyAuthentication to false will make the resource non-compliant.
-''')
+[Policy: drcp-sql-02] [Policy: drcp-sql-03]''')
 param administrators administratorsType?
 
 @allowed([
@@ -61,10 +61,10 @@ param administrators administratorsType?
 @description('''Optional. Minimal TLS version allowed. Default: 1.2
 
 Setting this parameter to values lower than '1.2' or 'None' will make the resource non-compliant.
-''')
+[Policy: drcp-sql-05]''')
 param minimalTlsVersion string = '1.2'
 
-@description('Optional. The databases to create in the server.')
+@description('Optional. The databases to create in the server. [Policy: drcp-sql-04] [Policy: drcp-sql-07]')
 param databases databaseType[]?
 
 @description('Optional. The Elastic Pools to create in the server.')
@@ -83,7 +83,7 @@ param keys keyType[]?
 For security reasons it should be disabled. If not specified, it will be disabled by default.
 
 Setting this parameter to 'Enabled' will make the resource non-compliant.
-''')
+[Policy: drcp-sql-01]''')
 @allowed([
   'Enabled'
   'Disabled'
@@ -94,7 +94,7 @@ param publicNetworkAccess string = 'Disabled'
 @description('''Optional. Whether or not to restrict outbound network access for this server. Default is 'Enabled'.
 
 Setting this parameter to 'Disabled' will make the resource non-compliant.
-''')
+[Policy: drcp-sql-01]''')
 @allowed([
   'Enabled'
   'Disabled'
@@ -116,7 +116,7 @@ param isIPv6Enabled string = 'Disabled'
 ])
 param connectionPolicy string = 'Default'
 
-@description('''Optional. Whether or not to enable advanced threat protection for this server. Default is 'Enabled'.''')
+@description('''Optional. Whether or not to enable advanced threat protection for this server. Default is 'Enabled'. [Policy: drcp-sql-08]''')
 @allowed([
   'Enabled'
   'Disabled'
@@ -129,15 +129,15 @@ param outboundFirewallRules outboundFirewallRuleType[]?
 @description('Optional. The encryption protection configuration.')
 param encryptionProtector encryptionProtectorType?
 
-@description('Optional. The security alert policies to create in the server. Default: state is Enabled.')
+@description('Optional. The security alert policies to create in the server. Default: state is Enabled. [Policy: drcp-sql-09]')
 param securityAlertPolicy securityPolicyAlertType = {
   state: 'Enabled'
 }
 
-@description('Optional. The vulnerability assessment (Classic) configuration.')
+@description('Optional. The vulnerability assessment (Classic) configuration. [Policy: drcp-sql-06]')
 param vulnerabilityAssessmentsClassic vulnerabilityAssessmentType?
 
-@description('Optional. The vulnerability assessment (Express) configuration. Default: \'Enabled\'')
+@description('Optional. The vulnerability assessment (Express) configuration. Default: \'Enabled\' [Policy: drcp-sql-06]')
 param vulnerabilityAssessmentsExpress sqlVulnerabilityAssessmentType = {
   state: 'Enabled'
 }
@@ -145,7 +145,7 @@ param vulnerabilityAssessmentsExpress sqlVulnerabilityAssessmentType = {
 @description('Optional. The audit settings configuration.')
 param auditSettings auditSettingsType?
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sql-10] [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType
 
 
@@ -580,7 +580,7 @@ output databases array = [for (database, index) in (databases ?? []): {
 }]
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = publicNetworkAccess != 'Disabled' || restrictOutboundNetworkAccess != 'Enabled' || ! (administrators.?azureADOnlyAuthentication ?? true) || securityAlertPolicy.?state != 'Enabled' || ( empty(vulnerabilityAssessmentsClassic) && empty(vulnerabilityAssessmentsExpress))
+output evidenceOfNonCompliance bool = publicNetworkAccess != 'Disabled' || restrictOutboundNetworkAccess != 'Enabled' || ! (administrators.?azureADOnlyAuthentication ?? true) || minimalTlsVersion < '1.2' || securityAlertPolicy.?state != 'Enabled' || advancedthreatProtection != 'Enabled' || ( empty(vulnerabilityAssessmentsClassic) && empty(vulnerabilityAssessmentsExpress))
 
 // =============== //
 //   Definitions   //

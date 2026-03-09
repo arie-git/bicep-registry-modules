@@ -41,7 +41,7 @@ param isAutoInflateEnabled bool = false
 @description('Optional. Upper limit of throughput units when AutoInflate is enabled, value should be within 0 to 20 throughput units.')
 param maximumThroughputUnits int = 1
 
-@description('Optional. Authorization Rules for the Event Hub namespace.')
+@description('Optional. Authorization Rules for the Event Hub namespace. [Policy: drcp-evh-06]')
 param authorizationRules array = [
   {
     name: 'RootManageSharedAccessKey'
@@ -53,7 +53,7 @@ param authorizationRules array = [
   }
 ]
 
-@description('Optional. This property disables SAS authentication for the Event Hubs namespace.')
+@description('Optional. This property disables SAS authentication for the Event Hubs namespace. [Policy: drcp-evh-05]')
 param disableLocalAuth bool = true
 
 @description('Optional. Value that indicates whether Kafka is enabled for Event Hubs Namespace.')
@@ -64,10 +64,10 @@ param kafkaEnabled bool = false
   '1.1'
   '1.2'
 ])
-@description('Optional. The minimum TLS version for the cluster to support.')
+@description('Optional. The minimum TLS version for the cluster to support. [Policy: drcp-evh-07]')
 param minimumTlsVersion string = '1.2'
 
-@description('Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.')
+@description('Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set. [Policy: drcp-evh-01]')
 @allowed([
   ''
   'Disabled'
@@ -76,10 +76,10 @@ param minimumTlsVersion string = '1.2'
 ])
 param publicNetworkAccess string = ''
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType[]?
 
-@description('Optional. Configure networking options. This object contains IPs/Subnets to allow or restrict access to private endpoints only. For security reasons, it is recommended to configure this object on the Namespace.')
+@description('Optional. Configure networking options. This object contains IPs/Subnets to allow or restrict access to private endpoints only. For security reasons, it is recommended to configure this object on the Namespace. [Policy: drcp-evh-03, drcp-evh-04]')
 param networkRuleSets networkRuleSetType?
 
 @description('Optional. The diagnostic settings of the service.')
@@ -95,7 +95,7 @@ param managedIdentities managedIdentityType?
 @description('Optional. The customer managed key definition.')
 param customerManagedKey customerManagedKeyType?
 
-@description('Optional. Enable infrastructure encryption (double encryption). Note, this setting requires the configuration of Customer-Managed-Keys (CMK) via the corresponding module parameters.')
+@description('Optional. Enable infrastructure encryption (double encryption). Note, this setting requires the configuration of Customer-Managed-Keys (CMK) via the corresponding module parameters. [Policy: drcp-evh-08]')
 param requireInfrastructureEncryption bool = false
 
 @description('Optional. Array of role assignments to create.')
@@ -485,7 +485,7 @@ output secondaryKey string = listkeys(
 ).secondaryKey
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (disableLocalAuth != true || eventHubNamespace.properties.publicNetworkAccess != 'Disabled' || minimumTlsVersion != '1.2')
+output evidenceOfNonCompliance bool = (disableLocalAuth != true || eventHubNamespace.properties.publicNetworkAccess != 'Disabled' || minimumTlsVersion != '1.2' || zoneRedundant != true || (networkRuleSets.?trustedServiceAccessEnabled ?? false) != false)
 
 // =============== //
 //   Definitions   //

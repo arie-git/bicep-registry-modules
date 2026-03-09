@@ -22,12 +22,14 @@ param name string
 Default: the module calculates this ID using the name of the resource.
 
 To be compliant, the resource group name needs to end with an authorized suffix, e.g. '-adbmanaged-rg'.
+[Policy: drcp-adb-w22]
 ''')
 param managedResourceGroupResourceId string = ''
 
 @description('''Optional. The pricing tier of workspace. Default: premium.
 
-Setting this parameter to a value other than 'premium' will make the resource non-compliant.''')
+Setting this parameter to a value other than 'premium' will make the resource non-compliant.
+[Policy: drcp-adb-r02]''')
 @allowed([
   'trial'
   'standard'
@@ -94,21 +96,25 @@ param tags object?
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
-@description('Required. The resource ID of a Virtual Network where Databricks clusters should be created.')
+@description('''Required. The resource ID of a Virtual Network where Databricks clusters should be created.
+[Policy: drcp-adb-r03]''')
 param customVirtualNetworkResourceId string
 
 @description('Optional. The resource ID of a Azure Machine Learning workspace to link with Databricks workspace.')
 param amlWorkspaceResourceId string = ''
 
-@description('Required. The name of the 1st Subnet for clusters within the Virtual Network.')
+@description('''Required. The name of the 1st Subnet for clusters within the Virtual Network.
+[Policy: drcp-adb-r03]''')
 param customPrivateSubnetName string
 
-@description('Required. The name of a 2nd Subnet for clusters within the Virtual Network.')
+@description('''Required. The name of a 2nd Subnet for clusters within the Virtual Network.
+[Policy: drcp-adb-r03]''')
 param customPublicSubnetName string
 
 @description('''Optional. Disable Public IP. Default: true
 
 Setting this parameter to false will make the resource non-compliant.
+[Policy: drcp-adb-r04]
 ''')
 param disablePublicIp bool = true
 
@@ -137,6 +143,7 @@ param publicIpName string = ''
 Platform managed keys will be used for data at rest.
 
 Setting this parameter to 'false' will make the resource non-compliant.
+[Policy: drcp-adb-w10]
 ''')
 param requireInfrastructureEncryption bool = true
 
@@ -187,6 +194,7 @@ param managedVnetAddressPrefix string = '10.139'
 @description('''Optional. The network access type for accessing workspace. Set value to disabled to access workspace only via private link. Default: Disabled
 
 Setting this parameter to 'Enabled' will make the resource non-compliant.
+[Policy: drcp-adb-r01]
 ''')
 @allowed([
   'Disabled'
@@ -236,6 +244,7 @@ param complianceSecurityProfile string = 'Enabled'
 Available values for 'service' are: 'databricks_ui_api'.
 
 Default: 'databricks_ui_api' is used if  subnetResourceId is provided but 'service' is not specified.
+[Policy: drcp-sub-07]
 ''')
 param privateEndpoints privateEndpointType
 
