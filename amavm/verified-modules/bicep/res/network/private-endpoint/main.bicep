@@ -2,7 +2,7 @@ metadata name = 'Private Endpoint'
 metadata description = 'This module deploys a Private Endpoint.'
 metadata owner = 'AMCCC'
 metadata compliance = 'Private endpoints to other subscriptions are not allowed by default.'
-metadata complianceVersion = '20241022'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the private endpoint resource to create.')
 param name string
@@ -76,7 +76,7 @@ var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemet
 
 // Resources
 
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' =
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' =
   if (enableTelemetry) {
     name: take('${telemetryId}.res.network-privateendpoint.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',64)
     properties: {
@@ -95,7 +95,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' =
     }
   }
 
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2024-01-01' = {
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2025-05-01' = {
   name: name
   location: location
   tags: finalTags

@@ -6,12 +6,12 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "9158956301520673823"
+      "templateHash": "852879539301151873"
     },
     "name": "Data Collection Rules",
     "description": "This module deploys a Data Collection Rule.",
     "owner": "AMCCC",
-    "complianceVersion": "20250328",
+    "complianceVersion": "20260309",
     "compliance": "This is a utility module. No specific compliance requirements."
   },
   "definitions": {
@@ -544,7 +544,7 @@
     "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2024-03-01",
+      "apiVersion": "2024-07-01",
       "name": "[take(format('{0}.res.insights-datacollectionrule.{1}.{2}', variables('telemetryId'), replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4)), 64)]",
       "properties": {
         "mode": "Incremental",
@@ -564,7 +564,7 @@
     "dataCollectionRule": {
       "condition": "[not(equals(parameters('dataCollectionRuleProperties').kind, 'All'))]",
       "type": "Microsoft.Insights/dataCollectionRules",
-      "apiVersion": "2023-03-11",
+      "apiVersion": "2024-03-11",
       "name": "[parameters('name')]",
       "kind": "[parameters('dataCollectionRuleProperties').kind]",
       "location": "[parameters('location')]",
@@ -575,7 +575,7 @@
     "dataCollectionRuleAll": {
       "condition": "[equals(parameters('dataCollectionRuleProperties').kind, 'All')]",
       "type": "Microsoft.Insights/dataCollectionRules",
-      "apiVersion": "2023-03-11",
+      "apiVersion": "2024-03-11",
       "name": "[parameters('name')]",
       "location": "[parameters('location')]",
       "tags": "[variables('finalTags')]",
@@ -612,7 +612,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "3904140861442672302"
+              "templateHash": "7533986185759573812"
             }
           },
           "definitions": {
@@ -760,7 +760,7 @@
             "dataCollectionRule": {
               "existing": true,
               "type": "Microsoft.Insights/dataCollectionRules",
-              "apiVersion": "2023-03-11",
+              "apiVersion": "2024-03-11",
               "name": "[parameters('dataCollectionRuleName')]"
             },
             "dataCollectionRule_roleAssignments": {
@@ -829,7 +829,7 @@
       "metadata": {
         "description": "The location the resource was deployed into."
       },
-      "value": "[if(equals(parameters('dataCollectionRuleProperties').kind, 'All'), reference('dataCollectionRuleAll', '2023-03-11', 'full').location, reference('dataCollectionRule', '2023-03-11', 'full').location)]"
+      "value": "[if(equals(parameters('dataCollectionRuleProperties').kind, 'All'), reference('dataCollectionRuleAll', '2024-03-11', 'full').location, reference('dataCollectionRule', '2024-03-11', 'full').location)]"
     },
     "systemAssignedMIPrincipalId": {
       "type": "string",
@@ -837,7 +837,7 @@
       "metadata": {
         "description": "The principal ID of the system assigned identity."
       },
-      "value": "[if(equals(parameters('dataCollectionRuleProperties').kind, 'All'), tryGet(tryGet(if(equals(parameters('dataCollectionRuleProperties').kind, 'All'), reference('dataCollectionRuleAll', '2023-03-11', 'full'), null()), 'identity'), 'principalId'), tryGet(tryGet(if(not(equals(parameters('dataCollectionRuleProperties').kind, 'All')), reference('dataCollectionRule', '2023-03-11', 'full'), null()), 'identity'), 'principalId'))]"
+      "value": "[if(equals(parameters('dataCollectionRuleProperties').kind, 'All'), tryGet(tryGet(if(equals(parameters('dataCollectionRuleProperties').kind, 'All'), reference('dataCollectionRuleAll', '2024-03-11', 'full'), null()), 'identity'), 'principalId'), tryGet(tryGet(if(not(equals(parameters('dataCollectionRuleProperties').kind, 'All')), reference('dataCollectionRule', '2024-03-11', 'full'), null()), 'identity'), 'principalId'))]"
     },
     "evidenceOfNonCompliance": {
       "type": "bool",

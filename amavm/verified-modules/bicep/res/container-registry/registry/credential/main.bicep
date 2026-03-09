@@ -18,13 +18,11 @@ param kvUserNameSecretUri string
 @description('Required. KeyVault Secret URI for accessing the password.')
 param kvPwdSecretUri string
 
-#disable-next-line use-recent-api-versions
-resource registry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+resource registry 'Microsoft.ContainerRegistry/registries@2023-06-01-preview' existing = {
   name: registryName
 }
 
-#disable-next-line use-recent-api-versions
-resource credentialSetResource 'Microsoft.ContainerRegistry/registries/credentialSets@2023-01-01-preview' = {
+resource credentialSetResource 'Microsoft.ContainerRegistry/registries/credentialSets@2023-11-01-preview' = {
   name: name
   parent: registry
   identity: {

@@ -7,7 +7,7 @@ metadata compliance = '''Compliant usage of ServiceBus Namespace requires:
 - publicNetworkAccess: 'Disabled'
 - managedIdentity: not empty
 '''
-metadata complianceVersion = '20250428'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the Service Bus Namespace.')
 @maxLength(260)
@@ -181,7 +181,7 @@ var formattedRoleAssignments = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.servicebus-namespace.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   properties: {
     mode: 'Incremental'
@@ -199,7 +199,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
   name: last(split((customerManagedKey.?keyVaultResourceId!), '/'))
   scope: resourceGroup(
     split(customerManagedKey.?keyVaultResourceId!, '/')[2],

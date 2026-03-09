@@ -61,7 +61,7 @@ param state string = 'Enabled'
 //                                 : null
 
 
-resource server 'Microsoft.Sql/servers@2023-05-01-preview' existing = {
+resource server 'Microsoft.Sql/servers@2023-08-01' existing = {
   name: serverName
 }
 
@@ -74,7 +74,7 @@ resource server 'Microsoft.Sql/servers@2023-05-01-preview' existing = {
 //   }
 // }
 
-resource securityAlertPolicy 'Microsoft.Sql/servers/securityAlertPolicies@2023-05-01-preview' = {
+resource securityAlertPolicy 'Microsoft.Sql/servers/securityAlertPolicies@2023-08-01' = {
   name: 'Default'
   parent: server
   properties: {

@@ -2,7 +2,7 @@ metadata name = 'Private Endpoint Private DNS Zone Groups'
 metadata description = 'This module deploys a Private Endpoint Private DNS Zone Group.'
 metadata owner = 'AMCCC'
 metadata compliance = 'There are nio special compliance requirements.'
-metadata complianceVersion = '20240701'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent private endpoint. Required if the template is used in a standalone deployment.')
 param privateEndpointName string
@@ -24,11 +24,11 @@ var privateDnsZoneConfigsVar = [
   }
 ]
 
-resource privateEndpoint 'Microsoft.Network/privateEndpoints@2023-11-01' existing = {
+resource privateEndpoint 'Microsoft.Network/privateEndpoints@2025-05-01' existing = {
   name: privateEndpointName
 }
 
-resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-11-01' = {
+resource privateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-05-01' = {
   name: name
   parent: privateEndpoint
   properties: {

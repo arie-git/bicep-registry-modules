@@ -1,7 +1,7 @@
 metadata name = 'DBforPostgreSQL Flexible Servers'
 metadata description = 'This module deploys a DBforPostgreSQL Flexible Server.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20251009'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of this module requires the following parameter values:
 - publicNetworkAccess = 'Disabled'
 - delegatedSubnetResourceId = not empty
@@ -138,7 +138,7 @@ param customerManagedKey customerManagedKeyType
 
 
 @description('Optional. Properties for the maintenence window. If provided, \'customWindow\' property must exist and set to \'Enabled\'.')
-param maintenanceWindow resourceInput<'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01'>.properties.maintenanceWindow = {
+param maintenanceWindow resourceInput<'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-preview'>.properties.maintenanceWindow = {
   customWindow: 'Enabled'
   dayOfWeek: 0
   startHour: 1
@@ -216,7 +216,7 @@ param enableAdvancedThreatProtection bool = true
 param roleAssignments roleAssignmentType
 
 @description('Optional. Tags of the resource.')
-param tags resourceInput<'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01'>.tags?
+param tags resourceInput<'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-preview'>.tags?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
@@ -291,7 +291,7 @@ var defaultLogCategories = [for category in defaultLogCategoryNames ?? []: {
 //   : concat(configurationsDefault, configurationsAdditional)
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.dbforpostgresql-flexibleserver.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
     64
@@ -332,7 +332,7 @@ resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
   )
 }
 
-resource flexibleServer 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
+resource flexibleServer 'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-preview' = {
   name: name
   location: location
   tags: finalTags

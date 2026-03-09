@@ -282,7 +282,7 @@ var defaultMetricsCategories = [for category in defaultMetricsCategoryNames ?? [
   category: category
 }]
 
-import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../../bicep-shared/environments.bicep'
+import { telemetryId } from '../../../../../bicep-shared/environments.bicep'
 
 var versionInfo = loadJsonContent('version.json')
 var moduleVersion = versionInfo.version
@@ -290,7 +290,7 @@ var finalTags = union(tags ?? {}, {telemetryAVM: telemetryId, telemetryType: 're
 
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.sql-database.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, serverName, name, location), 0, 4)}',
     64
@@ -311,11 +311,11 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource server 'Microsoft.Sql/servers@2023-08-01-preview' existing = {
+resource server 'Microsoft.Sql/servers@2023-08-01' existing = {
   name: serverName
 }
 
-resource database 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
+resource database 'Microsoft.Sql/servers/databases@2023-08-01' = {
   name: name
   parent: server
   location: location

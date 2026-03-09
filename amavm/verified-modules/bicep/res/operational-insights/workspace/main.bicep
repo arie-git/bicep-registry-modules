@@ -2,7 +2,7 @@ metadata name = 'Log Analytics Workspace'
 metadata description = 'This module deploys a Log Analytics Workspace.'
 metadata owner = 'AMCCC'
 metadata compliance = 'Ensure that local authentication and data export are disabled, no linked storage accounts, and that resource permissions are used for access.'
-metadata complianceVersion = '20240626'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the Log Analytics workspace.')
 param name string
@@ -181,7 +181,7 @@ var defaultLogCategories = [for category in defaultLogCategoryNames ?? []: {
 
 #disable-next-line prefer-interpolation
 var concatUniqueIds = concat(location, name)
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.operationalinsights-workspace.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, concatUniqueIds), 0, 4)}',
     64
@@ -202,7 +202,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' = {
   location: location
   name: name
   tags: finalTags

@@ -21,11 +21,11 @@ param managedClusterName string
 ])
 param name string = 'aksManagedAutoUpgradeSchedule'
 
-resource managedCluster 'Microsoft.ContainerService/managedClusters@2024-08-01' existing = {
+resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' existing = {
   name: managedClusterName
 }
 
-resource aksManagedAutoUpgradeSchedule 'Microsoft.ContainerService/managedClusters/maintenanceConfigurations@2024-08-01' = {
+resource aksManagedAutoUpgradeSchedule 'Microsoft.ContainerService/managedClusters/maintenanceConfigurations@2025-09-01' = {
   name: name
   parent: managedCluster
   properties: {

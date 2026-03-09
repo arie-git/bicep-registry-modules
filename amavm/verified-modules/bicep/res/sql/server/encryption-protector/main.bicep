@@ -18,11 +18,11 @@ param autoRotationEnabled bool = false
 ])
 param serverKeyType string = 'ServiceManaged'
 
-resource sqlServer 'Microsoft.Sql/servers@2023-08-01-preview' existing = {
+resource sqlServer 'Microsoft.Sql/servers@2023-08-01' existing = {
   name: sqlServerName
 }
 
-resource encryptionProtector 'Microsoft.Sql/servers/encryptionProtector@2023-05-01-preview' = {
+resource encryptionProtector 'Microsoft.Sql/servers/encryptionProtector@2023-08-01' = {
   name: 'current'
   parent: sqlServer
   properties: {

@@ -4,7 +4,7 @@ metadata owner = 'AMCCC'
 metadata compliance = '''Compliant usage of this resource requires following parameter values:
 - attributesExp: set to a value less than 1 year from the creation.
 '''
-metadata complianceVersion = '20240719'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent key vault. Required if the template is used in a standalone deployment.')
 param keyVaultName string
@@ -78,7 +78,7 @@ var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemet
 
 #disable-next-line no-deployments-resources
 // Resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.security-key-vault-secret.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, keyVaultName), 0, 4)}',
     64
@@ -99,11 +99,11 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableT
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
   name: keyVaultName
 }
 
-resource secret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+resource secret 'Microsoft.KeyVault/vaults/secrets@2024-11-01' = {
   name: name
   parent: keyVault
   tags: finalTags

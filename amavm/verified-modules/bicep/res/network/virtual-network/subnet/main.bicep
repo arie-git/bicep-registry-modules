@@ -6,7 +6,7 @@ A compliant subnet requires:
 - 'routeTableResourceId' parameter must be not empty
 - 'networkSecurityGroupResourceId' parameter must be not empty
 - 'privateEndpointNetworkPolicies' parameter must be either 'Enabled' or 'RouteTableEnabled'.'''
-metadata complianceVersion = '20240626'
+metadata complianceVersion = '20260309'
 
 @description('Optional. Array of IpAllocation which reference this subnet.')
 param ipAllocations {
@@ -35,7 +35,7 @@ var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
 
 #disable-next-line prefer-interpolation
 var concatUniqueIds = concat(virtualNetworkName, subnet.?networkSecurityGroupResourceId ?? '', subnet.?routeTableResourceId ?? '')
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     'amavm1.res.network-subnet.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, concatUniqueIds), 0, 4)}',
     64
@@ -56,11 +56,11 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' existing = {
   name: virtualNetworkName
 }
 
-resource subnetRes 'Microsoft.Network/virtualNetworks/subnets@2023-11-01' = {
+resource subnetRes 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   name: subnet.name
   parent: virtualNetwork
   properties: {

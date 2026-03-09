@@ -5,7 +5,7 @@ metadata compliance = '''Compliant usage of Static Web App requires:
 
 - publicNetworkAccess: 'Disabled'
 '''
-metadata complianceVersion = '20241111'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the static site.')
 @minLength(1)
@@ -155,7 +155,7 @@ var moduleVersion = versionInfo.version
 var finalTags = union(tags ?? {}, {telemetryAVM: telemetryId, telemetryType: 'res', telemetryAVMversion: moduleVersion})
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.web-staticsite.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64

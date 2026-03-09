@@ -1,7 +1,7 @@
 metadata name = 'Data Collection Rules'
 metadata description = 'This module deploys a Data Collection Rule.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20250328'
+metadata complianceVersion = '20260309'
 metadata compliance = 'This is a utility module. No specific compliance requirements.'
 
 // ============== //
@@ -85,7 +85,7 @@ var dataCollectionRulePropertiesUnion = union(
 )
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.insights-datacollectionrule.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   properties: {
     mode: 'Incremental'
@@ -103,7 +103,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource dataCollectionRule 'Microsoft.Insights/dataCollectionRules@2023-03-11' = if (dataCollectionRuleProperties.kind != 'All') {
+resource dataCollectionRule 'Microsoft.Insights/dataCollectionRules@2024-03-11' = if (dataCollectionRuleProperties.kind != 'All') {
   kind: dataCollectionRuleProperties.kind
   location: location
   name: name
@@ -113,7 +113,7 @@ resource dataCollectionRule 'Microsoft.Insights/dataCollectionRules@2023-03-11' 
 }
 
 // Using a separate resource for parameter kind: 'All' as it requires that the "kind' is not set on the resource and 'kind: null' is not allowed for this resource type
-resource dataCollectionRuleAll 'Microsoft.Insights/dataCollectionRules@2023-03-11' = if (dataCollectionRuleProperties.kind == 'All') {
+resource dataCollectionRuleAll 'Microsoft.Insights/dataCollectionRules@2024-03-11' = if (dataCollectionRuleProperties.kind == 'All') {
   location: location
   name: name
   tags: finalTags

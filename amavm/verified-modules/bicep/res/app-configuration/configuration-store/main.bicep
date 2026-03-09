@@ -5,7 +5,7 @@ metadata compliance = '''Compliant usage of App Configuration requires:
 - disableLocalAuth: true
 - publicNetworkAccess: 'Disabled'
 '''
-metadata complianceVersion = '20250402'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the Azure App Configuration.')
 param name string
@@ -142,7 +142,7 @@ var formattedRoleAssignments = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.appconfiguration-configurationstore.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   properties: {
     mode: 'Incremental'
@@ -160,7 +160,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-12-01-preview' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
   name: last(split((customerManagedKey.?keyVaultResourceId!), '/'))
   scope: resourceGroup(
     split(customerManagedKey.?keyVaultResourceId!, '/')[2],
@@ -180,7 +180,7 @@ resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
   )
 }
 
-resource configurationStore 'Microsoft.AppConfiguration/configurationStores@2024-05-01' = {
+resource configurationStore 'Microsoft.AppConfiguration/configurationStores@2025-02-01-preview' = {
   name: name
   location: location
   tags: finalTags

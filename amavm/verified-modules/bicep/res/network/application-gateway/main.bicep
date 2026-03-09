@@ -12,7 +12,7 @@ metadata compliance = '''Compliant usage of this module requires the following p
 - backendPool protocol = 'https'
 - requestRoutingRules not empty
 '''
-metadata complianceVersion = '20250506'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the Application Gateway.')
 @maxLength(80)
@@ -266,7 +266,7 @@ var formattedRoleAssignments = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.network-appgw.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
     64
@@ -295,7 +295,7 @@ module wafPolicy 'br/amavm:res/network/application-gateway-web-application-firew
   }
 }
 
-resource applicationGateway 'Microsoft.Network/applicationGateways@2024-05-01' = {
+resource applicationGateway 'Microsoft.Network/applicationGateways@2025-05-01' = {
   name: name
   location: location
   tags: finalTags

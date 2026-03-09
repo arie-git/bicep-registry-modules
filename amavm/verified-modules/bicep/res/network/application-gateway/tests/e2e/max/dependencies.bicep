@@ -18,7 +18,7 @@ param certDeploymentScriptName string
 
 var addressPrefix = '10.0.0.0/16'
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   name: virtualNetworkName
   location: location
   properties: {
@@ -45,11 +45,11 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   }
 }
 
-resource privateDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource privateDNSZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: 'privatelink.appgateway.net'
   location: 'global'
 
-  resource virtualNetworkLinks 'virtualNetworkLinks@2020-06-01' = {
+  resource virtualNetworkLinks 'virtualNetworkLinks@2024-06-01' = {
     name: '${virtualNetwork.name}-vnetlink'
     location: 'global'
     properties: {
@@ -61,7 +61,7 @@ resource privateDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   }
 }
 
-resource publicIP 'Microsoft.Network/publicIPAddresses@2023-04-01' = {
+resource publicIP 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
   name: publicIPName
   location: location
   sku: {
@@ -114,7 +114,7 @@ resource keyPermissions 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource certDeploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
+resource certDeploymentScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
   name: certDeploymentScriptName
   location: location
   kind: 'AzurePowerShell'

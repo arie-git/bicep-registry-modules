@@ -1,7 +1,7 @@
 metadata name = 'Metric Alerts'
 metadata description = 'This module deploys a Metric Alert.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20250328'
+metadata complianceVersion = '20260309'
 metadata compliance = 'This is a utility module. No specific compliance requirements.'
 
 @description('Required. The name of the alert.')
@@ -106,7 +106,7 @@ var formattedRoleAssignments = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.insights-metricalert.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   properties: {
     mode: 'Incremental'

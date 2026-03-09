@@ -1,7 +1,7 @@
 metadata name = 'Azure Data Factory Linked Service'
 metadata description = 'This module deploys a Linked Service for Azure Data Factory.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240722'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Data Factory requires:
 - type : from the allowed list of linked service types
 - typeProperties : storing the connection secrets of applicable linked services such as Sql Server, File Server in the Azure Key-Vault
@@ -144,7 +144,7 @@ var properties = type == 'AzureKeyVault'
 // Dependencies //
 // ============ //
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-11-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.data-factory-integration-runtime.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, dataFactoryName), 0, 4)}',
     64

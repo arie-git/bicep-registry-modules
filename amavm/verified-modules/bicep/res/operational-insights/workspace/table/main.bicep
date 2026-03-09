@@ -75,11 +75,11 @@ var builtInRoleNames = {
 //   Deployments   //
 // =============== //
 
-resource workspace 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
+resource workspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
   name: logAnalyticsWorkspaceName
 }
 
-resource table 'Microsoft.OperationalInsights/workspaces/tables@2023-09-01' = {
+resource table 'Microsoft.OperationalInsights/workspaces/tables@2025-02-01' = {
   parent: workspace
   name: name
   properties: {

@@ -2,7 +2,7 @@ metadata name = 'Service Bus Namespace Topic'
 metadata description = 'This module deploys a Service Bus Namespace Topic.'
 metadata owner = 'AMCCC'
 metadata compliance = ''
-metadata complianceVersion = '20250415'
+metadata complianceVersion = '20260309'
 
 
 @description('Conditional. The name of the parent Service Bus Namespace for the Service Bus Topic. Required if the template is used in a standalone deployment.')
@@ -107,7 +107,7 @@ var formattedRoleAssignments = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: '${telemetryId}.res.servicebus-ns-topic.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}'
   properties: {
     mode: 'Incremental'

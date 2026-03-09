@@ -14,11 +14,11 @@ param staticSiteName string
 @description('Optional. Name of the backend to link to the static site.')
 param name string = uniqueString(backendResourceId)
 
-resource staticSite 'Microsoft.Web/staticSites@2024-04-01' existing = {
+resource staticSite 'Microsoft.Web/staticSites@2022-03-01' existing = {
   name: staticSiteName
 }
 
-resource linkedBackend 'Microsoft.Web/staticSites/linkedBackends@2024-04-01' = {
+resource linkedBackend 'Microsoft.Web/staticSites/linkedBackends@2022-03-01' = {
   name: name
   parent: staticSite
   properties: {

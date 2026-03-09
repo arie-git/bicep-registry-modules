@@ -1,7 +1,7 @@
 metadata name = 'Action Groups'
 metadata description = 'This module deploys an Action Group.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20250328'
+metadata complianceVersion = '20260309'
 metadata compliance = 'This is a utility module. No specific compliance requirements.'
 
 // TODO - Array to types
@@ -82,7 +82,7 @@ var formattedRoleAssignments = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.insights-actiongroup.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   properties: {
     mode: 'Incremental'
@@ -100,7 +100,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
+resource actionGroup 'Microsoft.Insights/actionGroups@2024-10-01-preview' = {
   name: name
   location: location
   tags: finalTags

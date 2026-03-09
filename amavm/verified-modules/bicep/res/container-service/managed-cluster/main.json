@@ -6,12 +6,12 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "13567169499852129919"
+      "templateHash": "9333823293417707353"
     },
     "name": "Azure Kubernetes Service (AKS) Managed Cluster",
     "description": "This module deploys an Azure Kubernetes Service (AKS) Managed Cluster.",
     "owner": "AMCCC",
-    "complianceVersion": "20240829",
+    "complianceVersion": "20260309",
     "compliance": "Compliant usage of this module requires the following parameter values:\n\n- aadProfile.enableAzureRBAC: true, and enableRBAC: true\n- addonAzurePolicy.enabled: true\n- apiServerAccessProfile.disableRunCommand: true\n- apiServerAccessProfile.enablePrivateCluster: true\n- diagnosticSettings: 'workspaceResourceId' is not empty and required 'categories' are provided (see parameter description for more details)\n- disableLocalAccounts: true\n- enableRBAC: true\n- kubernetesVersion: null (default) or one of supported versions [Microsoft Learn](https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli)\n- securityProfileDefender.securityMonitoring.enabled: true\n- publicNetworkAccess: 'Disabled'\n- networkOutboundType: not 'loadBalancer'\n"
   },
   "definitions": {
@@ -2351,7 +2351,7 @@
     "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2024-03-01",
+      "apiVersion": "2024-07-01",
       "name": "[take(format('{0}.res.containerservice-managedcluster.{1}.{2}', variables('telemetryId'), replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('name'), parameters('location')), 0, 4)), 64)]",
       "properties": {
         "mode": "Incremental",
@@ -2370,7 +2370,7 @@
     },
     "managedCluster": {
       "type": "Microsoft.ContainerService/managedClusters",
-      "apiVersion": "2024-08-01",
+      "apiVersion": "2025-09-01",
       "name": "[parameters('name')]",
       "location": "[parameters('location')]",
       "tags": "[variables('finalTags')]",
@@ -2572,7 +2572,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.41.2.15936",
-              "templateHash": "4393828069129059802"
+              "templateHash": "8903309883011205407"
             },
             "name": "Azure Kubernetes Service (AKS) Managed Cluster Maintenance Configurations",
             "description": "This module deploys an Azure Kubernetes Service (AKS) Managed Cluster Maintenance Configurations.",
@@ -2893,12 +2893,12 @@
             "managedCluster": {
               "existing": true,
               "type": "Microsoft.ContainerService/managedClusters",
-              "apiVersion": "2024-08-01",
+              "apiVersion": "2025-09-01",
               "name": "[parameters('managedClusterName')]"
             },
             "aksManagedAutoUpgradeSchedule": {
               "type": "Microsoft.ContainerService/managedClusters/maintenanceConfigurations",
-              "apiVersion": "2024-08-01",
+              "apiVersion": "2025-09-01",
               "name": "[format('{0}/{1}', parameters('managedClusterName'), parameters('name'))]",
               "properties": {
                 "maintenanceWindow": "[parameters('maintenanceWindow')]",
@@ -2971,7 +2971,7 @@
       "metadata": {
         "description": "The principal ID of the system assigned identity."
       },
-      "value": "[coalesce(tryGet(tryGet(reference('managedCluster', '2024-08-01', 'full'), 'identity'), 'principalId'), '')]"
+      "value": "[coalesce(tryGet(tryGet(reference('managedCluster', '2025-09-01', 'full'), 'identity'), 'principalId'), '')]"
     },
     "kubeletIdentityClientId": {
       "type": "string",
@@ -3027,7 +3027,7 @@
       "metadata": {
         "description": "The location the resource was deployed into."
       },
-      "value": "[reference('managedCluster', '2024-08-01', 'full').location]"
+      "value": "[reference('managedCluster', '2025-09-01', 'full').location]"
     },
     "oidcIssuerUrl": {
       "type": "string",

@@ -63,7 +63,7 @@ If provided and isAzureMonitorTargetEnabled=true the 'master' database will be c
 param workspaceResourceId string?
 
 
-resource server 'Microsoft.Sql/servers@2023-05-01-preview' existing = {
+resource server 'Microsoft.Sql/servers@2023-08-01' existing = {
   name: serverName
 }
 
@@ -83,7 +83,7 @@ module storageAccount_sbdc_rbac 'modules/nested_storageRoleAssignment.bicep' = i
   }
 }
 
-resource auditSettings 'Microsoft.Sql/servers/auditingSettings@2023-05-01-preview' = {
+resource auditSettings 'Microsoft.Sql/servers/auditingSettings@2023-08-01' = {
   name: name
   parent: server
   properties: {
@@ -105,7 +105,7 @@ resource auditSettings 'Microsoft.Sql/servers/auditingSettings@2023-05-01-previe
   }
 }
 
-resource masterDb 'Microsoft.Sql/servers/databases@2023-05-01-preview' existing = if (isAzureMonitorTargetEnabled && !empty(workspaceResourceId)) {
+resource masterDb 'Microsoft.Sql/servers/databases@2023-08-01' existing = if (isAzureMonitorTargetEnabled && !empty(workspaceResourceId)) {
   parent: server
   name: 'master'
 }

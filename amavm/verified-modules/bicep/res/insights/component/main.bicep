@@ -1,7 +1,7 @@
 metadata name = 'Application Insights'
 metadata description = 'This component deploys an Application Insights instance.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20250912'
+metadata complianceVersion = '20260309'
 metadata compliance = '''
 
 Ensure that:
@@ -154,7 +154,7 @@ var defaultLogCategories = [for category in defaultLogCategoryNames ?? []: {
 
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.insights-component.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',64)
   properties: {
     mode: 'Incremental'

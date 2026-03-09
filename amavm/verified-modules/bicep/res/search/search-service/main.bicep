@@ -1,7 +1,7 @@
 metadata name = 'Search Services'
 metadata description = 'This module deploys a Search Service.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20260108'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of this module requires the following parameter values:
 - disableLocalAuth: true
 - publicNetworkAccess: Disabled
@@ -201,7 +201,7 @@ var defaultLogCategories = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.search-searchservice.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
     64

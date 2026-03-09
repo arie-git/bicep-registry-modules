@@ -2,7 +2,7 @@ metadata name = 'Azure Databricks Access Connector'
 metadata description = 'This module deploys an Azure Databricks Access Connector.'
 metadata owner = 'AMCCC'
 metadata compliance = 'There are no special compliance requirements for this resource.'
-metadata complianceVersion = '20240702'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the Azure Databricks access connector to create.')
 param name string
@@ -56,7 +56,7 @@ var versionInfo = loadJsonContent('version.json')
 var moduleVersion = versionInfo.version
 var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemetryAVMversion: moduleVersion},tags??{})
 
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' =
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' =
   if (enableTelemetry) {
     name: take(
       '${telemetryId}.res.databricks-accessconnector.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',

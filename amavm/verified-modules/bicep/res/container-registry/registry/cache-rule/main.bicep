@@ -1,7 +1,7 @@
 metadata name = 'Azure Container Registry Cache'
 metadata description = 'Cache for Azure Container Registry (Preview) feature allows users to cache container images in a private container registry. Cache for ACR, is a preview feature available in Basic, Standard, and Premium service tiers ([ref](https://learn.microsoft.com/en-us/azure/container-registry/tutorial-registry-cache)).'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240805'
+metadata complianceVersion = '20260309'
 metadata compliance = '''There are no special compliance requirements for Cache Rules.'''
 
 @description('Required. The name of the parent registry. Required if the template is used in a standalone deployment.')
@@ -26,7 +26,7 @@ import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../
 
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.containerregistry-cacherule.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, registryName, name), 0, 4)}',
     64
@@ -47,13 +47,11 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-#disable-next-line use-recent-api-versions
-resource registry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+resource registry 'Microsoft.ContainerRegistry/registries@2023-06-01-preview' existing = {
   name: registryName
 }
 
-#disable-next-line use-recent-api-versions
-resource cacheRule 'Microsoft.ContainerRegistry/registries/cacheRules@2023-01-01-preview' = {
+resource cacheRule 'Microsoft.ContainerRegistry/registries/cacheRules@2023-06-01-preview' = {
   name: name
   parent: registry
   properties: {

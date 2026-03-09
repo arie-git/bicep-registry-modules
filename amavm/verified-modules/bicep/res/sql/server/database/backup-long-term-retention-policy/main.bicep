@@ -34,15 +34,15 @@ If an empty value is provided, the setting is removed.''')
 param yearlyRetention string = 'P1Y'
 
 
-resource server 'Microsoft.Sql/servers@2023-05-01-preview' existing = {
+resource server 'Microsoft.Sql/servers@2023-08-01' existing = {
   name: serverName
 
-  resource database 'databases@2023-05-01-preview' existing = {
+  resource database 'databases@2023-08-01' existing = {
     name: databaseName
   }
 }
 
-resource backupLongTermRetentionPolicy 'Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies@2023-05-01-preview' = {
+resource backupLongTermRetentionPolicy 'Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies@2023-08-01' = {
   name: 'default'
   parent: server::database
   properties: {

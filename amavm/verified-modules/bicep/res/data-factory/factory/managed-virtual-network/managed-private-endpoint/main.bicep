@@ -1,7 +1,7 @@
 metadata name = 'Data Factory Managed Virtual Network Managed PrivateEndpoints'
 metadata description = 'This module deploys a Data Factory Managed Virtual Network Managed Private Endpoint.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240722'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Data Factory requires:
 This module not to be used.
 '''

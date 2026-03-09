@@ -3,7 +3,7 @@ metadata description = 'This module deploys a Virtual Network (vNet).'
 metadata owner = 'AMCCC'
 metadata compliance = '''Creating Virtual Networks in spokes is not supported.
 Peering these custom VNets or establishing any other type of connectivity links would generally be not-compliant.'''
-metadata complianceVersion = '20240626'
+metadata complianceVersion = '20260309'
 
 
 @description('Required. The name of the Virtual Network (vNet).')
@@ -71,7 +71,7 @@ import { builtInRoleNames, telemetryId } from '../../../../bicep-shared/environm
 // Dependencies //
 // ============ //
 
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.network-virtualnetwork.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -92,7 +92,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   name: name
   location: location
   tags: finalTags

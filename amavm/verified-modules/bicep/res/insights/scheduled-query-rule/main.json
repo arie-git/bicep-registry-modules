@@ -6,12 +6,12 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "14421667572630767469"
+      "templateHash": "11834413859242663058"
     },
     "name": "Scheduled Query Rules",
     "description": "This module deploys a Scheduled Query Rule.",
     "owner": "AMCCC",
-    "complianceVersion": "20250328",
+    "complianceVersion": "20260309",
     "compliance": "This is a utility module. No specific compliance requirements."
   },
   "definitions": {
@@ -276,7 +276,7 @@
     "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2024-03-01",
+      "apiVersion": "2024-07-01",
       "name": "[take(format('{0}.res.insights-scheduledqueryrule.{1}.{2}', variables('telemetryId'), replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4)), 64)]",
       "properties": {
         "mode": "Incremental",

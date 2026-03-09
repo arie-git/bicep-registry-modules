@@ -6,12 +6,12 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "12990314722329636471"
+      "templateHash": "14172146323678538853"
     },
     "name": "Action Groups",
     "description": "This module deploys an Action Group.",
     "owner": "AMCCC",
-    "complianceVersion": "20250328",
+    "complianceVersion": "20260309",
     "compliance": "This is a utility module. No specific compliance requirements."
   },
   "definitions": {
@@ -246,7 +246,7 @@
     "avmTelemetry": {
       "condition": "[parameters('enableTelemetry')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2024-03-01",
+      "apiVersion": "2024-07-01",
       "name": "[take(format('{0}.res.insights-actiongroup.{1}.{2}', variables('telemetryId'), replace('-..--..-', '.', '-'), substring(uniqueString(deployment().name, parameters('location')), 0, 4)), 64)]",
       "properties": {
         "mode": "Incremental",
@@ -265,7 +265,7 @@
     },
     "actionGroup": {
       "type": "Microsoft.Insights/actionGroups",
-      "apiVersion": "2023-01-01",
+      "apiVersion": "2024-10-01-preview",
       "name": "[parameters('name')]",
       "location": "[parameters('location')]",
       "tags": "[variables('finalTags')]",
@@ -335,7 +335,7 @@
       "metadata": {
         "description": "The location the resource was deployed into."
       },
-      "value": "[reference('actionGroup', '2023-01-01', 'full').location]"
+      "value": "[reference('actionGroup', '2024-10-01-preview', 'full').location]"
     },
     "evidenceOfNonCompliance": {
       "type": "bool",

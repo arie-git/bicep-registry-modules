@@ -2,7 +2,7 @@ metadata name = 'Route Table'
 metadata description = 'This module deploys a User Defined Route Table (UDR).'
 metadata owner = 'AMCCC'
 metadata compliance = 'When specifying routes, ensure that \'Internet\' service tag is not used for any. Ensure that BGP route propagation is disabled.'
-metadata complianceVersion = '20240626'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name given for the route table.')
 param name string
@@ -55,7 +55,7 @@ var versionInfo = loadJsonContent('version.json')
 var moduleVersion = versionInfo.version
 var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemetryAVMversion: moduleVersion},tags??{})
 
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.network-routetable.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -76,7 +76,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource routeTable 'Microsoft.Network/routeTables@2023-11-01' = {
+resource routeTable 'Microsoft.Network/routeTables@2024-07-01' = {
   name: name
   location: location
   tags: finalTags

@@ -1,7 +1,7 @@
 metadata name = 'Azure Data Factory'
 metadata description = 'This module deploys Azure Data Factory.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240722'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Data Factory requires:
 - managedVirtualNetworkName: empty
 - managedPrivateEndpoints : empty array
@@ -194,7 +194,7 @@ resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
 // ============ //
 #disable-next-line no-deployments-resources
 // Resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-11-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.data-factory.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64

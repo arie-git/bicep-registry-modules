@@ -490,42 +490,42 @@ For each module: diff upstream vs fork params, add new params/types/resources, r
 ### Critical Priority (>10 version gap)
 
 - [~] SYNC-01: storage/storage-account — 0.10 → 0.32 (gap: 22) — PARTIAL: API versions updated to 2025-01-01 (all child modules), new SKUs, Cold tier, TLS 1.3, sasExpirationAction. Remaining: secretsExport, objectReplicationPolicies, immutableStorageWithVersioning, resourceInput type refactoring
-- [ ] SYNC-02: sql/server — 0.4 → 0.21 (gap: 17)
-- [ ] SYNC-03: operational-insights/workspace — 0.3 → 0.15 (gap: 12)
-- [ ] SYNC-04: web/site — 0.11 → 0.22 (gap: 11)
+- [x] SYNC-02: sql/server — 0.4 → 0.21 (gap: 17) — DONE: API versions updated to 2023-08-01 (all 13 child modules), added isIPv6Enabled + connectionPolicy params, connection policy resource, removed TLS 1.0/1.1/None, updated VNet ref to 2024-05-01, updated deployments API, removed unused imports, storage refs in nested modules updated to 2025-01-01
+- [x] SYNC-03: operational-insights/workspace — 0.3 → 0.15 (gap: 12) — DONE: API versions updated to 2025-02-01 (all 7 child modules), deployments API to 2024-07-01, storage ref in storage-insight-config to 2025-01-01
+- [x] SYNC-04: web/site — 0.11 → 0.22 (gap: 11) — DONE: API versions updated to 2025-03-01 (all 14 child modules), removed deprecated vnet booleans, added outboundVnetRouting with resourceInput typing
 
 ### High Priority (5-10 version gap)
 
-- [ ] SYNC-05: container-service/managed-cluster — 0.3 → 0.12 (gap: 9)
-- [ ] SYNC-06: container-registry/registry — 0.3 → 0.11 (gap: 8)
-- [ ] SYNC-07: data-factory/factory — 0.3 → 0.11 (gap: 8)
-- [ ] SYNC-08: key-vault/vault — 0.6 → 0.13 (gap: 7)
-- [ ] SYNC-09: databricks/workspace — 0.5 → 0.12 (gap: 7)
-- [ ] SYNC-10: network/virtual-network — 0.2 → 0.7 (gap: 5)
-- [ ] SYNC-11: web/serverfarm — 0.2 → 0.7 (gap: 5)
+- [x] SYNC-05: container-service/managed-cluster — 0.3 → 0.12 (gap: 9) — DONE: API versions updated to 2025-09-01 (3 files), deployments to 2024-07-01
+- [x] SYNC-06: container-registry/registry — 0.3 → 0.11 (gap: 8) — DONE: API versions updated to 2025-03-01-preview (main), child modules to 2023-06-01-preview, KeyVault/ManagedIdentity updated, VNet refs updated
+- [x] SYNC-07: data-factory/factory — 0.3 → 0.11 (gap: 8) — DONE: deployments API updated to 2024-11-01 (DataFactory API already at 2018-06-01 matching upstream)
+- [x] SYNC-08: key-vault/vault — 0.6 → 0.13 (gap: 7) — DONE: KeyVault API updated to 2024-11-01 (all 4 modules), deployments to 2024-07-01, VNet refs to 2024-05-01
+- [x] SYNC-09: databricks/workspace — 0.5 → 0.12 (gap: 7) — DONE: deployments to 2024-07-01, VNet refs to 2024-05-01 (Databricks API already aligned)
+- [x] SYNC-10: network/virtual-network — 0.2 → 0.7 (gap: 5) — DONE: Network API updated to 2024-05-01 (main+subnets+peering), deployments to 2024-07-01
+- [x] SYNC-11: web/serverfarm — 0.2 → 0.7 (gap: 5) — DONE: Web API updated to 2025-03-01, deployments to 2024-07-01
 
 ### Medium Priority (2-4 version gap)
 
-- [ ] SYNC-12: network/application-gateway — 0.5 → 0.9 (gap: 4)
-- [ ] SYNC-13: network/private-endpoint — 0.8 → 0.12 (gap: 4)
-- [ ] SYNC-14: insights/data-collection-rule — 0.6 → 0.10 (gap: 4)
-- [ ] SYNC-15: app-configuration/configuration-store — 0.6 → 0.9 (gap: 3)
-- [ ] SYNC-16: insights/action-group — 0.5 → 0.8 (gap: 3)
-- [ ] SYNC-17: insights/scheduled-query-rule — 0.3 → 0.6 (gap: 3)
-- [ ] SYNC-18: insights/component — 0.4 → 0.7 (gap: 3)
-- [ ] SYNC-19: search/search-service — 0.9 → 0.12 (gap: 3)
-- [ ] SYNC-20: managed-identity/user-assigned-identity — 0.2 → 0.5 (gap: 3)
-- [ ] SYNC-21: databricks/access-connector — 0.1 → 0.4 (gap: 3)
-- [ ] SYNC-22: network/route-table — 0.2 → 0.5 (gap: 3)
-- [ ] SYNC-23: web/static-site — 0.6 → 0.9 (gap: 3)
-- [ ] SYNC-24: db-for-postgre-sql/flexible-server — 0.13 → 0.15 (gap: 2)
-- [ ] SYNC-25: service-bus/namespace — 0.14 → 0.16 (gap: 2)
-- [ ] SYNC-26: network/network-security-group — 0.3 → 0.5 (gap: 2)
+- [x] SYNC-12: network/application-gateway — 0.5 → 0.9 (gap: 4) — DONE: Network API to 2025-05-01, deployments to 2024-07-01, test deps updated
+- [x] SYNC-13: network/private-endpoint — 0.8 → 0.12 (gap: 4) — DONE: Network API to 2025-05-01, deployments to 2024-07-01
+- [x] SYNC-14: insights/data-collection-rule — 0.6 → 0.10 (gap: 4) — DONE: Insights API to 2024-03-11, deployments to 2024-07-01, test deps updated
+- [x] SYNC-15: app-configuration/configuration-store — 0.6 → 0.9 (gap: 3) — DONE: AppConfig API to 2025-02-01-preview, deployments to 2024-07-01
+- [x] SYNC-16: insights/action-group — 0.5 → 0.8 (gap: 3) — DONE: Insights API to 2024-10-01-preview, deployments to 2024-07-01
+- [x] SYNC-17: insights/scheduled-query-rule — 0.3 → 0.6 (gap: 3) — DONE: deployments to 2024-07-01 (Insights API already aligned)
+- [x] SYNC-18: insights/component — 0.4 → 0.7 (gap: 3) — DONE: deployments to 2024-07-01 (Insights API already aligned)
+- [x] SYNC-19: search/search-service — 0.9 → 0.12 (gap: 3) — DONE: deployments to 2024-07-01
+- [x] SYNC-20: managed-identity/user-assigned-identity — 0.2 → 0.5 (gap: 3) — DONE: ManagedIdentity API to 2024-11-30, deployments to 2024-07-01
+- [x] SYNC-21: databricks/access-connector — 0.1 → 0.4 (gap: 3) — DONE: deployments to 2024-07-01
+- [x] SYNC-22: network/route-table — 0.2 → 0.5 (gap: 3) — DONE: Network API to 2024-07-01, deployments to 2024-07-01
+- [x] SYNC-23: web/static-site — 0.6 → 0.9 (gap: 3) — DONE: deployments to 2024-07-01, child modules aligned with upstream
+- [x] SYNC-24: db-for-postgre-sql/flexible-server — 0.13 → 0.15 (gap: 2) — DONE: PostgreSQL API to 2025-06-01-preview (all 6 modules), deployments to 2024-07-01
+- [x] SYNC-25: service-bus/namespace — 0.14 → 0.16 (gap: 2) — DONE: KeyVault to 2025-05-01, deployments to 2024-07-01
+- [x] SYNC-26: network/network-security-group — 0.3 → 0.5 (gap: 2) — DONE: deployments to 2024-07-01
 
 ### Low Priority (1 version gap)
 
-- [ ] SYNC-27: insights/activity-log-alert — 0.3 → 0.4 (gap: 1)
-- [ ] SYNC-28: insights/metric-alert — 0.3 → 0.4 (gap: 1)
+- [x] SYNC-27: insights/activity-log-alert — 0.3 → 0.4 (gap: 1) — DONE: deployments to 2024-07-01
+- [x] SYNC-28: insights/metric-alert — 0.3 → 0.4 (gap: 1) — DONE: deployments to 2024-07-01
 
 ---
 

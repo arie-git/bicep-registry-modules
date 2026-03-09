@@ -2,7 +2,7 @@ metadata name = 'Virtual Network Peerings'
 metadata description = 'This module deploys a Virtual Network Peering.'
 metadata owner = 'AMCCC'
 metadata compliance = 'Using a Virtual Networking Peering would generally be not compliant.'
-metadata complianceVersion = '20240626'
+metadata complianceVersion = '20260309'
 
 @description('Optional. The Name of Vnet Peering resource. If not provided, default value will be localVnetName-remoteVnetName.')
 param name string = '${localVnetName}-${last(split(remoteVirtualNetworkId, '/'))}'
@@ -33,7 +33,7 @@ param enableTelemetry bool = true
 
 #disable-next-line prefer-interpolation
 var concatUniqueIds = concat(localVnetName, name, remoteVirtualNetworkId)
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     'amavm1.res.network-virtualnetwork-peering.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, concatUniqueIds), 0, 4)}',
     64
@@ -54,11 +54,11 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' existing = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
   name: localVnetName
 }
 
-resource virtualNetworkPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2023-04-01' = {
+resource virtualNetworkPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-01-01' = {
   name: name
   parent: virtualNetwork
   properties: {

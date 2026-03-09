@@ -146,11 +146,11 @@ param vnetSubnetId string?
 @description('Optional. Determines the type of workload a node can run.')
 param workloadRuntime string?
 
-resource managedCluster 'Microsoft.ContainerService/managedClusters@2024-08-01' existing = {
+resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' existing = {
   name: managedClusterName
 }
 
-resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2024-08-01' = {
+resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01' = {
   name: name
   parent: managedCluster
   properties: {

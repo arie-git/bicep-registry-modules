@@ -1,7 +1,7 @@
 metadata name = 'Azure Kubernetes Service (AKS) Managed Cluster'
 metadata description = 'This module deploys an Azure Kubernetes Service (AKS) Managed Cluster.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240829'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of this module requires the following parameter values:
 
 - aadProfile.enableAzureRBAC: true, and enableRBAC: true
@@ -636,7 +636,7 @@ var configuredRequiredLogCategoryNames = intersection(
 // ============ //
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.containerservice-managedcluster.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -673,7 +673,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
 // Main Resources //
 // ============== //
 
-resource managedCluster 'Microsoft.ContainerService/managedClusters@2024-08-01' = {
+resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' = {
   name: name
   location: location
   tags: finalTags

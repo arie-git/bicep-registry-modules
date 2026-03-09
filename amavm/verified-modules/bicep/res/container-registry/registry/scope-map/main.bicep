@@ -14,13 +14,11 @@ param actions string[]
 @sys.description('Optional. The user friendly description of the scope map.')
 param description string?
 
-#disable-next-line use-recent-api-versions
-resource registry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+resource registry 'Microsoft.ContainerRegistry/registries@2023-06-01-preview' existing = {
   name: registryName
 }
 
-#disable-next-line use-recent-api-versions
-resource scopeMap 'Microsoft.ContainerRegistry/registries/scopeMaps@2023-01-01-preview' = {
+resource scopeMap 'Microsoft.ContainerRegistry/registries/scopeMaps@2023-06-01-preview' = {
   name: name
   parent: registry
   properties: {

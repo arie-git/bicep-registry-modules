@@ -2,7 +2,7 @@ metadata name = 'Key Vault Access Policies'
 metadata description = 'This module deploys a Key Vault Access Policy.'
 metadata owner = 'AMCCC'
 metadata compliance = 'There are no special compliance requirements for this resource. According to current Key-Vault policies, access policies should not be configured on Key-Vault'
-metadata complianceVersion = '20240705'
+metadata complianceVersion = '20260309'
 
 // ================ //
 // Parameters       //
@@ -25,11 +25,11 @@ var formattedAccessPolicies = [
   }
 ]
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = {
   name: keyVaultName
 }
 
-resource policies 'Microsoft.KeyVault/vaults/accessPolicies@2023-07-01' = {
+resource policies 'Microsoft.KeyVault/vaults/accessPolicies@2024-11-01' = {
   name: 'add'
   parent: keyVault
   properties: {

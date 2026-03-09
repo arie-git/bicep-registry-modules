@@ -1,7 +1,7 @@
 metadata name = 'Azure Data Factory Integration Runtime'
 metadata description = 'This module deploys a Managed or Self-Hosted Integration Runtime for Azure Data Factory.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240722'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Data Factory requires:
 - type: 'SelfHosted'
 - managedVirtualNetworkName: empty
@@ -58,7 +58,7 @@ var managedVirtualNetworkVar = {
 // ============ //
 #disable-next-line no-deployments-resources
 // Resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-11-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.data-factory-integration-runtime.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, dataFactoryName), 0, 4)}',
     64

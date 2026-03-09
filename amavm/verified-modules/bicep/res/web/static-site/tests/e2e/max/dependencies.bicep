@@ -35,7 +35,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-04-01' = {
   }
 }
 
-resource privateDNSZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+resource privateDNSZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.azurestaticapps.net'
   location: 'global'
 
@@ -51,12 +51,12 @@ resource privateDNSZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   }
 }
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: managedIdentityName
   location: location
 }
 
-resource serverFarm 'Microsoft.Web/serverfarms@2024-04-01' = {
+resource serverFarm 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: serverFarmName
   location: location
   sku: {
@@ -69,7 +69,7 @@ resource serverFarm 'Microsoft.Web/serverfarms@2024-04-01' = {
   properties: {}
 }
 
-resource functionApp 'Microsoft.Web/sites@2024-04-01' = {
+resource functionApp 'Microsoft.Web/sites@2022-03-01' = {
   name: siteName
   location: location
   kind: 'functionapp'

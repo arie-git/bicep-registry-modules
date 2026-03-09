@@ -1,7 +1,7 @@
 metadata name = 'User Assigned Identity'
 metadata description = 'This module deploys a User Assigned Identity.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240802'
+metadata complianceVersion = '20260309'
 metadata compliance = 'There are no special compliance requirements for this module.'
 
 @description('Required. Name of the User Assigned Identity.')
@@ -41,7 +41,7 @@ var moduleVersion = versionInfo.version
 var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemetryAVMversion: moduleVersion},tags??{})
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.managedidentity-userassignedidentity.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -62,7 +62,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' = {
   name: name
   location: location
   tags: finalTags

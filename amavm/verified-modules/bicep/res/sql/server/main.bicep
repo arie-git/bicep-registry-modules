@@ -9,7 +9,7 @@ metadata compliance = '''Compliant usage of Azure SQL Server requires:
 - securityAlertPolicies.state: 'Enabled'
 - vulnerabilityAssessmentsClassic or vulnerabilityAssessmentsExpress are configured
 '''
-metadata complianceVersion = '20240726'
+metadata complianceVersion = '20260309'
 
 @description('''Conditional. The administrator username for the server. Required if no `administrators` object for AAD authentication is provided.
 Once created it cannot be changed. Default: empty''')
@@ -55,11 +55,8 @@ Setting administrators.azureADOnlyAuthentication to false will make the resource
 param administrators administratorsType?
 
 @allowed([
-  '1.0'
-  '1.1'
   '1.2'
   '1.3'
-  'None'
 ])
 @description('''Optional. Minimal TLS version allowed. Default: 1.2
 
@@ -103,6 +100,21 @@ Setting this parameter to 'Disabled' will make the resource non-compliant.
   'Disabled'
 ])
 param restrictOutboundNetworkAccess string = 'Enabled'
+
+@description('Optional. Whether or not IPv6 is enabled on the server. Default: Disabled.')
+@allowed([
+  'Disabled'
+  'Enabled'
+])
+param isIPv6Enabled string = 'Disabled'
+
+@description('Optional. The connection policy for the server. Default: Default.')
+@allowed([
+  'Default'
+  'Redirect'
+  'Proxy'
+])
+param connectionPolicy string = 'Default'
 
 @description('''Optional. Whether or not to enable advanced threat protection for this server. Default is 'Enabled'.''')
 @allowed([
@@ -178,7 +190,7 @@ var identity = !empty(managedIdentities)
       }
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.sql-server.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -199,7 +211,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource server 'Microsoft.Sql/servers@2023-05-01-preview' = {
+resource server 'Microsoft.Sql/servers@2023-08-01' = {
   location: location
   name: name
   tags: finalTags
@@ -223,11 +235,20 @@ resource server 'Microsoft.Sql/servers@2023-05-01-preview' = {
     publicNetworkAccess: !empty(publicNetworkAccess)
       ? any(publicNetworkAccess)
       : (!empty(privateEndpoints) && empty(firewallRules??[]) && empty(virtualNetworkRules??[]) ? 'Disabled' : null)
+    isIPv6Enabled: isIPv6Enabled
     restrictOutboundNetworkAccess: !empty(restrictOutboundNetworkAccess) ? restrictOutboundNetworkAccess : null
   }
 }
 
-resource advancedthreatProtectionResource 'Microsoft.Sql/servers/advancedThreatProtectionSettings@2023-05-01-preview' = {
+resource server_connection_policy 'Microsoft.Sql/servers/connectionPolicies@2023-08-01' = {
+  name: 'default'
+  parent: server
+  properties: {
+    connectionType: connectionPolicy
+  }
+}
+
+resource advancedthreatProtectionResource 'Microsoft.Sql/servers/advancedThreatProtectionSettings@2023-08-01' = {
   name: take('${uniqueString(deployment().name, name, location)}-sqlserver-advanced-threat-protection',64)
   parent: server
   properties: {
@@ -236,7 +257,7 @@ resource advancedthreatProtectionResource 'Microsoft.Sql/servers/advancedThreatP
 }
 
 // The explicit creation of the master is needed for successfull applying of audit settings on the server
-resource server_masterDb 'Microsoft.Sql/servers/databases@2023-05-01-preview' = {
+resource server_masterDb 'Microsoft.Sql/servers/databases@2023-08-01' = {
   parent: server
   location: location
   name: 'master'
@@ -319,7 +340,7 @@ module server_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0' = [
       enableTelemetry: privateEndpoint.?enableTelemetry ?? enableTelemetry
       location: privateEndpoint.?location ?? reference(
         split(privateEndpoint.subnetResourceId, '/subnets/')[0],
-        '2020-06-01',
+        '2024-05-01',
         'Full'
       ).location
       lock: privateEndpoint.?lock ?? lock
@@ -559,14 +580,13 @@ output databases array = [for (database, index) in (databases ?? []): {
 }]
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = publicNetworkAccess != 'Disabled' || restrictOutboundNetworkAccess != 'Enabled' || contains(['1.0','1.1'],minimalTlsVersion) || ! (administrators.?azureADOnlyAuthentication ?? true) || securityAlertPolicy.?state != 'Enabled' || ( empty(vulnerabilityAssessmentsClassic) && empty(vulnerabilityAssessmentsExpress))
+output evidenceOfNonCompliance bool = publicNetworkAccess != 'Disabled' || restrictOutboundNetworkAccess != 'Enabled' || ! (administrators.?azureADOnlyAuthentication ?? true) || securityAlertPolicy.?state != 'Enabled' || ( empty(vulnerabilityAssessmentsClassic) && empty(vulnerabilityAssessmentsExpress))
 
 // =============== //
 //   Definitions   //
 // =============== //
 
 import {
-  diagnosticSettingType
   lockType
   managedIdentitiesType
   privateEndpointType

@@ -2,7 +2,7 @@ metadata name = 'Network Security Group'
 metadata description = 'This module deploys a Network security Group (NSG).'
 metadata owner = 'AMCCC'
 metadata compliance = 'There are no special compliance requirements.'
-metadata complianceVersion = '20240626'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the Network Security Group.')
 param name string
@@ -59,7 +59,7 @@ var versionInfo = loadJsonContent('version.json')
 var moduleVersion = versionInfo.version
 var finalTags = union({telemetryAVM: telemetryId, telemetryType: 'res',  telemetryAVMversion: moduleVersion},tags??{})
 
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.network-networksecuritygroup.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64

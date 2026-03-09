@@ -1,7 +1,7 @@
 metadata name = 'Azure Container Registry'
 metadata description = 'This module deploys Azure Container Registry.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240805'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Container Registry requires:
 - sku: 'premium'
 - acrAdminUserEnabled: false
@@ -210,7 +210,7 @@ var defaultLogCategories = [
 // Dependencies //
 // ============ //
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.containerregistry-registry.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
     64
@@ -231,19 +231,19 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
   name: last(split((customerManagedKey.?keyVaultResourceId ?? 'dummyVault'), '/'))
   scope: resourceGroup(
     split((customerManagedKey.?keyVaultResourceId ?? '//'), '/')[2],
     split((customerManagedKey.?keyVaultResourceId ?? '////'), '/')[4]
   )
 
-  resource cMKKey 'keys@2023-02-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
+  resource cMKKey 'keys@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
     name: customerManagedKey.?keyName ?? 'dummyKey'
   }
 }
 
-resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
+resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
   name: last(split(customerManagedKey.?userAssignedIdentityResourceId ?? 'dummyMsi', '/'))
   scope: resourceGroup(
     split((customerManagedKey.?userAssignedIdentityResourceId ?? '//'), '/')[2],
@@ -251,8 +251,7 @@ resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
   )
 }
 
-#disable-next-line use-recent-api-versions
-resource registry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' = {
+resource registry 'Microsoft.ContainerRegistry/registries@2025-03-01-preview' = {
   name: name
   location: location
   identity: identity
@@ -409,7 +408,6 @@ resource registry_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(l
   scope: registry
 }
 
-#disable-next-line use-recent-api-versions
 resource registry_diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = [
   for (diagnosticSetting, index) in (diagnosticSettings ?? []): {
     name: diagnosticSetting.?name ?? '${name}-diagnosticsettings'
@@ -515,8 +513,7 @@ module registry_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0' =
 output name string = registry.name
 
 @description('The reference to the Azure container registry.')
-#disable-next-line use-recent-api-versions
-output loginServer string = reference(registry.id, '2019-05-01').loginServer
+output loginServer string = registry.properties.loginServer
 
 @description('The name of the Azure container registry.')
 output resourceGroupName string = resourceGroup().name

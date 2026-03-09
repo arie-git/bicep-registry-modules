@@ -24,13 +24,11 @@ param regionEndpointEnabled bool = false
 @description('Optional. Whether or not zone redundancy is enabled for this container registry.')
 param zoneRedundancy string = 'Enabled'
 
-#disable-next-line use-recent-api-versions
-resource registry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+resource registry 'Microsoft.ContainerRegistry/registries@2023-06-01-preview' existing = {
   name: registryName
 }
 
-#disable-next-line use-recent-api-versions
-resource replication 'Microsoft.ContainerRegistry/registries/replications@2023-01-01-preview' = {
+resource replication 'Microsoft.ContainerRegistry/registries/replications@2023-06-01-preview' = {
   name: name
   parent: registry
   location: location

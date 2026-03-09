@@ -3,7 +3,7 @@ metadata description = 'This module deploys an App Service Plan.'
 metadata owner = 'AMCCC'
 metadata compliance = '''This resource does not have any special compliance requirements.
 However, make sure to choose the 'skuName' parameter that supports private endpoints an VNet injection, or you won't be able to deploy a compliant app.'''
-metadata complianceVersion = '20241111'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the app service plan.')
 @minLength(1)
@@ -131,7 +131,7 @@ var formattedRoleAssignments = [
 // ============ //
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.app-service-plan.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -152,7 +152,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableT
   }
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-04-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: name
   kind: kind
   location: location

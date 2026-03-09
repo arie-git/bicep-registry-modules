@@ -1,7 +1,7 @@
 metadata name = 'Azure Key Vault'
 metadata description = 'This module deploys an Azure Key Vault.'
 metadata owner = 'AMCCC'
-metadata complianceVersion = '20240713'
+metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Key-Vault requires:
 - skuName: 'premium'
 - publicNetworkAccess: 'Disabled'
@@ -164,7 +164,7 @@ var defaultLogCategories = [for category in defaultLogCategoryNames: {
 // ============ //
 #disable-next-line no-deployments-resources
 // Resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.security-key-vault.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -185,7 +185,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2023-07-01' = if (enableT
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2024-11-01' = {
   name: name
   location: location
   tags: finalTags
