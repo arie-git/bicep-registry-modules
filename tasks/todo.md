@@ -24,7 +24,7 @@
 - [x] Create `upstream.json` (v0.19), `version.json` (v0.1)
 - [x] Create `tests/e2e/defaults/`
 - [x] `bicep build` passes (only BCP192/BCP062 expected, BCP036 cosmetic warning on cors)
-- [ ] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
+- [x] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
 - [ ] Create `README.md`
 - [x] Karen: 18/18 PASS
 
@@ -41,7 +41,7 @@
 - [x] Apply full Module Customization Checklist (18/18)
 - [x] Create `upstream.json` (v0.14, ORPHANED), `version.json` (v0.1), test
 - [x] `bicep build` passes (only BCP192/BCP062 expected)
-- [ ] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
+- [x] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
 - [ ] Create `README.md`
 - [x] Karen: 18/18 PASS
 
@@ -58,7 +58,7 @@
 - [x] Apply full Module Customization Checklist (18/18)
 - [x] Create `upstream.json` (v0.16), `version.json` (v0.1), test
 - [x] `bicep build` passes (clean — no errors)
-- [ ] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
+- [x] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
 - [ ] Create `README.md`
 - [x] Karen: 18/18 PASS
 
