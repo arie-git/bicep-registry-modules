@@ -333,7 +333,7 @@ Commented-out code: `slots` parameter, `app_slots` module loop, slot outputs (sl
 - [x] Implement `reserved: contains(kind,'linux')` property
 - [x] Implement TODO properties: `endToEndEncryptionEnabled`, `dnsConfiguration`, `daprConfig`
 - [x] Add new upstream params: `e2eEncryptionEnabled`, `dnsConfiguration`, `daprConfig`, `sshEnabled`, `ipMode`, `resourceConfig`, `workloadProfileName`, `hostNamesDisabled`, `outboundVnetRouting`
-- [ ] Update tests to cover slots
+- [x] Update tests to cover slots (uncommented slot config in 2webAppLinux.max and 4webApp.max)
 - [x] `bicep build` passes (only BCP192 expected)
 - [ ] Karen: validate
 
