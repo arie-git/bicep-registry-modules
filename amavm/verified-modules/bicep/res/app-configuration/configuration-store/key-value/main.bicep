@@ -1,5 +1,8 @@
 metadata name = 'App Configuration Stores Key Values'
 metadata description = 'This module deploys an App Configuration Store Key Value.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the key.')
 param name string
@@ -37,3 +40,5 @@ output resourceId string = keyValues.id
 
 @description('The resource group the batch account was deployed into.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

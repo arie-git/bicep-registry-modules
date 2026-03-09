@@ -1,6 +1,8 @@
 metadata name = 'Static Web App Site Config'
 metadata description = 'This module deploys a Static Web App Site Config.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @allowed([
   'appsettings'
@@ -34,3 +36,6 @@ output resourceId string = config.id
 
 @description('The name of the resource group the config was created in.')
 output resourceGroupName string = resourceGroup().name
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

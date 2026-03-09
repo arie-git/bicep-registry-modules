@@ -1,6 +1,8 @@
 metadata name = 'Static Web App Site Linked Backends'
 metadata description = 'This module deploys a Custom Function App into a Static Web App Site using the Linked Backends property.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The resource ID of the backend linked to the static site.')
 param backendResourceId string
@@ -50,3 +52,6 @@ type linkedBackendType = {
   @description('Optional. The region of the backend linked to the static site.')
   region: string?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

@@ -1,6 +1,8 @@
 metadata name = 'Azure Container Registry (ACR) Webhooks'
 metadata description = 'This module deploys an Azure Container Registry (ACR) Webhook.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent registry. Required if the template is used in a standalone deployment.')
 param registryName string
@@ -110,3 +112,5 @@ type webhookType = {
   @description('Optional. The scope of repositories where the event can be triggered. For example, \'foo:*\' means events for all tags under repository \'foo\'. \'foo:bar\' means events for \'foo:bar\' only. \'foo\' is equivalent to \'foo:latest\'. Empty means all events.')
   scope: string?
 }[]?
+
+output evidenceOfNonCompliance bool = false

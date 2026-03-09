@@ -1,5 +1,8 @@
 metadata name = 'DBforPostgreSQL Flexible Server Databases'
 metadata description = 'This module deploys a DBforPostgreSQL Flexible Server Database.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the database.')
 param name string
@@ -34,3 +37,5 @@ output resourceId string = database.id
 
 @description('The resource group name of the deployed database.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

@@ -1,6 +1,8 @@
 metadata name = 'Azure Kubernetes Service (AKS) Managed Cluster Maintenance Configurations'
 metadata description = 'This module deploys an Azure Kubernetes Service (AKS) Managed Cluster Maintenance Configurations.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. Maintenance window for the maintenance configuration.')
 param maintenanceWindow maintenanceWindowType
@@ -154,3 +156,5 @@ type timeInWeekType = {
     int
   ]
 }[]
+
+output evidenceOfNonCompliance bool = false

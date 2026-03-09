@@ -1,5 +1,8 @@
 metadata name = 'App Configuration Replicas'
 metadata description = 'This module deploys an App Configuration Replica.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Optional. Name of the replica.')
 param name string = '${replicaLocation}replica'
@@ -28,3 +31,5 @@ output name string = replica.name
 
 @description('The resource ID of the replica that was deployed.')
 output resourceId string = replica.id
+
+output evidenceOfNonCompliance bool = false

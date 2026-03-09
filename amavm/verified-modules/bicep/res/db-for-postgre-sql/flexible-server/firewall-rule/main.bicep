@@ -1,5 +1,8 @@
 metadata name = 'DBforPostgreSQL Flexible Server Firewall Rules'
 metadata description = 'This module deploys a DBforPostgreSQL Flexible Server Firewall Rule.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the PostgreSQL flexible server Firewall Rule.')
 param name string
@@ -34,3 +37,5 @@ output resourceId string = firewallRule.id
 
 @description('The resource group of the deployed firewall rule.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

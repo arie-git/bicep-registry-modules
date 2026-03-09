@@ -1,5 +1,8 @@
 metadata name = 'Service Bus Namespace Topic Authorization Rules'
 metadata description = 'This module deploys a Service Bus Namespace Topic Authorization Rule.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the service bus namespace topic.')
 param name string
@@ -42,3 +45,5 @@ output resourceId string = authorizationRule.id
 
 @description('The name of the Resource Group the authorization rule was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

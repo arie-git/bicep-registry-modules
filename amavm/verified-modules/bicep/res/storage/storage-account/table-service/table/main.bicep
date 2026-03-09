@@ -1,6 +1,8 @@
 metadata name = 'Storage Account Table'
 metadata description = 'This module deploys a Storage Account Table.'
 metadata owner = 'Azure/module-maintainers'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @maxLength(24)
 @description('Conditional. The name of the parent Storage Account. Required if the template is used in a standalone deployment.')
@@ -138,3 +140,6 @@ type tableSignedIdentifier = {
   @description('Required. Unique-64-character-value of the stored access policy.')
   id: string
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

@@ -1,5 +1,8 @@
 metadata name = 'Redis Cache Firewall Rules'
 metadata description = 'This module creates a firewall rule for Redis Cache.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. Redis cache name.')
 param redisCacheName string
@@ -34,3 +37,5 @@ output resourceId string = firewallRule.id
 
 @description('The resource group of the deployed firewall rule.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

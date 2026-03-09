@@ -1,6 +1,8 @@
 metadata name = 'Log Analytics Workspace Tables'
 metadata description = 'This module deploys a Log Analytics Workspace Table.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 // ============== //
 //   Parameters   //
@@ -154,3 +156,5 @@ type roleAssignmentType = {
   @description('Optional. The Resource Id of the delegated managed identity resource.')
   delegatedManagedIdentityResourceId: string?
 }[]?
+
+output evidenceOfNonCompliance bool = false

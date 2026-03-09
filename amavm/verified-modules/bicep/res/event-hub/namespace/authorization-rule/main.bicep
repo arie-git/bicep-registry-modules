@@ -1,5 +1,8 @@
 metadata name = 'Event Hub Namespace Authorization Rule'
 metadata description = 'This module deploys an Event Hub Namespace Authorization Rule.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent event hub namespace. Required if the template is used in a standalone deployment.')
 param namespaceName string
@@ -35,3 +38,5 @@ output resourceId string = authorizationRule.id
 
 @description('The name of the resource group the authorization rule was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

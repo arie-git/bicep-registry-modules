@@ -1,6 +1,8 @@
 metadata name = 'Log Analytics Workspace Storage Insight Configs'
 metadata description = 'This module deploys a Log Analytics Workspace Storage Insight Config.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent Log Analytics workspace. Required if the template is used in a standalone deployment.')
 param logAnalyticsWorkspaceName string
@@ -50,3 +52,5 @@ output resourceGroupName string = resourceGroup().name
 
 @description('The name of the storage insights configuration.')
 output name string = storageinsightconfig.name
+
+output evidenceOfNonCompliance bool = false

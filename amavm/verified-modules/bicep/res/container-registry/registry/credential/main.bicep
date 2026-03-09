@@ -1,3 +1,9 @@
+metadata name = 'Container Registry Credential Sets'
+metadata description = 'This module deploys a Container Registry Credential Set.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
+
 @description('Required. The name of the parent registry. Required if the template is used in a standalone deployment.')
 param registryName string
 
@@ -65,3 +71,5 @@ type credentialType = {
   @description('Required. KeyVault Secret URI for accessing the username.')
   usernameSecretIdentifier: string
 }
+
+output evidenceOfNonCompliance bool = false

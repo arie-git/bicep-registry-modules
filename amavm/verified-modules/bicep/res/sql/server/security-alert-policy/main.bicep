@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Security Alert Policies'
 metadata description = 'This module deploys an Azure SQL Server Security Alert Policy.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent SQL Server. Required if the template is used in a standalone deployment.')
 param serverName string
@@ -149,3 +151,6 @@ type securityPolicyAlertType = {
   // Note, the role assignment must not already exist on the storage account.''')
   // createStorageRoleAssignment: bool?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

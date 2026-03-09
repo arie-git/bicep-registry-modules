@@ -1,6 +1,8 @@
 metadata name = 'Log Analytics Workspace Saved Searches'
 metadata description = 'This module deploys a Log Analytics Workspace Saved Search.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the parent Log Analytics workspace.')
 param logAnalyticsWorkspaceName string
@@ -61,3 +63,5 @@ output resourceGroupName string = resourceGroup().name
 
 @description('The name of the deployed saved search.')
 output name string = savedSearch.name
+
+output evidenceOfNonCompliance bool = false

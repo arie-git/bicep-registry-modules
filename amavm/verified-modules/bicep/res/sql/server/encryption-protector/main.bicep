@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Encryption Protector'
 metadata description = 'This module deploys an Azure SQL Server Encryption Protector.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the sql server. Required if the template is used in a standalone deployment.')
 param sqlServerName string
@@ -56,3 +58,6 @@ type encryptionProtectorType = {
   @description('Optional. The encryption protector type.')
   serverKeyType: ('ServiceManaged' | 'AzureKeyVault')?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

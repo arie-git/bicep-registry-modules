@@ -1,6 +1,8 @@
 metadata name = 'SQL Server Database Long Term Backup Retention Policies'
 metadata description = 'This module deploys an Azure SQL Server Database Long-Term Backup Retention Policy.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the parent SQL Server.')
 param serverName string
@@ -93,3 +95,6 @@ type backupLongTermRetentionPolicyType = {
   If an empty ('') value is provided, the setting is removed.''')
   yearlyRetention: string?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

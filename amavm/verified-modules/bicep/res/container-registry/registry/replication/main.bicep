@@ -1,6 +1,8 @@
 metadata name = 'Azure Container Registry (ACR) Replications'
 metadata description = 'This module deploys an Azure Container Registry (ACR) Replication.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent registry. Required if the template is used in a standalone deployment.')
 param registryName string
@@ -69,3 +71,5 @@ type replicationType = {
   @description('Optional. Whether or not zone redundancy is enabled for this container registry.')
   zoneRedundancy: ('Disabled' | 'Enabled')?
 }[]?
+
+output evidenceOfNonCompliance bool = false

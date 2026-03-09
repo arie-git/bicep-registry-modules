@@ -1,5 +1,8 @@
 metadata name = 'Service Bus Namespace Migration Configuration'
 metadata description = 'This module deploys a Service Bus Namespace Migration Configuration.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent Service Bus Namespace for the Service Bus Queue. Required if the template is used in a standalone deployment.')
 @minLength(1)
@@ -33,3 +36,5 @@ output resourceId string = migrationConfiguration.id
 
 @description('The name of the Resource Group the migration configuration was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

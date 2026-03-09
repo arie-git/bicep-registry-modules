@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Keys'
 metadata description = 'This module deploys an Azure SQL Server Key.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Optional. The name of the key. Must follow the [<keyVaultName>_<keyName>_<keyVersion>] pattern.')
 param name string?
@@ -67,3 +69,6 @@ type keyType = {
   ''')
   uri: string?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Firewall Rule'
 metadata description = 'This module deploys an Azure SQL Server Firewall Rule.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the Server Firewall Rule.')
 param name string
@@ -53,3 +55,6 @@ type firewallRuleType = {
   Use value \'0.0.0.0\' for all Azure-internal IP addresses.''')
   startIpAddress: string?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

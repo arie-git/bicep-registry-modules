@@ -1,6 +1,8 @@
 metadata name = 'Storage Account Local Users'
 metadata description = 'This module deploys a Storage Account Local User, which is used for SFTP authentication.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @maxLength(24)
 @description('Conditional. The name of the parent Storage Account. Required if the template is used in a standalone deployment.')
@@ -68,3 +70,6 @@ type sshAuthorizedKeysType = {
     key: string
   }[]
 }?
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

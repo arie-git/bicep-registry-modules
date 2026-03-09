@@ -1,6 +1,8 @@
 metadata name = 'Storage Account Table Services'
 metadata description = 'This module deploys a Storage Account Table Service.'
 metadata owner = 'Azure/module-maintainers'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @maxLength(24)
 @description('Conditional. The name of the parent Storage Account. Required if the template is used in a standalone deployment.')
@@ -121,3 +123,6 @@ type tableServiceType = {
   @description('Optional. Tables to create.')
   tables: tableServiceTableType[]?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

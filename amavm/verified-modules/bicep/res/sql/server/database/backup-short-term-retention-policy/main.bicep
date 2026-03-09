@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Database Short Term Backup Retention Policies'
 metadata description = 'This module deploys an Azure SQL Server Database Short-Term Backup Retention Policy.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the parent SQL Server.')
 param serverName string
@@ -67,3 +69,6 @@ type backupShortTermRetentionPolicyType = {
   Basic-tier databases are limited to a maximum of 7 days. For all databases, the maximum is 35 days.''')
   retentionDays: int?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

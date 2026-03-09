@@ -1,5 +1,8 @@
 metadata name = 'Service Bus Namespace Network Rule Sets'
 metadata description = 'This module deploys a ServiceBus Namespace Network Rule Set.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent Service Bus Namespace for the Service Bus Network Rule Set. Required if the template is used in a standalone deployment.')
 @minLength(1)
@@ -66,3 +69,5 @@ output resourceId string = networkRuleSet.id
 
 @description('The name of the resource group the network rule set was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

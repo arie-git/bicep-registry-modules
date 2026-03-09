@@ -1,5 +1,8 @@
 metadata name = 'Redis Cache Linked Servers'
 metadata description = 'This module connects a primary and secondary Redis Cache together for geo-replication.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. Primary Redis cache name.')
 param redisCacheName string
@@ -41,3 +44,5 @@ output geoReplicatedPrimaryHostName string = redisLinkedServer.properties.geoRep
 
 @description('The resource group of the deployed linkedServer.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

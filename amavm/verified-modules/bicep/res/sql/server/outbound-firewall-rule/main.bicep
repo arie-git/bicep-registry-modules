@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Outbound Firewall Rule'
 metadata description = 'This module deploys an Azure SQL Server Outbound Firewall Rule.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. Fully-qualified domain name that the SQL Server will be allowed to access when outbound networking restrictions are enabled.')
 param name string
@@ -35,3 +37,6 @@ type outboundFirewallRuleType = {
   @description('Required. Fully-qualified domain name that the SQL Server will be allowed to access when outbound networking restrictions are enabled.')
   name: string
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

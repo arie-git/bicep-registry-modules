@@ -1,5 +1,8 @@
 metadata name = 'Private Link Scope Scoped Resources'
 metadata description = 'This module deploys a Private Link Scope Scoped Resource.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. Name of the private link scoped resource.')
 @minLength(1)
@@ -32,3 +35,5 @@ output resourceId string = scopedResource.id
 
 @description('The full name of the deployed Scoped Resource.')
 output name string = scopedResource.name
+
+output evidenceOfNonCompliance bool = false

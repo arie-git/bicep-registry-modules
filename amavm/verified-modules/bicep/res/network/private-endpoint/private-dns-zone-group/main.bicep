@@ -45,6 +45,8 @@ output resourceId string = privateDnsZoneGroup.id
 @description('The resource group the private endpoint DNS zone group was deployed into.')
 output resourceGroupName string = resourceGroup().name
 
+output evidenceOfNonCompliance bool = false
+
 // ================ //
 // Definitions      //
 // ================ //

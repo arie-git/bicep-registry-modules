@@ -1,5 +1,8 @@
 metadata name = 'Search Services Private Link Resources'
 metadata description = 'This module deploys a Search Service Private Link Resource.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent searchServices. Required if the template is used in a standalone deployment.')
 param searchServiceName string
@@ -50,3 +53,5 @@ output resourceId string = sharedPrivateLinkResource.id
 
 @description('The name of the resource group the shared private link resource was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

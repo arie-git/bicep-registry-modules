@@ -128,6 +128,9 @@ output resourceId string = fileServices.id
 
 @description('The resource group of the deployed file share service.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false
+
 // =============== //
 //   Definitions   //
 // =============== //

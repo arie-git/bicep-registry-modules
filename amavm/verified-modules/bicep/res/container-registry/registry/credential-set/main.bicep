@@ -1,6 +1,8 @@
 metadata name = 'Container Registries Credential Sets'
 metadata description = 'This module deploys an ACR Credential Set.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent registry. Required if the template is used in a standalone deployment.')
 param registryName string
@@ -48,6 +50,9 @@ output resourceId string = credentialSet.id
 
 @description('The principal ID of the system assigned identity.')
 output systemAssignedMIPrincipalId string? = credentialSet.?identity.?principalId
+
+@description('Is there evidence of usage in non-compliance with policies?')
+output evidenceOfNonCompliance bool = false
 
 // =============== //
 //   Definitions   //

@@ -1,6 +1,8 @@
 metadata name = 'Container Registries scopeMaps'
 metadata description = 'This module deploys an Azure Container Registry (ACR) scopeMap.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @sys.description('Conditional. The name of the parent registry. Required if the template is used in a standalone deployment.')
 param registryName string
@@ -49,3 +51,5 @@ type scopeMapsType = {
   @sys.description('Optional. The user friendly description of the scope map.')
   description: string?
 }[]?
+
+output evidenceOfNonCompliance bool = false

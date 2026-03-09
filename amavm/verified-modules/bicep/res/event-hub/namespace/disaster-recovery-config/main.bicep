@@ -1,5 +1,8 @@
 metadata name = 'Event Hub Namespace Disaster Recovery Configs'
 metadata description = 'This module deploys an Event Hub Namespace Disaster Recovery Config.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent event hub namespace. Required if the template is used in a standalone deployment.')
 param namespaceName string
@@ -30,3 +33,5 @@ output resourceId string = disasterRecoveryConfig.id
 
 @description('The name of the resource group the disaster recovery config was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

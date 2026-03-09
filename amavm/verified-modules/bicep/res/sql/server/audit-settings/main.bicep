@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Audit Settings'
 metadata description = 'This module deploys an Azure SQL Server Audit Settings.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the audit settings. Default: DefaultAuditingSettings')
 param name string = 'DefaultAuditingSettings'
@@ -178,3 +180,6 @@ type auditSettingsType = {
   @description('Optional. Resource ID of the log analytics workspace that audit logs will be sent to.')
   workspaceResourceId: string?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

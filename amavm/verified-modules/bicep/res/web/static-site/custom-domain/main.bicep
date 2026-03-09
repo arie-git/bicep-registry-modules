@@ -1,6 +1,8 @@
 metadata name = 'Static Web App Site Custom Domains'
 metadata description = 'This module deploys a Static Web App Site Custom Domain.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The custom domain name.')
 param name string
@@ -44,3 +46,6 @@ type customDomainType = {
   @description('Optional. Validation method for adding a custom domain.')
   validationMethod: string?
 }[]
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

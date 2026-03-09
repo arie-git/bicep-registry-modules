@@ -1,5 +1,8 @@
 metadata name = 'Redis Cache Access Policy Assignment'
 metadata description = 'This module deploys an access policy assignment for Redis Cache.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the Redis cache.')
 param redisCacheName string
@@ -38,3 +41,5 @@ output resourceId string = policyAssignment.id
 
 @description('The name of the resource group the access policy assignment was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

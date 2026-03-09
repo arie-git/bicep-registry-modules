@@ -50,3 +50,5 @@ output resourceId string = managedPrivateEndpoint.id
 
 @description('The resource group of the deployed managed private endpoint.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

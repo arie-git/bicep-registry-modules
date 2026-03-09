@@ -1,5 +1,8 @@
 metadata name = 'Event Hub Namespace Event Hub Consumer Groups'
 metadata description = 'This module deploys an Event Hub Namespace Event Hub Consumer Group.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent event hub namespace. Required if the template is used in a standalone deployment.s.')
 param namespaceName string
@@ -38,3 +41,5 @@ output resourceId string = consumerGroup.id
 
 @description('The name of the resource group the consumer group was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

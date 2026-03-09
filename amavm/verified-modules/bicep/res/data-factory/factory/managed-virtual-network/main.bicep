@@ -47,3 +47,5 @@ output name string = managedVirtualNetwork.name
 
 @description('The resource ID of the Managed Virtual Network.')
 output resourceId string = managedVirtualNetwork.id
+
+output evidenceOfNonCompliance bool = false

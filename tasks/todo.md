@@ -542,68 +542,68 @@ Every main.bicep (parent AND child) must have: `metadata owner`, `metadata compl
 - [x] document-db/database-account/sql-role-definition/main.bicep
 
 **Remaining (28 files):**
-- [ ] app-configuration/configuration-store/key-value/main.bicep
-- [ ] app-configuration/configuration-store/replica/main.bicep
-- [ ] container-registry/registry/credential/main.bicep
-- [ ] db-for-postgre-sql/flexible-server/administrator/main.bicep
-- [ ] db-for-postgre-sql/flexible-server/advanced-threat-protection-setting/main.bicep
-- [ ] db-for-postgre-sql/flexible-server/configuration/main.bicep
-- [ ] db-for-postgre-sql/flexible-server/database/main.bicep
-- [ ] db-for-postgre-sql/flexible-server/firewall-rule/main.bicep
-- [ ] event-hub/namespace/authorization-rule/main.bicep
-- [ ] event-hub/namespace/disaster-recovery-config/main.bicep
-- [ ] event-hub/namespace/eventhub/authorization-rule/main.bicep
-- [ ] event-hub/namespace/eventhub/consumergroup/main.bicep
-- [ ] event-hub/namespace/eventhub/main.bicep
-- [ ] event-hub/namespace/network-rule-set/main.bicep
-- [ ] cache/redis/access-policy-assignment/main.bicep
-- [ ] cache/redis/access-policy/main.bicep
-- [ ] cache/redis/firewall-rule/main.bicep
-- [ ] cache/redis/linked-servers/main.bicep
-- [ ] insights/private-link-scope/scoped-resource/main.bicep
-- [ ] search/search-service/shared-private-link-resource/main.bicep
-- [ ] service-bus/namespace/authorization-rule/main.bicep
-- [ ] service-bus/namespace/disaster-recovery-config/main.bicep
-- [ ] service-bus/namespace/migration-configuration/main.bicep
-- [ ] service-bus/namespace/network-rule-set/main.bicep
-- [ ] service-bus/namespace/queue/authorization-rule/main.bicep
-- [ ] service-bus/namespace/topic/authorization-rule/main.bicep
-- [ ] service-bus/namespace/topic/subscription/main.bicep
-- [ ] service-bus/namespace/topic/subscription/rule/main.bicep
+- [x] app-configuration/configuration-store/key-value/main.bicep
+- [x] app-configuration/configuration-store/replica/main.bicep
+- [x] container-registry/registry/credential/main.bicep
+- [x] db-for-postgre-sql/flexible-server/administrator/main.bicep
+- [x] db-for-postgre-sql/flexible-server/advanced-threat-protection-setting/main.bicep
+- [x] db-for-postgre-sql/flexible-server/configuration/main.bicep
+- [x] db-for-postgre-sql/flexible-server/database/main.bicep
+- [x] db-for-postgre-sql/flexible-server/firewall-rule/main.bicep
+- [x] event-hub/namespace/authorization-rule/main.bicep
+- [x] event-hub/namespace/disaster-recovery-config/main.bicep
+- [x] event-hub/namespace/eventhub/authorization-rule/main.bicep
+- [x] event-hub/namespace/eventhub/consumergroup/main.bicep
+- [x] event-hub/namespace/eventhub/main.bicep
+- [x] event-hub/namespace/network-rule-set/main.bicep
+- [x] cache/redis/access-policy-assignment/main.bicep
+- [x] cache/redis/access-policy/main.bicep
+- [x] cache/redis/firewall-rule/main.bicep
+- [x] cache/redis/linked-servers/main.bicep
+- [x] insights/private-link-scope/scoped-resource/main.bicep
+- [x] search/search-service/shared-private-link-resource/main.bicep
+- [x] service-bus/namespace/authorization-rule/main.bicep
+- [x] service-bus/namespace/disaster-recovery-config/main.bicep
+- [x] service-bus/namespace/migration-configuration/main.bicep
+- [x] service-bus/namespace/network-rule-set/main.bicep
+- [x] service-bus/namespace/queue/authorization-rule/main.bicep
+- [x] service-bus/namespace/topic/authorization-rule/main.bicep
+- [x] service-bus/namespace/topic/subscription/main.bicep
+- [x] service-bus/namespace/topic/subscription/rule/main.bicep
 
 ### META-2: Files missing compliance + evidenceOfNonCompliance (have owner) — 47 files
 
-- [ ] container-registry/registry/replication/main.bicep
-- [ ] container-registry/registry/scope-map/main.bicep
-- [ ] container-registry/registry/webhook/main.bicep
-- [ ] container-service/managed-cluster/agent-pool/main.bicep
-- [ ] container-service/managed-cluster/maintenance-configurations/main.bicep
-- [ ] insights/component/linkedStorageAccounts/main.bicep
-- [ ] managed-identity/user-assigned-identity/federated-identity-credential/main.bicep
-- [ ] operational-insights/workspace/data-export/main.bicep
-- [ ] operational-insights/workspace/data-source/main.bicep
-- [ ] operational-insights/workspace/linked-service/main.bicep
-- [ ] operational-insights/workspace/linked-storage-account/main.bicep
-- [ ] operational-insights/workspace/saved-search/main.bicep
-- [ ] operational-insights/workspace/storage-insight-config/main.bicep
-- [ ] operational-insights/workspace/table/main.bicep
-- [ ] sql/server/audit-settings/main.bicep
-- [ ] sql/server/database/backup-long-term-retention-policy/main.bicep
-- [ ] sql/server/database/backup-short-term-retention-policy/main.bicep
-- [ ] sql/server/elastic-pool/main.bicep
-- [ ] sql/server/encryption-protector/main.bicep
-- [ ] sql/server/firewall-rule/main.bicep
-- [ ] sql/server/key/main.bicep
-- [ ] sql/server/outbound-firewall-rule/main.bicep
-- [ ] sql/server/security-alert-policy/main.bicep
-- [ ] sql/server/sql-vulnerability-assessment/main.bicep
-- [ ] sql/server/virtual-network-rule/main.bicep
-- [ ] sql/server/vulnerability-assessment/main.bicep
-- [ ] storage/storage-account/blob-service/container/immutability-policy/main.bicep
-- [ ] storage/storage-account/local-user/main.bicep
-- [ ] storage/storage-account/queue-service/main.bicep
-- [ ] storage/storage-account/table-service/main.bicep
-- [ ] storage/storage-account/table-service/table/main.bicep
+- [x] container-registry/registry/replication/main.bicep
+- [x] container-registry/registry/scope-map/main.bicep
+- [x] container-registry/registry/webhook/main.bicep
+- [x] container-service/managed-cluster/agent-pool/main.bicep
+- [x] container-service/managed-cluster/maintenance-configurations/main.bicep
+- [x] insights/component/linkedStorageAccounts/main.bicep
+- [x] managed-identity/user-assigned-identity/federated-identity-credential/main.bicep
+- [x] operational-insights/workspace/data-export/main.bicep
+- [x] operational-insights/workspace/data-source/main.bicep
+- [x] operational-insights/workspace/linked-service/main.bicep
+- [x] operational-insights/workspace/linked-storage-account/main.bicep
+- [x] operational-insights/workspace/saved-search/main.bicep
+- [x] operational-insights/workspace/storage-insight-config/main.bicep
+- [x] operational-insights/workspace/table/main.bicep
+- [x] sql/server/audit-settings/main.bicep
+- [x] sql/server/database/backup-long-term-retention-policy/main.bicep
+- [x] sql/server/database/backup-short-term-retention-policy/main.bicep
+- [x] sql/server/elastic-pool/main.bicep
+- [x] sql/server/encryption-protector/main.bicep
+- [x] sql/server/firewall-rule/main.bicep
+- [x] sql/server/key/main.bicep
+- [x] sql/server/outbound-firewall-rule/main.bicep
+- [x] sql/server/security-alert-policy/main.bicep
+- [x] sql/server/sql-vulnerability-assessment/main.bicep
+- [x] sql/server/virtual-network-rule/main.bicep
+- [x] sql/server/vulnerability-assessment/main.bicep
+- [x] storage/storage-account/blob-service/container/immutability-policy/main.bicep
+- [x] storage/storage-account/local-user/main.bicep
+- [x] storage/storage-account/queue-service/main.bicep
+- [x] storage/storage-account/table-service/main.bicep
+- [x] storage/storage-account/table-service/table/main.bicep
 - [x] web/site/basic-publishing-credentials-policy/main.bicep — N/A (no version.json, not independently deployable)
 - [x] web/site/config--appsettings/main.bicep — N/A
 - [x] web/site/config--authsettingsv2/main.bicep — N/A
@@ -617,19 +617,24 @@ Every main.bicep (parent AND child) must have: `metadata owner`, `metadata compl
 - [x] web/site/slot/extensions--msdeploy/main.bicep — N/A
 - [x] web/site/slot/hybrid-connection-namespace/relay/main.bicep — N/A
 - [x] web/site/slot/main.bicep — N/A
-- [ ] web/static-site/config/main.bicep
-- [ ] web/static-site/custom-domain/main.bicep
-- [ ] web/static-site/linked-backend/main.bicep
+- [x] web/static-site/config/main.bicep
+- [x] web/static-site/custom-domain/main.bicep
+- [x] web/static-site/linked-backend/main.bicep
 
 ### META-3: Files missing only evidenceOfNonCompliance (have owner + compliance) — 7 files
 
-- [ ] data-factory/factory/managed-virtual-network/main.bicep
-- [ ] data-factory/factory/managed-virtual-network/managed-private-endpoint/main.bicep
-- [ ] network/private-endpoint/private-dns-zone-group/main.bicep
-- [ ] service-bus/namespace/queue/main.bicep
-- [ ] service-bus/namespace/topic/main.bicep
-- [ ] storage/storage-account/blob-service/main.bicep
-- [ ] storage/storage-account/file-service/main.bicep
+- [x] data-factory/factory/managed-virtual-network/main.bicep
+- [x] data-factory/factory/managed-virtual-network/managed-private-endpoint/main.bicep
+- [x] network/private-endpoint/private-dns-zone-group/main.bicep
+- [x] service-bus/namespace/queue/main.bicep
+- [x] service-bus/namespace/topic/main.bicep
+- [x] storage/storage-account/blob-service/main.bicep
+- [x] storage/storage-account/file-service/main.bicep
+
+### META-4: Files missed in original audit (found by explorer) — 1 file needed fix
+
+- [x] container-registry/registry/credential-set/main.bicep — added compliance + complianceVersion + evidenceOfNonCompliance
+- [x] All other missed files (key-vault/vault/key, secret, access-policy; container-registry/cache-rule; network/virtual-network/subnet; data-factory/integration-runtime, linked-service; storage/management-policy, queue-service/queue, file-service/share, blob-service/container) — already had all metadata fields
 
 ### Up-to-Date (no sync needed)
 

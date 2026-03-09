@@ -1,5 +1,8 @@
 metadata name = 'Event Hub Namespace Event Hubs'
 metadata description = 'This module deploys an Event Hub Namespace Event Hub.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 import { telemetryId } from '../../../../../bicep-shared/environments.bicep'
 
@@ -250,6 +253,8 @@ output resourceId string = eventHub.id
 
 @description('The resource group the Event Hub was deployed into.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false
 
 // ================ //
 // Definitions      //

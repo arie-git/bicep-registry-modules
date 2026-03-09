@@ -1,6 +1,8 @@
 metadata name = 'User Assigned Identity Federated Identity Credential'
 metadata description = 'This module deploys a User Assigned Identity Federated Identity Credential.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent user assigned identity. Required if the template is used in a standalone deployment.')
 param userAssignedIdentityName string
@@ -58,3 +60,5 @@ type federatedIdentityCredentialType = {
   @description('Required. The identifier of the external identity.')
   subject: string
 }
+
+output evidenceOfNonCompliance bool = false

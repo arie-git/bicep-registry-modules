@@ -1,5 +1,8 @@
 metadata name = 'DBforPostgreSQL Flexible Server Advanced Threat Protection'
 metadata description = 'This module deploys a DBforPostgreSQL Advanced Threat Protection.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent PostgreSQL flexible server. Required if the template is used in a standalone deployment.')
 param flexibleServerName string
@@ -34,3 +37,5 @@ output advancedTreatProtectionState string = flexibleServer_advancedThreatProtec
 
 @description('The resource group of the deployed administrator.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

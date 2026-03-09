@@ -1,6 +1,8 @@
 metadata name = 'Azure SQL Server Virtual Network Rules'
 metadata description = 'This module deploys an Azure SQL Server Virtual Network Rule.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the Server Virtual Network Rule.')
 param name string
@@ -52,3 +54,6 @@ type virtualNetworkRuleType = {
   @description('Required. The resource Id of the virtual network subnet.')
   virtualNetworkSubnetId: string
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false

@@ -1,6 +1,8 @@
 metadata name = 'Azure Kubernetes Service (AKS) Managed Cluster Agent Pools'
 metadata description = 'This module deploys an Azure Kubernetes Service (AKS) Managed Cluster Agent Pool.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent managed cluster. Required if the template is used in a standalone deployment.')
 param managedClusterName string
@@ -319,3 +321,5 @@ type agentPoolType = {
   @description('Optional. The enable default telemetry of the agent pool.')
   enableDefaultTelemetry: bool?
 }[]
+
+output evidenceOfNonCompliance bool = false

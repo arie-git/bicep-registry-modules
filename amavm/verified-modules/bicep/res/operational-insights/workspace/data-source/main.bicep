@@ -1,6 +1,8 @@
 metadata name = 'Log Analytics Workspace Datasources'
 metadata description = 'This module deploys a Log Analytics Workspace Data Source.'
 metadata owner = 'Azure/module-maintainers'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the parent Log Analytics workspace.')
 param logAnalyticsWorkspaceName string
@@ -99,3 +101,5 @@ output resourceGroupName string = resourceGroup().name
 
 @description('The name of the deployed data source.')
 output name string = dataSource.name
+
+output evidenceOfNonCompliance bool = false

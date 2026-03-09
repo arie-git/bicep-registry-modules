@@ -1,6 +1,8 @@
 metadata name = 'Application Insights Linked Storage Account'
 metadata description = 'This component deploys an Application Insights Linked Storage Account.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent Application Insights instance. Required if the template is used in a standalone deployment.')
 param appInsightsName string
@@ -28,3 +30,5 @@ output resourceId string = linkedStorageAccount.id
 
 @description('The resource group the agent pool was deployed into.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

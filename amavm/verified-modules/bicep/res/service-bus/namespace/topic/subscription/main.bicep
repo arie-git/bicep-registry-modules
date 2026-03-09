@@ -1,5 +1,8 @@
 metadata name = 'Service Bus Namespace Topic Subscription'
 metadata description = 'This module deploys a Service Bus Namespace Topic Subscription.'
+metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the service bus namespace topic subscription.')
 @minLength(1)
@@ -127,6 +130,8 @@ output resourceId string = subscription.id
 
 @description('The name of the Resource Group the topic subscription was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false
 
 // =============== //
 //   Definitions   //

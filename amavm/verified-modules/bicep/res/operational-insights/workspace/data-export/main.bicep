@@ -1,6 +1,8 @@
 metadata name = 'Log Analytics Workspace Data Exports'
 metadata description = 'This module deploys a Log Analytics Workspace Data Export.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 // ============== //
 //   Parameters   //
@@ -53,3 +55,5 @@ output resourceId string = dataExport.id
 
 @description('The name of the resource group the data export was created in.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

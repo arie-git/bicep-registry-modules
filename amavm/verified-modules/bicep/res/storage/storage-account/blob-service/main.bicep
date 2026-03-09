@@ -190,6 +190,8 @@ output resourceId string = blobServices.id
 @description('The name of the deployed blob service.')
 output resourceGroupName string = resourceGroup().name
 
+output evidenceOfNonCompliance bool = false
+
 // =============== //
 //   Definitions   //
 // =============== //

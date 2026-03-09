@@ -1,6 +1,8 @@
 metadata name = 'Log Analytics Workspace Linked Storage Accounts'
 metadata description = 'This module deploys a Log Analytics Workspace Linked Storage Account.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the parent Log Analytics workspace.')
 param logAnalyticsWorkspaceName string
@@ -39,3 +41,5 @@ output resourceId string = linkedStorageAccount.id
 
 @description('The resource group where the linked storage account is deployed.')
 output resourceGroupName string = resourceGroup().name
+
+output evidenceOfNonCompliance bool = false

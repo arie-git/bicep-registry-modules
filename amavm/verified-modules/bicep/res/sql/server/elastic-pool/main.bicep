@@ -1,6 +1,8 @@
 metadata name = 'SQL Server Elastic Pool'
 metadata description = 'This module deploys an Azure SQL Server Elastic Pool.'
 metadata owner = 'AMCCC'
+metadata compliance = 'inherited from parent'
+metadata complianceVersion = '20260309'
 
 @description('Required. The name of the Elastic Pool.')
 param name string
@@ -136,3 +138,6 @@ type elasticPoolType = {
   @description('Optional. Whether or not this elastic pool is zone redundant, which means the replicas of this elastic pool will be spread across multiple availability zones.')
   zoneRedundant: bool?
 }
+
+@description('Evidence of non-compliance (inherited from parent).')
+output evidenceOfNonCompliance bool = false
