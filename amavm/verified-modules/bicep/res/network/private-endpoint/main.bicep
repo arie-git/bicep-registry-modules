@@ -19,6 +19,10 @@ param customNetworkInterfaceName string?
 @description('Optional. A list of IP configurations of the private endpoint. This will be used to map to the First Party Service endpoints.')
 param ipConfigurations ipConfigurationsType
 
+@description('Optional. Specifies the IP version type for the private IPs of the private endpoint. If not defined, this defaults to IPv4.')
+@allowed(['IPv4'])
+param ipVersionType string = 'IPv4'
+
 @description('Optional. The private DNS zone group to configure for the private endpoint.')
 param privateDnsZoneGroup privateDnsZoneGroupType?
 
@@ -113,6 +117,7 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2025-05-01' = {
     subnet: {
       id: subnetResourceId
     }
+    ipVersionType: ipVersionType
   }
 }
 
@@ -129,18 +134,18 @@ resource privateEndpoint_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!
     name: lock.?name ?? 'lock-${name}'
     properties: {
       level: lock.?kind ?? ''
-      notes: lock.?kind == 'CanNotDelete'
+      notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
         ? 'Cannot delete resource or child resources.'
-        : 'Cannot delete or modify the resource or child resources.'
+        : 'Cannot delete or modify the resource or child resources.')
     }
     scope: privateEndpoint
   }
 
 resource privateEndpoint_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
-    name: roleAssignment.?name ?? guid(privateEndpoint.id, roleAssignment.principalId, roleAssignment.roleDefinitionIdOrName)
+    name: roleAssignment.?name ?? guid(privateEndpoint.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
     properties: {
-      roleDefinitionId: roleAssignment.roleDefinitionIdOrName
+      roleDefinitionId: roleAssignment.roleDefinitionId
       principalId: roleAssignment.principalId
       description: roleAssignment.?description
       principalType: roleAssignment.?principalType
@@ -165,17 +170,13 @@ output name string = privateEndpoint.name
 output location string = privateEndpoint.location
 
 @description('The custom DNS configurations of the private endpoint.')
-output customDnsConfig customDnsConfigType = privateEndpoint.properties.customDnsConfigs
+output customDnsConfigs customDnsConfigType = privateEndpoint.properties.customDnsConfigs
 
-@description('The IDs of the network interfaces associated with the private endpoint.')
-output networkInterfaceIds array = privateEndpoint.properties.networkInterfaces
+@description('The resource IDs of the network interfaces associated with the private endpoint.')
+output networkInterfaceResourceIds string[] = map(privateEndpoint.properties.networkInterfaces, nic => nic.id)
 
 @description('The group Id for the private endpoint Group.')
-output groupId string = !empty(privateEndpoint.properties.manualPrivateLinkServiceConnections) && length(privateEndpoint.properties.manualPrivateLinkServiceConnections[0].properties.?groupIds) > 0
-  ? privateEndpoint.properties.manualPrivateLinkServiceConnections[0].properties.?groupIds[0] ?? ''
-  : !empty(privateEndpoint.properties.privateLinkServiceConnections) && length(privateEndpoint.properties.privateLinkServiceConnections[0].properties.?groupIds) > 0
-      ? privateEndpoint.properties.privateLinkServiceConnections[0].properties.?groupIds[0] ?? ''
-      : ''
+output groupId string? = privateEndpoint.properties.?manualPrivateLinkServiceConnections[?0].properties.?groupIds[?0] ?? privateEndpoint.properties.?privateLinkServiceConnections[?0].properties.?groupIds[?0]
 
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = false //TODO: maybe check for links to other subscriptions

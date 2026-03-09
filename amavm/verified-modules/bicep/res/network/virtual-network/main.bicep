@@ -12,8 +12,14 @@ param name string
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Required. An Array of 1 or more IP Address Prefixes for the Virtual Network.')
+@description('Required. An Array of 1 or more IP Address Prefixes OR the resource ID of the IPAM pool to be used for the Virtual Network. When specifying an IPAM pool resource ID you must also set a value for the parameter called `ipamPoolNumberOfIpAddresses`.')
 param addressPrefixes array
+
+@description('Optional. Number of IP addresses allocated from the pool. To be used only when the addressPrefix param is defined with a resource ID of an IPAM pool.')
+param ipamPoolNumberOfIpAddresses string?
+
+@description('Optional. The BGP community associated with the virtual network.')
+param virtualNetworkBgpCommunity string?
 
 import { subnetType } from 'subnet/main.bicep'  // path to the subnet module
 
@@ -58,6 +64,9 @@ param roleAssignments roleAssignmentType
 @description('Optional. Tags of the resource.')
 param tags object?
 
+@description('Optional. Indicates if VM protection is enabled for all the subnets in the virtual network.')
+param enableVmProtection bool?
+
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
@@ -97,9 +106,25 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
   location: location
   tags: finalTags
   properties: {
-    addressSpace: {
-      addressPrefixes: addressPrefixes
-    }
+    addressSpace: contains(addressPrefixes[0], '/Microsoft.Network/networkManagers/')
+      ? {
+          ipamPoolPrefixAllocations: [
+            {
+              pool: {
+                id: addressPrefixes[0]
+              }
+              numberOfIpAddresses: ipamPoolNumberOfIpAddresses
+            }
+          ]
+        }
+      : {
+          addressPrefixes: addressPrefixes
+        }
+    bgpCommunities: !empty(virtualNetworkBgpCommunity)
+      ? {
+          virtualNetworkCommunity: virtualNetworkBgpCommunity!
+        }
+      : null
     ddosProtectionPlan: !empty(ddosProtectionPlanResourceId)
       ? {
           id: ddosProtectionPlanResourceId
@@ -118,12 +143,14 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
         }
       : null
     flowTimeoutInMinutes: flowTimeoutInMinutes != 0 ? flowTimeoutInMinutes : null
+    enableVmProtection: enableVmProtection
     subnets: [
       for subnet in (subnets ?? []): {
         name: subnet.name
         properties: {
           addressPrefix: subnet.addressPrefix
           addressPrefixes: subnet.?addressPrefixes ?? []
+          ipamPoolPrefixAllocations: subnet.?ipamPoolPrefixAllocations
           applicationGatewayIPConfigurations: subnet.?applicationGatewayIPConfigurations ?? []
           delegations: subnet.?delegations ?? []
           ipAllocations: subnet.?ipAllocations ?? []
@@ -146,6 +173,8 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' = {
             : null
           serviceEndpoints: subnet.?serviceEndpoints ?? []
           serviceEndpointPolicies: subnet.?serviceEndpointPolicies ?? []
+          defaultOutboundAccess: subnet.?defaultOutboundAccess
+          sharingScope: subnet.?sharingScope
         }
       }
     ]

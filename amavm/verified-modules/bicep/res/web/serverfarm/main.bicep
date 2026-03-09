@@ -77,6 +77,33 @@ param targetWorkerSize int = 0
 @description('Optional. Zone Redundant server farms can only be used on Premium or ElasticPremium SKU tiers within ZRS Supported regions (https://learn.microsoft.com/en-us/azure/storage/common/redundancy-regions-zrs).')
 param zoneRedundant bool = startsWith(skuName, 'P') || startsWith(skuName, 'EP') ? true : false
 
+@description('Optional. If Hyper-V container app service plan true, false otherwise.')
+param hyperV bool?
+
+@description('Optional. The resource ID of the subnet to integrate the App Service Plan with for VNet integration.')
+param virtualNetworkSubnetId string?
+
+@description('Optional. Set to true to enable Managed Instance custom mode. Required for App Service Managed Instance plans.')
+param isCustomMode bool = false
+
+@description('Optional. Whether RDP is enabled for Managed Instance plans. Only applicable when isCustomMode is true. Requires a Bastion host deployed in the VNet.')
+param rdpEnabled bool?
+
+@description('Optional. A list of install scripts for Managed Instance plans. Only applicable when isCustomMode is true.')
+param installScripts array?
+
+@description('Optional. The default identity configuration for Managed Instance plans. Only applicable when isCustomMode is true.')
+param planDefaultIdentity string?
+
+@description('Optional. A list of registry adapters for Managed Instance plans. Only applicable when isCustomMode is true.')
+param registryAdapters array?
+
+@description('Optional. A list of storage mounts for Managed Instance plans. Only applicable when isCustomMode is true.')
+param storageMounts array?
+
+@description('Optional. The managed identity definition for this resource.')
+param managedIdentities managedIdentitiesType?
+
 @description('Optional. The lock settings of the service.')
 param lock lockType
 
@@ -126,6 +153,21 @@ var formattedRoleAssignments = [
   })
 ]
 
+var formattedUserAssignedIdentities = reduce(
+  map((managedIdentities.?userAssignedResourceIds ?? []), (id) => { '${id}': {} }),
+  {},
+  (cur, next) => union(cur, next)
+)
+
+var identity = !empty(managedIdentities)
+  ? {
+      type: (managedIdentities.?systemAssigned ?? false)
+        ? (!empty(managedIdentities.?userAssignedResourceIds ?? {}) ? 'SystemAssigned, UserAssigned' : 'SystemAssigned')
+        : (!empty(managedIdentities.?userAssignedResourceIds ?? {}) ? 'UserAssigned' : 'None')
+      userAssignedIdentities: !empty(formattedUserAssignedIdentities) ? formattedUserAssignedIdentities : null
+    }
+  : null
+
 // ============ //
 // Dependencies //
 // ============ //
@@ -157,6 +199,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2025-03-01' = {
   kind: kind
   location: location
   tags: finalTags
+  identity: identity
   sku: union({
     name: skuName
   },
@@ -179,6 +222,18 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2025-03-01' = {
     targetWorkerCount: targetWorkerCount
     targetWorkerSizeId: targetWorkerSize
     zoneRedundant: zoneRedundant
+    hyperV: hyperV
+    isCustomMode: isCustomMode
+    network: virtualNetworkSubnetId != null
+      ? {
+          virtualNetworkSubnetId: virtualNetworkSubnetId
+        }
+      : null
+    rdpEnabled: isCustomMode ? rdpEnabled : null
+    installScripts: isCustomMode ? installScripts : null
+    planDefaultIdentity: isCustomMode ? planDefaultIdentity : null
+    registryAdapters: isCustomMode ? registryAdapters : null
+    storageMounts: isCustomMode ? storageMounts : null
   }
 }
 
@@ -251,6 +306,9 @@ output resourceId string = appServicePlan.id
 @description('The location the resource was deployed into.')
 output location string = appServicePlan.location
 
+@description('The principal ID of the system assigned identity.')
+output systemAssignedMIPrincipalId string? = appServicePlan.?identity.?principalId
+
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = false
 
@@ -262,5 +320,6 @@ output evidenceOfNonCompliance bool = false
 import {
   diagnosticSettingType
   lockType
+  managedIdentitiesType
   roleAssignmentType
 } from '../../../../bicep-shared/types.bicep'

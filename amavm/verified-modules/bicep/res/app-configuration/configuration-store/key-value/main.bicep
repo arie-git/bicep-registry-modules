@@ -20,7 +20,7 @@ resource appConfiguration 'Microsoft.AppConfiguration/configurationStores@2025-0
   name: appConfigurationName
 }
 
-resource keyValues 'Microsoft.AppConfiguration/configurationStores/keyValues@2024-05-01' = {
+resource keyValues 'Microsoft.AppConfiguration/configurationStores/keyValues@2025-02-01-preview' = {
   name: name
   parent: appConfiguration
   properties: {

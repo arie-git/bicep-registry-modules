@@ -64,15 +64,22 @@ var dataCollectionRulePropertiesUnion = union(
   {
     description: dataCollectionRuleProperties.?description
   },
-  dataCollectionRuleProperties.kind == 'Linux' || dataCollectionRuleProperties.kind == 'Windows' || dataCollectionRuleProperties.kind == 'All'
+  contains(['Linux', 'Windows', 'All', 'PlatformTelemetry', 'AgentDirectToStore'], dataCollectionRuleProperties.kind)
     ? {
         dataSources: dataCollectionRuleProperties.dataSources
       }
     : {},
-  dataCollectionRuleProperties.kind == 'Linux' || dataCollectionRuleProperties.kind == 'Windows' || dataCollectionRuleProperties.kind == 'All' || dataCollectionRuleProperties.kind == 'Direct'
+  contains(
+      ['Linux', 'Windows', 'All', 'Direct', 'WorkspaceTransforms', 'PlatformTelemetry', 'AgentDirectToStore'],
+      dataCollectionRuleProperties.kind
+    )
     ? {
         dataFlows: dataCollectionRuleProperties.dataFlows
         destinations: dataCollectionRuleProperties.destinations
+      }
+    : {},
+  contains(['Linux', 'Windows', 'All', 'Direct', 'WorkspaceTransforms'], dataCollectionRuleProperties.kind)
+    ? {
         dataCollectionEndpointId: dataCollectionRuleProperties.?dataCollectionEndpointResourceId
         streamDeclarations: dataCollectionRuleProperties.?streamDeclarations
       }
@@ -157,6 +164,16 @@ output systemAssignedMIPrincipalId string? = dataCollectionRuleProperties.kind =
   ? dataCollectionRuleAll.?identity.?principalId
   : dataCollectionRule.?identity.?principalId
 
+@description('The endpoints of the dataCollectionRule, if created.')
+output endpoints object? = dataCollectionRuleProperties.kind == 'All'
+  ? dataCollectionRuleAll.properties.?endpoints
+  : dataCollectionRule.properties.?endpoints
+
+@description('The ImmutableId of the dataCollectionRule.')
+output immutableId string? = dataCollectionRuleProperties.kind == 'All'
+  ? dataCollectionRuleAll.properties.?immutableId
+  : dataCollectionRule.properties.?immutableId
+
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = false
 
@@ -173,6 +190,9 @@ type dataCollectionRulePropertiesType =
   | allPlatformsDcrPropertiesType
   | agentSettingsDcrPropertiesType
   | directDcrPropertiesType
+  | agentDirectToStoreType
+  | workspaceTransformsDcrPropertiesType
+  | platformTelemetryDcrPropertiesType
 
 @description('The type for the properties of the \'Linux\' data collection rule.')
 type linuxDcrPropertiesType = {
@@ -292,6 +312,69 @@ type directDcrPropertiesType = {
 
   @description('Optional. Description of the data collection rule.')
   description: string?
+}
+
+@description('The type for the properties of the \'AgentDirectToStore\' data collection rule.')
+type agentDirectToStoreType = {
+  @description('Required. The platform type specifies the type of resources this rule can apply to.')
+  kind: 'AgentDirectToStore'
+
+  @description('Required. Specification of data sources that will be collected.')
+  dataSources: object
+
+  @description('Required. The specification of data flows.')
+  dataFlows: array
+
+  @description('Required. Specification of destinations that can be used in data flows.')
+  destinations: object
+
+  @description('Optional. Description of the data collection rule.')
+  description: string?
+}
+
+@description('The type for the properties of the \'WorkspaceTransforms\' data collection rule.')
+type workspaceTransformsDcrPropertiesType = {
+  @description('Required. The kind of the resource.')
+  kind: 'WorkspaceTransforms'
+
+  @description('Required. The specification of data flows. Should include a separate dataflow for each table that will have a transformation. Use a where clause in the query if only certain records should be transformed.')
+  dataFlows: array
+
+  @description('Required. Specification of destinations that can be used in data flows. For WorkspaceTransforms, only one Log Analytics workspace destination is supported.')
+  destinations: object
+
+  @description('Optional. Description of the data collection rule.')
+  description: string?
+}
+
+@description('The type for the properties of the \'PlatformTelemetry\' data collection rule.')
+type platformTelemetryDcrPropertiesType = {
+  @description('Required. The kind of the resource.')
+  kind: 'PlatformTelemetry'
+
+  @description('Optional. Description of the data collection rule.')
+  description: string?
+
+  @description('Required. Specification of data sources that will be collected.')
+  dataSources: {
+    @description('Required. The list of platform telemetry configurations.')
+    platformTelemetry: array
+  }
+
+  @description('Required. Specification of destinations. Choose a single destination type of either logAnalytics, storageAccounts, or eventHubs.')
+  destinations: {
+    @description('Optional. The list of Log Analytics destinations.')
+    logAnalytics: array?
+
+    @description('Optional. The list of Storage Account destinations.')
+    storageAccounts: array?
+
+    @description('Optional. The list of Event Hub destinations.')
+    eventHubs: array?
+  }
+
+  @description('Required. The specification of data flows.')
+  dataFlows: array
 }
 
 import {

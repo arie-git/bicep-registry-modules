@@ -59,7 +59,11 @@ Setting this parameter value to 'false' will make the resource non-compliant.
 ''')
 param enableRbacAuthorization bool = true
 
-@description('Optional. The vault\'s create mode to indicate whether the vault need to be recovered or not. - recover or default.')
+@description('Optional. The vault\'s create mode to indicate whether the vault need to be recovered or not.')
+@allowed([
+  'default'
+  'recover'
+])
 param createMode string = 'default'
 
 @description('''Optional. Provide 'true' to enable Key Vault\'s purge protection feature.
@@ -229,9 +233,9 @@ resource keyVault_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(l
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: keyVault
 }
@@ -355,6 +359,7 @@ module keyVault_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0' =
         'Full'
       ).location
       lock: privateEndpoint.?lock ?? lock
+      privateDnsZoneGroup: privateEndpoint.?privateDnsZoneGroup
       roleAssignments: privateEndpoint.?roleAssignments
       tags: privateEndpoint.?tags ?? finalTags
       customDnsConfigs: privateEndpoint.?customDnsConfigs

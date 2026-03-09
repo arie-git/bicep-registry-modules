@@ -19,7 +19,9 @@ param managedIdentities managedIdentitiesType = {
 }
 @allowed([
   'Free'
+  'Developer'
   'Standard'
+  'Premium'
 ])
 @description('Optional. Pricing tier of App Configuration.')
 param sku string = 'Standard'
@@ -62,7 +64,7 @@ param customerManagedKey customerManagedKeyType?
 param keyValues appConfigKeyValuesType?
 
 @description('Optional. All Replicas to create.')
-param replicaLocations appConfigReplicationType?
+param replicaLocations replicaLocationType[]?
 
 @description('''Optional. The diagnostic settings of the service.
 
@@ -126,6 +128,14 @@ var specificBuiltInRoleNames = {
   'App Configuration Data Reader': subscriptionResourceId(
     'Microsoft.Authorization/roleDefinitions',
     '516239f1-63e1-4d78-a4de-a74fb236a071'
+  )
+  'App Configuration Reader': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    '175b81b9-6e0d-490a-85e4-0d422273c10c'
+  )
+  'App Configuration Contributor': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    'fe86443c-f201-4fc4-9d2a-ac61149fbda0'
   )
 }
 var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
@@ -191,17 +201,17 @@ resource configurationStore 'Microsoft.AppConfiguration/configurationStores@2025
   properties: {
     createMode: createMode
     disableLocalAuth: disableLocalAuth
-    enablePurgeProtection: sku == 'Free' ? false : enablePurgeProtection
+    enablePurgeProtection: sku == 'Free' || sku == 'Developer' ? false : enablePurgeProtection
     encryption: !empty(customerManagedKey)
       ? {
           keyVaultProperties: {
             keyIdentifier: !empty(customerManagedKey.?keyVersion)
-              ? '${cMKKeyVault::cMKKey.properties.keyUri}/${customerManagedKey!.?keyVersion}'
+              ? '${cMKKeyVault::cMKKey!.properties.keyUri}/${customerManagedKey!.keyVersion!}'
               : (customerManagedKey.?autoRotationEnabled ?? true)
-                  ? cMKKeyVault::cMKKey.properties.keyUri
-                  : cMKKeyVault::cMKKey.properties.keyUriWithVersion
+                  ? cMKKeyVault::cMKKey!.properties.keyUri
+                  : cMKKeyVault::cMKKey!.properties.keyUriWithVersion
             identityClientId: !empty(customerManagedKey.?userAssignedIdentityResourceId)
-              ? cMKUserAssignedIdentity.properties.clientId
+              ? cMKUserAssignedIdentity!.properties.clientId
               : null
           }
         }
@@ -209,7 +219,7 @@ resource configurationStore 'Microsoft.AppConfiguration/configurationStores@2025
     publicNetworkAccess: !empty(publicNetworkAccess)
       ? any(publicNetworkAccess)
       : (!empty(privateEndpoints) ? 'Disabled' : 'Enabled')
-    softDeleteRetentionInDays: sku == 'Free' ? 0 : softDeleteRetentionInDays
+    softDeleteRetentionInDays: sku == 'Free' || sku == 'Developer' ? 0 : softDeleteRetentionInDays
     dataPlaneProxy: !empty(dataPlaneProxy)
       ? {
           authenticationMode: dataPlaneProxy.?authenticationMode ?? 'Pass-through'
@@ -232,13 +242,14 @@ module configurationStore_keyValues 'key-value/main.bicep' = [
   }
 ]
 
+@batchSize(1)
 module configurationStore_replicas 'replica/main.bicep' = [
   for (replicaLocation, index) in (replicaLocations ?? []): {
     name: '${uniqueString(deployment().name, location)}-AppConfig-Replicas-${index}'
     params: {
       appConfigurationName: configurationStore.name
-      replicaLocation: replicaLocation
-      name: '${replicaLocation}replica'
+      replicaLocation: replicaLocation.replicaLocation
+      name: replicaLocation.?name
     }
   }
 ]
@@ -246,9 +257,9 @@ resource configurationStore_lock 'Microsoft.Authorization/locks@2020-05-01' = if
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: configurationStore
 }
@@ -374,6 +385,17 @@ output location string = configurationStore.location
 @description('The endpoint of the app configuration.')
 output endpoint string = configurationStore.properties.endpoint
 
+@description('The private endpoints of the app configuration.')
+output privateEndpoints privateEndpointOutputType[] = [
+  for (item, index) in (privateEndpoints ?? []): {
+    name: configurationStore_privateEndpoints[index].outputs.name
+    resourceId: configurationStore_privateEndpoints[index].outputs.resourceId
+    groupId: configurationStore_privateEndpoints[index].outputs.?groupId!
+    customDnsConfigs: configurationStore_privateEndpoints[index].outputs.customDnsConfigs
+    networkInterfaceResourceIds: configurationStore_privateEndpoints[index].outputs.networkInterfaceResourceIds
+  }
+]
+
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || !disableLocalAuth)
 
@@ -408,16 +430,39 @@ contentType: string?
 }[]?
 
 
-@description('The type for the Key Value replicas')
-type appConfigReplicationType = {
-@description('Required. Name of the replica.')
-name: string
+@export()
+type privateEndpointOutputType = {
+  @description('The name of the private endpoint.')
+  name: string
 
-@description('Required. Location of the replica.')
-replicaLocation: string
-}[]?
+  @description('The resource ID of the private endpoint.')
+  resourceId: string
 
+  @description('The group Id for the private endpoint Group.')
+  groupId: string?
 
+  @description('The custom DNS configurations of the private endpoint.')
+  customDnsConfigs: {
+    @description('FQDN that resolves to private endpoint IP address.')
+    fqdn: string?
+
+    @description('A list of private IP addresses of the private endpoint.')
+    ipAddresses: string[]
+  }[]
+
+  @description('The IDs of the network interfaces associated with the private endpoint.')
+  networkInterfaceResourceIds: string[]
+}
+
+@export()
+@description('The type for a replica location')
+type replicaLocationType = {
+  @description('Required. Location of the replica.')
+  replicaLocation: string
+
+  @description('Optional. Name of the replica.')
+  name: string?
+}
 
 import {
   customerManagedKeyType

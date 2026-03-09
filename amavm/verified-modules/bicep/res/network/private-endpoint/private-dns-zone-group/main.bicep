@@ -50,6 +50,7 @@ output resourceGroupName string = resourceGroup().name
 // ================ //
 
 @export()
+@description('The type of a private DNS zone group configuration.')
 type privateDnsZoneGroupConfigType = {
   @description('Optional. The name of the private DNS zone group config.')
   name: string?

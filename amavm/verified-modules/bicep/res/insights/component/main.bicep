@@ -79,6 +79,20 @@ param retentionInDays int = 365
 @maxValue(100)
 param samplingPercentage int = 100
 
+@description('Optional. Used by the Application Insights system to determine what kind of flow this component was created by. This is to be set to \'Bluefield\' when creating/updating a component via the REST API.')
+param flowType string?
+
+@description('Optional. Describes what tool created this Application Insights component. Customers using this API should set this to the default \'rest\'.')
+param requestSource string?
+
+@description('Optional. Indicates the flow of the ingestion.')
+@allowed([
+  'ApplicationInsights'
+  'ApplicationInsightsWithDiagnosticSettings'
+  'LogAnalytics'
+])
+param ingestionMode string?
+
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
@@ -188,6 +202,9 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
     publicNetworkAccessForQuery: publicNetworkAccessForQuery
     RetentionInDays: retentionInDays
     SamplingPercentage: samplingPercentage
+    Flow_Type: flowType
+    Request_Source: requestSource
+    IngestionMode: ingestionMode
   }
 }
 

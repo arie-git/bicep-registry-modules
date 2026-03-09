@@ -128,6 +128,28 @@ Setting this parameter to any value other than 'Disabled' will make the resource
 ])
 param publicNetworkAccess string = 'Disabled'
 
+@description('Optional. Advanced Networking profile for enabling observability and security feature suite on a cluster. For more information see https://aka.ms/aksadvancednetworking.')
+param advancedNetworking advancedNetworkingType?
+
+@description('Optional. The IP families used for the cluster.')
+@allowed([
+  'IPv4'
+  'IPv6'
+])
+param ipFamilies string[] = [
+  'IPv4'
+]
+
+@description('Optional. NAT Gateway profile for the cluster.')
+param natGatewayProfile object?
+
+@description('Optional. Network mode used for building the Kubernetes network.')
+@allowed([
+  'bridge'
+  'transparent'
+])
+param networkMode string?
+
 @description('Optional. Specifies the network plugin used for building Kubernetes network. Default: azure')
 @allowed([
   'azure'
@@ -159,12 +181,21 @@ param networkPolicy string = 'none'
 @description('Optional. Specifies the CIDR notation IP range from which to assign pod IPs when kubenet is used.')
 param networkPodCidr string?
 
+@description('Optional. The CIDR notation IP ranges from which to assign pod IPs. One IPv4 CIDR is expected for single-stack networking. Two CIDRs, one for each IP family (IPv4/IPv6), is expected for dual-stack networking.')
+param podCidrs string[]?
+
 @description('Optional. A CIDR notation IP range from which to assign service cluster IPs. It must not overlap with any Subnet IP ranges.')
 param networkServiceCidr string?
+
+@description('Optional. The CIDR notation IP ranges from which to assign service cluster IPs. One IPv4 CIDR is expected for single-stack networking. Two CIDRs, one for each IP family (IPv4/IPv6), is expected for dual-stack networking. They must not overlap with any Subnet IP ranges.')
+param serviceCidrs string[]?
 
 @description('''Optional. Specifies the IP address assigned to the Kubernetes DNS service.
 It must be within the Kubernetes service address range specified in serviceCidr.''')
 param networkDnsServiceIP string?
+
+@description('Optional. Static egress gateway profile for the cluster.')
+param staticEgressGatewayProfile object?
 
 @description('Optional. Network data plane used in the Kubernetes cluster. Not compatible with \'kubenet\' network plugin.')
 @allowed([
@@ -207,9 +238,6 @@ For more information see https://learn.microsoft.com/en-us/azure/aks/egress-outb
 ])
 param networkOutboundType string = 'userDefinedRouting'
 
-// @description('Optional. Advanced Network Observability configuration.')
-// param networkAdvancedFeatures advancedNetworkingType?
-
 // ----- Storage profile parameters -----
 
 @description('Optional. Whether the AzureBlob CSI Driver for the storage profile is enabled.')
@@ -223,6 +251,12 @@ param enableStorageProfileFileCSIDriver bool = true
 
 @description('Optional. Whether the snapshot controller for the storage profile is enabled.')
 param enableStorageProfileSnapshotController bool = false
+
+@description('Optional. Node provisioning settings that apply to the whole cluster.')
+param nodeProvisioningProfile object?
+
+@description('Optional. The node resource group configuration profile.')
+param nodeResourceGroupProfile object?
 
 // ----- Nodepools parameters -----
 
@@ -261,16 +295,8 @@ param primaryAgentPoolProfile array = [
   }
 ]
 
-// @description('Optional. Define one or more secondary/additional agent pools.')
-// param agentPools agentPoolType?
-
-// @description('''Optional. Node provisioning settings that apply to the whole cluster.
-// Once the mode it set to 'Auto', it cannot be changed back to 'Manual'.''')
-// @allowed([
-//   'Auto'
-//   'Manual'
-// ])
-// param nodeProvisioningProfile string = 'Manual'
+@description('Optional. Define one or more secondary/additional agent pools.')
+param agentPools agentPoolType[]?
 
 @description('Optional. Specifies the administrator username of Linux virtual machines.')
 param adminUsername string = 'azureuser'
@@ -378,44 +404,46 @@ param maintenanceConfigurations maintenanceConfigurationsType = [
 
 // ---- Ingress and DNS -----
 
-// @description('Optional. Specifies whether the httpApplicationRouting add-on is enabled or not.')
-// param addonHttpApplicationRoutingEnabled bool = false
+@description('Optional. Specifies whether the httpApplicationRouting add-on is enabled or not.')
+param httpApplicationRoutingEnabled bool = false
 
-// @description('Optional. Specifies whether the webApplicationRoutingEnabled add-on is enabled or not.')
-// param webApplicationRoutingEnabled bool = false
+@description('Optional. Specifies whether the webApplicationRoutingEnabled add-on is enabled or not.')
+param webApplicationRoutingEnabled bool = false
 
-// @description('Optional. Specifies the resource ID of connected DNS zone. It will be ignored if `webApplicationRoutingEnabled` is set to `false`.')
-// param dnsZoneResourceId string?
+@description('Optional. Specifies the resource ID of connected DNS zone. It will be ignored if `webApplicationRoutingEnabled` is set to `false`.')
+param dnsZoneResourceId string?
 
-// @description('''Optional. Specifies whether assign the DNS zone contributor role to the cluster service principal.
-// It will be ignored if `webApplicationRoutingEnabled` is set to `false` or `dnsZoneResourceId` not provided.''')
-// param enableDnsZoneContributorRoleAssignment bool = true
+@description('Optional. Ingress type for the default NginxIngressController custom resource. It will be ignored if `webApplicationRoutingEnabled` is set to `false`.')
+@allowed([
+  'AnnotationControlled'
+  'External'
+  'Internal'
+  'None'
+])
+param defaultIngressControllerType string?
 
-// @description('Optional. Specifies whether the ingressApplicationGateway (AGIC) add-on is enabled or not.')
-// param addonIngressApplicationGatewayEnabled bool = false
+@description('Optional. Specifies whether assign the DNS zone contributor role to the cluster service principal. It will be ignored if `webApplicationRoutingEnabled` is set to `false` or `dnsZoneResourceId` not provided.')
+param enableDnsZoneContributorRoleAssignment bool = true
 
-// @description('Conditional. Specifies the resource ID of connected application gateway. Required if `addonIngressApplicationGatewayEnabled` is set to `true`.')
-// param appGatewayResourceId string?
+@description('Optional. Specifies whether the ingressApplicationGateway (AGIC) add-on is enabled or not.')
+param ingressApplicationGatewayEnabled bool = false
 
-// @description('Optional. Specifies whether the aciConnectorLinux add-on is enabled or not.')
-// param addonAciConnectorLinuxEnabled bool = false
+@description('Conditional. Specifies the resource ID of connected application gateway. Required if `ingressApplicationGatewayEnabled` is set to `true`.')
+param appGatewayResourceId string?
+
+@description('Optional. Specifies whether the aciConnectorLinux add-on is enabled or not.')
+param aciConnectorLinuxEnabled bool = false
 
 // ----- Security related ----
 
-// @description('Optional. Running in Kubenet is disabled by default due to the security related nature of AAD Pod Identity and the risks of IP spoofing.')
-// param podIdentityProfileAllowNetworkPluginKubenet bool = false
+@description('Optional. The pod identity profile of the Managed Cluster. See [use AAD pod identity](https://learn.microsoft.com/azure/aks/use-azure-ad-pod-identity) for more details on AAD pod identity integration.')
+param podIdentityProfile object?
 
-// @description('Optional. Whether the pod identity addon is enabled.')
-// param podIdentityProfileEnable bool = false
+@description('Optional. Identities associated with the cluster.')
+param identityProfile object?
 
-// @description('Optional. The pod identities to use in the cluster.')
-// param podIdentityProfileUserAssignedIdentities array?
-
-// @description('Optional. The pod identity exceptions to allow.')
-// param podIdentityProfileUserAssignedIdentityExceptions array?
-
-// @description('Optional. Identities associated with the cluster.')
-// param identityProfile object?
+@description('Optional. Security profile for the managed cluster. When provided, this overrides the individual security params (securityProfileDefender, securityProfileAzureKeyVaultKms, imageCleaner, enableWorkloadIdentity).')
+param securityProfile object?
 
 @description('Optional. Whether the The OIDC issuer profile of the Managed Cluster is enabled.')
 param enableOidcIssuerProfile bool = enableWorkloadIdentity
@@ -549,11 +577,58 @@ param lock lockType
 @description('Optional. Tags of the resource.')
 param tags object?
 
+@description('Optional. The Resource ID of the disk encryption set to use for enabling encryption at rest. For security reasons, this value should be provided.')
+param diskEncryptionSetResourceId string?
+
+@description('Optional. Settings and configurations for the flux extension.')
+param fluxExtension extensionType?
+
+@description('Optional. Configurations for provisioning the cluster with HTTP proxy servers.')
+param httpProxyConfig object?
+
+@description('Optional. Workload Auto-scaler profile for the managed cluster.')
+param workloadAutoScalerProfile object?
+
+@description('Optional. Service mesh profile for a managed cluster.')
+param serviceMeshProfile object?
+
+@description('Optional. AI toolchain operator settings that apply to the whole cluster.')
+param aiToolchainOperatorProfile object?
+
+@description('Optional. Profile of the cluster bootstrap configuration.')
+param bootstrapProfile object?
+
+@description('Optional. The FQDN subdomain of the private cluster with custom private dns zone. This cannot be updated once the Managed Cluster has been created.')
+param fqdnSubdomain string?
+
+@description('Optional. Settings for upgrading the cluster with override options.')
+param upgradeSettings object?
+
+@description('Optional. The profile for Windows VMs in the Managed Cluster.')
+param windowsProfile object?
+
+@description('Optional. Parameters to be applied to the cluster-autoscaler when enabled.')
+param autoScalerProfile object?
+
+@description('Conditional. Information about a service principal identity for the cluster to use for manipulating Azure APIs. Required if no managed identities are assigned to the cluster.')
+param aksServicePrincipalProfile object?
+
+@description('Optional. Specifies whether the openServiceMesh add-on is enabled or not.')
+param openServiceMeshEnabled bool = false
+
+@description('Optional. Specifies whether the kubeDashboard add-on is enabled or not.')
+param kubeDashboardEnabled bool = false
+
+@description('Optional. Specifies whether the OMS agent is using managed identity authentication.')
+param omsAgentUseAADAuth bool = true
+
 // =========== //
 // Variables   //
 // =========== //
 
 var enablePrivateCluster = apiServerAccessProfile.?enablePrivateCluster ?? true
+
+var enableReferencedModulesTelemetry = false
 
 import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'
 
@@ -683,27 +758,29 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
     tier: skuTier
   }
   properties: {
+    aiToolchainOperatorProfile: aiToolchainOperatorProfile
+    bootstrapProfile: bootstrapProfile
+    httpProxyConfig: httpProxyConfig
+    identityProfile: identityProfile
+    diskEncryptionSetID: diskEncryptionSetResourceId
     nodeResourceGroup: nodeResourceGroup
+    nodeResourceGroupProfile: nodeResourceGroupProfile
+    nodeProvisioningProfile: nodeProvisioningProfile
     dnsPrefix: dnsPrefix
+    fqdnSubdomain: fqdnSubdomain
     kubernetesVersion: kubernetesVersion
     supportPlan: supportPlan
     enableRBAC: enableRBAC
     disableLocalAccounts: disableLocalAccounts
     publicNetworkAccess: publicNetworkAccess
-    // diskEncryptionSetID: diskEncryptionSetResourceId
-    // enablePodSecurityPolicy: enablePodSecurityPolicy
-    // httpProxyConfig: httpProxyConfig
     apiServerAccessProfile: {
       authorizedIPRanges: apiServerAccessProfile.?authorizedIPRanges ?? [] // TODO: check usage conditions
       disableRunCommand: apiServerAccessProfile.?disableRunCommand ?? true
       enablePrivateCluster: apiServerAccessProfile.?enablePrivateCluster ?? enablePrivateCluster
       enablePrivateClusterPublicFQDN: apiServerAccessProfile.?enablePrivateClusterPublicFQDN ?? (apiServerAccessProfile.?privateDNSZone ?? 'none')=='none'
       privateDNSZone: apiServerAccessProfile.?privateDNSZone ?? 'none'
-      // enableVnetIntegration: apiServerAccessProfile.?enableVnetIntegration ?? false // NOT TESTED while in preview
-      // subnetId: (apiServerAccessProfile.?enableVnetIntegration ?? false) ? apiServerAccessProfile.?subnetId : null // NOT TESTED while in preview
     }
-    // identityProfile: identityProfile
-    // servicePrincipalProfile: aksServicePrincipalProfile
+    servicePrincipalProfile: aksServicePrincipalProfile
     aadProfile: {
       managed: aadProfile.?managed ?? true
       enableAzureRBAC: aadProfile.?enableAzureRBAC ?? true
@@ -719,47 +796,50 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
             version: addonAzurePolicy.?config.?version ?? 'v2'
           } : null
       }
-      // httpApplicationRouting: {
-      //   enabled: addonHttpApplicationRoutingEnabled
-      // }
+      httpApplicationRouting: {
+        enabled: httpApplicationRoutingEnabled
+      }
       omsagent: {
         enabled: addonOmsAgentEnabled && !empty(logAnalyticsWorkspaceResourceId)
         #disable-next-line BCP321 // Value will not be used if null or empty
         config: addonOmsAgentEnabled && !empty(logAnalyticsWorkspaceResourceId)
           ? {
               logAnalyticsWorkspaceResourceID: logAnalyticsWorkspaceResourceId
-              useAADAuth: 'true'
+              ...(omsAgentUseAADAuth
+                ? {
+                    useAADAuth: 'true'
+                  }
+                : {})
             }
           : null
       }
-      // ingressApplicationGateway: {
-      //   enabled: addonIngressApplicationGatewayEnabled && !empty(appGatewayResourceId)
-      //   #disable-next-line BCP321 // Value will not be used if null or empty
-      //   config: addonIngressApplicationGatewayEnabled && !empty(appGatewayResourceId)
-      //     ? {
-      //         applicationGatewayId: appGatewayResourceId
-      //         effectiveApplicationGatewayId: appGatewayResourceId
-      //       }
-      //     : null
-      // }
-      // aciConnectorLinux: {
-      //   enabled: addonAciConnectorLinuxEnabled
-      // }
-      // }
-      // openServiceMesh: {
-      //   enabled: addonOpenServiceMeshEnabled
-      //   config: addonOpenServiceMeshEnabled ? {} : null
-      // }
-      // kubeDashboard: {
-      //   enabled: addonKubeDashboardEnabled
-      // }
+      ingressApplicationGateway: {
+        enabled: ingressApplicationGatewayEnabled && !empty(appGatewayResourceId)
+        #disable-next-line BCP321 // Value will not be used if null or empty
+        config: ingressApplicationGatewayEnabled && !empty(appGatewayResourceId)
+          ? {
+              applicationGatewayId: appGatewayResourceId
+              effectiveApplicationGatewayId: appGatewayResourceId
+            }
+          : null
+      }
+      aciConnectorLinux: {
+        enabled: aciConnectorLinuxEnabled
+      }
+      openServiceMesh: {
+        enabled: openServiceMeshEnabled
+        config: openServiceMeshEnabled ? {} : null
+      }
+      kubeDashboard: {
+        enabled: kubeDashboardEnabled
+      }
     }
     oidcIssuerProfile: enableOidcIssuerProfile
       ? {
           enabled: enableOidcIssuerProfile
         }
       : null
-    securityProfile: {
+    securityProfile: securityProfile ?? {
       defender: securityProfileDefender.?securityMonitoring.?enabled ?? !empty(securityProfileDefender.?logAnalyticsWorkspaceResourceId)
         ? {
             securityMonitoring: {
@@ -783,20 +863,17 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
             keyId: (securityProfileAzureKeyVaultKms.?enabled ?? true) ? securityProfileAzureKeyVaultKms.?keyId : null
           } : null
     }
-    // safeguardsProfile: { // still in preview
-    //   level: 'Warning'
-    //   version: 'v1.0.0'
-    //   excludedNamespaces: [
-    //     'kube-system'
-    //     'calico-system'
-    //     'tigera-system'
-    //     'gatekeeper-system'
-    //   ]
-    // }
     networkProfile: {
+      advancedNetworking: advancedNetworking
+      ipFamilies: ipFamilies
+      natGatewayProfile: natGatewayProfile
+      networkMode: networkMode
+      podCidrs: podCidrs
+      serviceCidrs: serviceCidrs
+      staticEgressGatewayProfile: staticEgressGatewayProfile
       networkPlugin: networkPlugin
-      networkPluginMode: (empty(networkPluginMode) || networkPlugin=='kubenet') ? null : networkPluginMode
-      networkPolicy: networkPolicy
+      networkPluginMode: networkDataPlane == 'cilium' ? 'overlay' : ((empty(networkPluginMode) || networkPlugin=='kubenet') ? null : networkPluginMode)
+      networkPolicy: networkDataPlane == 'cilium' ? 'cilium' : networkPolicy
       networkDataplane: (networkPlugin == 'kubenet') ? null : networkDataPlane
       podCidr: (networkPlugin == 'azure' && networkPluginMode == '' ) ? null : networkPodCidr
       serviceCidr: networkServiceCidr
@@ -805,15 +882,13 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
       loadBalancerProfile: empty(networkLoadBalancerProfile) ? null : {
         allocatedOutboundPorts: networkLoadBalancerProfile.?allocatedOutboundPorts ?? 0
         backendPoolType: (networkLoadBalancerSku == 'basic') ? 'NodeIPConfiguration' : networkLoadBalancerProfile.?backendPoolType ?? 'NodeIPConfiguration'
-        //clusterServiceLoadBalancerHealthProbeMode: networkLoadBalancerProfile.?clusterServiceLoadBalancerHealthProbeMode ?? 'ServiceNodePort'
         effectiveOutboundIPs: []
-        enableMultipleStandardLoadBalancers: networkLoadBalancerProfile.?enableMultipleStandardLoadBalancers ?? false // Note: may give error "Check that the field is in the right location, is spelled correctly, and is supported in the API version" depending on API version
+        enableMultipleStandardLoadBalancers: networkLoadBalancerProfile.?enableMultipleStandardLoadBalancers ?? false
         idleTimeoutInMinutes: networkLoadBalancerProfile.?idleTimeoutInMinutes ?? 4
         managedOutboundIPs: networkLoadBalancerProfile.?managedOutboundIPs
         outboundIPPrefixes: networkLoadBalancerProfile.?outboundIPPrefixes
         outboundIPs: networkLoadBalancerProfile.?outboundIPs
       }
-      // advancedNetworking: networkAdvancedFeatures
       outboundType: networkOutboundType
     }
     storageProfile: {
@@ -821,7 +896,7 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
         enabled: enableStorageProfileBlobCSIDriver
       }
       diskCSIDriver: {
-        enabled: costAnalysisEnabled == true && skuTier != 'free' ? true : enableStorageProfileDiskCSIDriver
+        enabled: costAnalysisEnabled == true && skuTier != 'Free' ? true : enableStorageProfileDiskCSIDriver
       }
       fileCSIDriver: {
         enabled: enableStorageProfileFileCSIDriver
@@ -830,9 +905,7 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
         enabled: enableStorageProfileSnapshotController
       }
     }
-    // nodeProvisioningProfile: {
-    //   mode: nodeProvisioningProfile
-    // }
+    workloadAutoScalerProfile: workloadAutoScalerProfile
     agentPoolProfiles: primaryAgentPoolProfile
     linuxProfile: !empty(sshPublicKey)
       ? {
@@ -847,60 +920,32 @@ resource managedCluster 'Microsoft.ContainerService/managedClusters@2025-09-01' 
         }
       : null
     autoUpgradeProfile: autoUpgradeProfile
-    // autoScalerProfile: {
-    //   'balance-similar-node-groups': toLower(string(autoScalerProfileBalanceSimilarNodeGroups))
-    //   expander: autoScalerProfileExpander
-    //   'max-empty-bulk-delete': autoScalerProfileMaxEmptyBulkDelete
-    //   'max-graceful-termination-sec': autoScalerProfileMaxGracefulTerminationSec
-    //   'max-node-provision-time': autoScalerProfileMaxNodeProvisionTime
-    //   'max-total-unready-percentage': autoScalerProfileMaxTotalUnreadyPercentage
-    //   'new-pod-scale-up-delay': autoScalerProfileNewPodScaleUpDelay
-    //   'ok-total-unready-count': autoScalerProfileOkTotalUnreadyCount
-    //   'scale-down-delay-after-add': autoScalerProfileScaleDownDelayAfterAdd
-    //   'scale-down-delay-after-delete': autoScalerProfileScaleDownDelayAfterDelete
-    //   'scale-down-delay-after-failure': autoScalerProfileScaleDownDelayAfterFailure
-    //   'scale-down-unneeded-time': autoScalerProfileScaleDownUnneededTime
-    //   'scale-down-unready-time': autoScalerProfileScaleDownUnreadyTime
-    //   'scale-down-utilization-threshold': autoScalerProfileUtilizationThreshold
-    //   'scan-interval': autoScalerProfileScanInterval
-    //   'skip-nodes-with-local-storage': toLower(string(autoScalerProfileSkipNodesWithLocalStorage))
-    //   'skip-nodes-with-system-pods': toLower(string(autoScalerProfileSkipNodesWithSystemPods))
-    // }
-    // workloadAutoScalerProfile: {
-    //   keda: {
-    //     enabled: true
-    //   }
-    //   verticalPodAutoscaler: {
-    //     enabled: true
-    //     addonAutoscaling: 'Disabled'
-    //   }
-    // }
-    // ingressProfile: {
-    //   webAppRouting: {
-    //     enabled: webApplicationRoutingEnabled
-    //     dnsZoneResourceIds: !empty(dnsZoneResourceId)
-    //       ? [
-    //           any(dnsZoneResourceId)
-    //         ]
-    //       : null
-    //   }
-    // }
-    // podIdentityProfile: {
-    //   allowNetworkPluginKubenet: podIdentityProfileAllowNetworkPluginKubenet
-    //   enabled: podIdentityProfileEnable
-    //   userAssignedIdentities: podIdentityProfileUserAssignedIdentities
-    //   userAssignedIdentityExceptions: podIdentityProfileUserAssignedIdentityExceptions
-    // }
-    metricsProfile: {
-      costAnalysis: {
-        enabled: skuTier == 'free' ? false : costAnalysisEnabled
+    autoScalerProfile: autoScalerProfile
+    ingressProfile: {
+      webAppRouting: {
+        enabled: webApplicationRoutingEnabled
+        dnsZoneResourceIds: !empty(dnsZoneResourceId)
+          ? [
+              any(dnsZoneResourceId)
+            ]
+          : null
+        nginx: !empty(defaultIngressControllerType)
+          ? {
+              defaultIngressControllerType: any(defaultIngressControllerType)
+            }
+          : null
       }
     }
-    azureMonitorProfile: {
-      // containerInsights: azureMonitorProfile.?containerInsights
-      metrics: azureMonitorProfile.?metrics
-      // appMonitoring: azureMonitorProfile.?appMonitoring
+    podIdentityProfile: podIdentityProfile
+    metricsProfile: {
+      costAnalysis: {
+        enabled: skuTier == 'Free' ? false : costAnalysisEnabled
+      }
     }
+    azureMonitorProfile: azureMonitorProfile
+    serviceMeshProfile: serviceMeshProfile
+    upgradeSettings: upgradeSettings
+    windowsProfile: windowsProfile
   }
 }
 
@@ -915,66 +960,67 @@ module managedCluster_maintenanceConfigurations 'maintenance-configurations/main
   }
 }]
 
-// module managedCluster_agentPools 'agent-pool/main.bicep' = [
-//   for (agentPool, index) in (agentPools ?? []): {
-//     name: '${uniqueString(deployment().name, name, location)}-managedcluster-agentpool-${index}'
-//     params: {
-//       managedClusterName: managedCluster.?name
-//       name: agentPool.name
-//       availabilityZones: agentPool.?availabilityZones
-//       count: agentPool.?count
-//       sourceResourceId: agentPool.?sourceResourceId
-//       enableAutoScaling: agentPool.?enableAutoScaling
-//       enableEncryptionAtHost: agentPool.?enableEncryptionAtHost
-//       enableFIPS: agentPool.?enableFIPS
-//       enableNodePublicIP: agentPool.?enableNodePublicIP
-//       enableUltraSSD: agentPool.?enableUltraSSD
-//       gpuInstanceProfile: agentPool.?gpuInstanceProfile
-//       kubeletDiskType: agentPool.?kubeletDiskType
-//       maxCount: agentPool.?maxCount
-//       maxPods: agentPool.?maxPods
-//       minCount: agentPool.?minCount
-//       mode: agentPool.?mode
-//       nodeLabels: agentPool.?nodeLabels
-//       nodePublicIpPrefixId: agentPool.?nodePublicIpPrefixId
-//       nodeTaints: agentPool.?nodeTaints
-//       orchestratorVersion: agentPool.?orchestratorVersion ?? kubernetesVersion
-//       osDiskSizeGB: agentPool.?osDiskSizeGB
-//       osDiskType: agentPool.?osDiskType
-//       osSku: agentPool.?osSku
-//       osType: agentPool.?osType
-//       podSubnetId: agentPool.?podSubnetId
-//       proximityPlacementGroupResourceId: agentPool.?proximityPlacementGroupResourceId
-//       scaleDownMode: agentPool.?scaleDownMode
-//       scaleSetEvictionPolicy: agentPool.?scaleSetEvictionPolicy
-//       scaleSetPriority: agentPool.?scaleSetPriority
-//       spotMaxPrice: agentPool.?spotMaxPrice
-//       tags: agentPool.?tags ?? finalTags
-//       type: agentPool.?type
-//       maxSurge: agentPool.?maxSurge
-//       vmSize: agentPool.?vmSize
-//       vnetSubnetId: agentPool.?vnetSubnetId
-//       workloadRuntime: agentPool.?workloadRuntime
-//     }
-//   }
-// ]
+module managedCluster_agentPools 'agent-pool/main.bicep' = [
+  for (agentPool, index) in (agentPools ?? []): {
+    name: '${uniqueString(deployment().name, name, location)}-managedcluster-agentpool-${index}'
+    params: {
+      managedClusterName: managedCluster.?name
+      name: agentPool.name
+      availabilityZones: agentPool.?availabilityZones
+      count: agentPool.?count
+      sourceResourceId: agentPool.?sourceResourceId
+      enableAutoScaling: agentPool.?enableAutoScaling
+      enableEncryptionAtHost: agentPool.?enableEncryptionAtHost
+      enableFIPS: agentPool.?enableFIPS
+      enableNodePublicIP: agentPool.?enableNodePublicIP
+      enableUltraSSD: agentPool.?enableUltraSSD
+      gpuInstanceProfile: agentPool.?gpuInstanceProfile
+      kubeletDiskType: agentPool.?kubeletDiskType
+      maxCount: agentPool.?maxCount
+      maxPods: agentPool.?maxPods
+      minCount: agentPool.?minCount
+      mode: agentPool.?mode
+      nodeLabels: agentPool.?nodeLabels
+      nodePublicIpPrefixId: agentPool.?nodePublicIpPrefixId
+      nodeTaints: agentPool.?nodeTaints
+      orchestratorVersion: agentPool.?orchestratorVersion ?? kubernetesVersion
+      osDiskSizeGB: agentPool.?osDiskSizeGB
+      osDiskType: agentPool.?osDiskType
+      osSku: agentPool.?osSku
+      osType: agentPool.?osType
+      podSubnetId: agentPool.?podSubnetId
+      proximityPlacementGroupResourceId: agentPool.?proximityPlacementGroupResourceId
+      scaleDownMode: agentPool.?scaleDownMode
+      scaleSetEvictionPolicy: agentPool.?scaleSetEvictionPolicy
+      scaleSetPriority: agentPool.?scaleSetPriority
+      spotMaxPrice: agentPool.?spotMaxPrice
+      tags: agentPool.?tags ?? tags
+      type: agentPool.?type
+      maxSurge: agentPool.?maxSurge
+      vmSize: agentPool.?vmSize
+      vnetSubnetId: agentPool.?vnetSubnetId
+      workloadRuntime: agentPool.?workloadRuntime
+    }
+  }
+]
 
-// module managedCluster_extension 'br/public:avm/res/kubernetes-configuration/extension:0.2.0' = if (!empty(fluxExtension)) {
-//   name: '${uniqueString(deployment().name, location)}-ManagedCluster-FluxExtension'
-//   params: {
-//     clusterName: managedCluster.name
-//     configurationProtectedSettings: fluxExtension.?configurationProtectedSettings
-//     configurationSettings: fluxExtension.?configurationSettings
-//     enableTelemetry: enableTelemetry
-//     extensionType: 'microsoft.flux'
-//     fluxConfigurations: fluxExtension.?configurations
-//     location: location
-//     name: 'flux'
-//     releaseNamespace: fluxExtension.?releaseNamespace ?? 'flux-system'
-//     releaseTrain: fluxExtension.?releaseTrain ?? 'Stable'
-//     version: fluxExtension.?version
-//   }
-// }
+module managedCluster_extension 'br/amavm:avm/res/kubernetes-configuration/extension:0.3.8' = if (!empty(fluxExtension)) {
+  name: '${uniqueString(deployment().name, location)}-ManagedCluster-FluxExtension'
+  params: {
+    clusterName: managedCluster.name
+    configurationProtectedSettings: fluxExtension.?configurationProtectedSettings
+    configurationSettings: fluxExtension.?configurationSettings
+    enableTelemetry: enableReferencedModulesTelemetry
+    extensionType: 'microsoft.flux'
+    fluxConfigurations: fluxExtension.?fluxConfigurations
+    location: location
+    name: fluxExtension.?name ?? 'flux'
+    releaseNamespace: fluxExtension.?releaseNamespace ?? 'flux-system'
+    releaseTrain: fluxExtension.?releaseTrain ?? 'Stable'
+    version: fluxExtension.?version
+    targetNamespace: fluxExtension.?targetNamespace
+  }
+}
 
 resource managedCluster_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock ?? {}) && lock.?kind != 'None') {
   name: lock.?name ?? 'lock-${name}'
@@ -1033,23 +1079,47 @@ resource managedCluster_roleAssignments 'Microsoft.Authorization/roleAssignments
   }
 ]
 
-// resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = if (enableDnsZoneContributorRoleAssignment == true && dnsZoneResourceId != null && webApplicationRoutingEnabled) {
-//   name: last(split((!empty(dnsZoneResourceId) ? any(dnsZoneResourceId) : '/dummmyZone'), '/'))!
-// }
+resource dnsZone 'Microsoft.Network/dnsZones@2018-05-01' existing = if (publicNetworkAccess != 'Disabled' && enableDnsZoneContributorRoleAssignment == true && dnsZoneResourceId != null && webApplicationRoutingEnabled) {
+  name: last(split((!empty(dnsZoneResourceId) ? any(dnsZoneResourceId) : '/dummmyZone'), '/'))!
+}
 
-// resource dnsZone_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (enableDnsZoneContributorRoleAssignment == true && dnsZoneResourceId != null && webApplicationRoutingEnabled) {
-//   name: guid(
-//     dnsZone.id,
-//     subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'befefa01-2a29-4197-83a8-272ff33ce314'),
-//     'DNS Zone Contributor'
-//   )
-//   properties: {
-//     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions','befefa01-2a29-4197-83a8-272ff33ce314') // 'DNS Zone Contributor'
-//     principalId: managedCluster.properties.ingressProfile.webAppRouting.identity.objectId
-//     principalType: 'ServicePrincipal'
-//   }
-//   scope: dnsZone
-// }
+resource privateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' existing = if (publicNetworkAccess == 'Disabled' && enableDnsZoneContributorRoleAssignment == true && dnsZoneResourceId != null && webApplicationRoutingEnabled) {
+  name: last(split((!empty(dnsZoneResourceId) ? any(dnsZoneResourceId) : '/dummmyZone'), '/'))
+}
+
+resource dnsZone_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (publicNetworkAccess != 'Disabled' && enableDnsZoneContributorRoleAssignment == true && dnsZoneResourceId != null && webApplicationRoutingEnabled) {
+  name: guid(
+    dnsZone.id,
+    subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'befefa01-2a29-4197-83a8-272ff33ce314'),
+    'DNS Zone Contributor'
+  )
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'befefa01-2a29-4197-83a8-272ff33ce314'
+    ) // 'DNS Zone Contributor'
+    principalId: managedCluster.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+  scope: dnsZone
+}
+
+resource privateDnsZone_roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (publicNetworkAccess == 'Disabled' && enableDnsZoneContributorRoleAssignment == true && dnsZoneResourceId != null && webApplicationRoutingEnabled) {
+  name: guid(
+    privateDnsZone.id,
+    subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'befefa01-2a29-4197-83a8-272ff33ce314'),
+    'DNS Zone Contributor'
+  )
+  properties: {
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      'befefa01-2a29-4197-83a8-272ff33ce314'
+    ) // 'DNS Zone Contributor'
+    principalId: managedCluster.properties.ingressProfile.webAppRouting.identity.objectId
+    principalType: 'ServicePrincipal'
+  }
+  scope: privateDnsZone
+}
 
 @description('The resource ID of the managed cluster.')
 output resourceId string = managedCluster.id
@@ -1130,13 +1200,8 @@ import {
 import { agentPoolType } from 'agent-pool/main.bicep'
 import { maintenanceConfigurationType } from 'maintenance-configurations/main.bicep'
 
-type fluxConfigurationProtectedSettingsType = {
-  @description('Optional. The SSH private key to use for Git authentication.')
-  sshPrivateKey: string?
-}?
-
 type extensionType = {
-  @description('Required. The name of the extension.')
+  @description('Optional. The name of the extension.')
   name: string?
 
   @description('Optional. Namespace where the extension Release must be placed.')
@@ -1145,11 +1210,11 @@ type extensionType = {
   @description('Optional. Namespace where the extension will be created for an Namespace scoped extension.')
   targetNamespace: string?
 
-  @description('Required. The release train of the extension.')
+  @description('Optional. The release train of the extension.')
   releaseTrain: string?
 
   @description('Optional. The configuration protected settings of the extension.')
-  configurationProtectedSettings: fluxConfigurationProtectedSettingsType?
+  configurationProtectedSettings: object?
 
   @description('Optional. The configuration settings of the extension.')
   configurationSettings: object?
@@ -1158,8 +1223,8 @@ type extensionType = {
   version: string?
 
   @description('Optional. The flux configurations of the extension.')
-  configurations: array?
-}?
+  fluxConfigurations: array?
+}
 
 @description('Azure Key Vault secrets provider configuration.')
 type addonAzureKeyvaultSecretsProviderType = {

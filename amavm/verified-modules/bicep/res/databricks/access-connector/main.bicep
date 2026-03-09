@@ -1,4 +1,4 @@
-metadata name = 'Azure Databricks Access Connector'
+metadata name = 'Azure Databricks Access Connectors'
 metadata description = 'This module deploys an Azure Databricks Access Connector.'
 metadata owner = 'AMCCC'
 metadata compliance = 'There are no special compliance requirements for this resource.'
@@ -8,7 +8,7 @@ metadata complianceVersion = '20260309'
 param name string
 
 @description('Optional. Tags of the resource.')
-param tags object?
+param tags resourceInput<'Microsoft.Databricks/accessConnectors@2024-05-01'>.tags?
 
 @description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
@@ -91,16 +91,16 @@ resource accessConnector_lock 'Microsoft.Authorization/locks@2020-05-01' =
     name: lock.?name ?? 'lock-${name}'
     properties: {
       level: lock.?kind ?? ''
-      notes: lock.?kind == 'CanNotDelete'
+      notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
         ? 'Cannot delete resource or child resources.'
-        : 'Cannot delete or modify the resource or child resources.'
+        : 'Cannot delete or modify the resource or child resources.')
     }
     scope: accessConnector
   }
 
 resource accessConnector_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for (roleAssignment, index) in (roleAssignments ?? []): {
-    name: guid(accessConnector.id, roleAssignment.principalId, roleAssignment.roleDefinitionIdOrName)
+    name: roleAssignment.?name ?? guid(accessConnector.id, roleAssignment.principalId, roleAssignment.roleDefinitionIdOrName)
     properties: {
       #disable-next-line use-safe-access
       roleDefinitionId: contains(builtInRoleNames, roleAssignment.roleDefinitionIdOrName)

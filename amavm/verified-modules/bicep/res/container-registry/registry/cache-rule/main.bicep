@@ -8,7 +8,7 @@ metadata compliance = '''There are no special compliance requirements for Cache 
 param registryName string
 
 @description('Optional. The name of the cache rule. Will be derived from the source repository name if not defined.')
-param name string = replace(replace(sourceRepository, '/', 'rule'), '.', '-')
+param name string = replace(replace(replace(sourceRepository, '/', '-'), '.', '-'), '*', '')
 
 @description('Required. Source repository pulled from upstream.')
 param sourceRepository string
@@ -76,15 +76,15 @@ output evidenceOfNonCompliance bool = false
 @description('Describes how to create cache rule set.')
 @export()
 type cacheRuleType = {
-  @description('Optional. The name of the cache rule.')
+  @description('Optional. The name of the cache rule. Will be derived from the source repository name if not defined.')
   name: string?
 
-  @description('''Required. The full repository path of your source repository. For example 'docker.io/library/hello-world'''')
+  @description('Required. Source repository pulled from upstream.')
   sourceRepository: string
 
-  @description('''Required. The repository namespace for your target repository. For example 'hello-world'''')
-  targetRepository: string
+  @description('Optional. Target repository specified in docker pull command. E.g.: docker pull myregistry.azurecr.io/{targetRepository}:{tag}.')
+  targetRepository: string?
 
-  @description('Optional. Resource Id of credential object.')
-  credentialId: string?
+  @description('Optional. The resource ID of the credential store which is associated with the cache rule.')
+  credentialSetResourceId: string?
 }

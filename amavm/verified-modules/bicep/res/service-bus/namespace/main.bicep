@@ -199,14 +199,16 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+var isHSMManagedCMK = split(customerManagedKey.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
+
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
   name: last(split((customerManagedKey.?keyVaultResourceId!), '/'))
   scope: resourceGroup(
     split(customerManagedKey.?keyVaultResourceId!, '/')[2],
     split(customerManagedKey.?keyVaultResourceId!, '/')[4]
   )
 
-  resource cMKKey 'keys@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
+  resource cMKKey 'keys@2025-05-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
     name: customerManagedKey.?keyName!
   }
 }
@@ -248,12 +250,16 @@ resource serviceBusNamespace 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
                   }
                 : null
               keyName: customerManagedKey!.keyName
-              keyVaultUri: cMKKeyVault.properties.vaultUri
-              keyVersion: !empty(customerManagedKey.?keyVersion ?? '')
-                ? customerManagedKey!.?keyVersion
-                : (customerManagedKey.?autoRotationEnabled ?? true)
+              keyVaultUri: !isHSMManagedCMK
+                ? cMKKeyVault!.properties.vaultUri
+                : 'https://${last(split((customerManagedKey!.keyVaultResourceId), '/'))}.managedhsm.azure.net/'
+              keyVersion: !empty(customerManagedKey!.?keyVersion)
+                ? customerManagedKey!.keyVersion!
+                : (customerManagedKey!.?autoRotationEnabled ?? true)
                     ? null
-                    : last(split(cMKKeyVault::cMKKey.properties.keyUriWithVersion, '/'))
+                    : (!isHSMManagedCMK
+                        ? last(split(cMKKeyVault::cMKKey!.properties.keyUriWithVersion, '/'))
+                        : fail('Managed HSM CMK encryption requires either specifying the \'keyVersion\' or omitting the \'autoRotationEnabled\' property. Setting \'autoRotationEnabled\' to false without a \'keyVersion\' is not allowed.'))
             }
           ]
           requireInfrastructureEncryption: requireInfrastructureEncryption
@@ -368,9 +374,9 @@ resource serviceBusNamespace_lock 'Microsoft.Authorization/locks@2020-05-01' = i
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: serviceBusNamespace
 }
@@ -446,7 +452,7 @@ module serviceBusNamespace_privateEndpoints 'br/amavm:res/network/private-endpoi
         'Full'
       ).location
       lock: privateEndpoint.?lock ?? lock
-      privateDnsZoneGroup: null
+      privateDnsZoneGroup: privateEndpoint.?privateDnsZoneGroup
       roleAssignments: privateEndpoint.?roleAssignments
       tags: privateEndpoint.?tags ?? tags
       customDnsConfigs: privateEndpoint.?customDnsConfigs
@@ -492,8 +498,47 @@ output systemAssignedMIPrincipalId string? = serviceBusNamespace.?identity.?prin
 @description('The location the resource was deployed into.')
 output location string = serviceBusNamespace.location
 
+@description('The private endpoints of the service bus namespace.')
+output privateEndpoints privateEndpointOutputType[] = [
+  for (pe, index) in (privateEndpoints ?? []): {
+    name: serviceBusNamespace_privateEndpoints[index].outputs.name
+    resourceId: serviceBusNamespace_privateEndpoints[index].outputs.resourceId
+    groupId: serviceBusNamespace_privateEndpoints[index].outputs.?groupId!
+    customDnsConfigs: serviceBusNamespace_privateEndpoints[index].outputs.customDnsConfigs
+    networkInterfaceResourceIds: serviceBusNamespace_privateEndpoints[index].outputs.networkInterfaceResourceIds
+  }
+]
+
 @description('The endpoint of the deployed service bus namespace.')
 output serviceBusEndpoint string = serviceBusNamespace.properties.serviceBusEndpoint
+
+@secure()
+@description('The primary connection string of the service bus namespace.')
+output primaryConnectionString string = listkeys(
+  '${serviceBusNamespace.id}/AuthorizationRules/RootManageSharedAccessKey',
+  '2024-01-01'
+).primaryConnectionString
+
+@secure()
+@description('The secondary connection string of the service bus namespace.')
+output secondaryConnectionString string = listkeys(
+  '${serviceBusNamespace.id}/AuthorizationRules/RootManageSharedAccessKey',
+  '2024-01-01'
+).secondaryConnectionString
+
+@secure()
+@description('The primary key of the service bus namespace.')
+output primaryKey string = listkeys(
+  '${serviceBusNamespace.id}/AuthorizationRules/RootManageSharedAccessKey',
+  '2024-01-01'
+).primaryKey
+
+@secure()
+@description('The secondary key of the service bus namespace.')
+output secondaryKey string = listkeys(
+  '${serviceBusNamespace.id}/AuthorizationRules/RootManageSharedAccessKey',
+  '2024-01-01'
+).secondaryKey
 
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || !disableLocalAuth || minimumTlsVersion != '1.2')
@@ -747,7 +792,7 @@ type topicType = {
   supportOrdering: bool?
 
   @description('Optional. The subscriptions of the topic.')
-  subscriptions: subscriptionType?
+  subscriptions: subscriptionType[]?
 }
 
 import {

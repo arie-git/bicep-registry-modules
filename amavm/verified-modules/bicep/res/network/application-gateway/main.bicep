@@ -73,6 +73,9 @@ param enableRequestBuffering bool = false
 @description('Optional. Enable response buffering.')
 param enableResponseBuffering bool = false
 
+@description('Optional. Entra JWT validation configurations.')
+param entraJWTValidationConfigs array = []
+
 @description('Optional. Http listeners of the application gateway resource. Compliant usage requires HTTPS protocol, additionally Public IP address in frontend IP configuration results in non-compliance.')
 param httpListeners httpListenerType
 
@@ -252,7 +255,12 @@ param enableTelemetry bool = true
 
 var enableReferencedModulesTelemetry = false
 
-var specificBuiltInRoleNames = {}
+var specificBuiltInRoleNames = {
+  'Network Contributor': subscriptionResourceId(
+    'Microsoft.Authorization/roleDefinitions',
+    '4d97b98b-1d4f-4787-a291-c67834d212e7'
+  )
+}
 
 var formattedRoleAssignments = [
   for (roleAssignment, index) in (roleAssignments ?? []): union(roleAssignment, {
@@ -314,6 +322,7 @@ resource applicationGateway 'Microsoft.Network/applicationGateways@2025-05-01' =
       backendSettingsCollection: backendSettingsCollection
       customErrorConfigurations: customErrorConfigurations
       enableHttp2: enableHttp2
+      entraJWTValidationConfigs: entraJWTValidationConfigs
       firewallPolicy: !empty(firewallPolicyResourceId)
         ? {
             id: firewallPolicyResourceId
@@ -380,9 +389,9 @@ resource applicationGateway_lock 'Microsoft.Authorization/locks@2020-05-01' = if
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: applicationGateway
 }
@@ -395,6 +404,13 @@ resource applicationGateway_diagnosticSettings 'Microsoft.Insights/diagnosticSet
       workspaceId: diagnosticSetting.?workspaceResourceId
       eventHubAuthorizationRuleId: diagnosticSetting.?eventHubAuthorizationRuleResourceId
       eventHubName: diagnosticSetting.?eventHubName
+      metrics: [
+        for group in (diagnosticSetting.?metricCategories ?? [{ category: 'AllMetrics' }]): {
+          category: group.category
+          enabled: group.?enabled ?? true
+          timeGrain: null
+        }
+      ]
       logs: [
         for group in (diagnosticSetting.?logCategoriesAndGroups ?? defaultLogCategories): {
           categoryGroup: group.?categoryGroup

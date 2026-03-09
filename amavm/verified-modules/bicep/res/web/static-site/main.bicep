@@ -84,6 +84,7 @@ param lock lockType
 
 @description('''Required. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.
 Note, requires the 'sku' to be 'Standard'.
+Supplying the `privateDnsZoneGroup` configuration will allow the private endpoint to point to an already existing zone group. If not provided and `createPrivateDnsZone` being enabled, it will create and use the newly created zone group.
 
 Available values for 'service' are:
 - staticSites
@@ -112,6 +113,23 @@ param functionAppSettings object = {} // TODO: make a type
 
 @description('Optional. The custom domains associated with this static site. The deployment will fail as long as the validation records are not present.')
 param customDomains array = []
+
+@description('Optional. Custom domain validation method. If not specified, automatically determined based on domain structure.')
+@allowed([
+  'dns-txt-token'
+  'cname-delegation'
+])
+param validationMethod string?
+
+@description('Optional. Due the nature of Azure Static Apps, a partition ID is added to the app URL upon creation. Enabling the creation of the private DNS Zone will provision a DNS Zone with the correct partition ID, this is required for private endpoint connectivity to be enabled. You can choose to disable this option and create your own private DNS Zone by leveraging the output of the partitionId within this module. Default is `Enabled`, However the Private DNS Zone will only be created following if a `privateEndpoint` configuration is supplied.')
+@allowed([
+  'Enabled'
+  'Disabled'
+])
+param createPrivateDnsZone string = 'Enabled'
+
+@description('Conditional. The Virtual Network Resource Id to use for the private DNS Zone Vnet Link. Required if `createPrivateDnsZone` is set to `Enabled` and a Private Endpoint Configuration is supplied.')
+param virtualNetworkResourceId string = ''
 
 var formattedUserAssignedIdentities = reduce(
   map((managedIdentities.?userAssignedResourceIds ?? []), (id) => { '${id}': {} }),
@@ -232,9 +250,9 @@ module staticSite_customDomains 'custom-domain/main.bicep' = [
     params: {
       name: customDomain
       staticSiteName: staticSite.name
-      validationMethod: indexOf(customDomain, '.') == lastIndexOf(customDomain, '.')
+      validationMethod: validationMethod ?? (indexOf(customDomain, '.') == lastIndexOf(customDomain, '.')
         ? 'dns-txt-token'
-        : 'cname-delegation'
+        : 'cname-delegation')
     }
   }
 ]
@@ -243,9 +261,9 @@ resource staticSite_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: staticSite
 }
@@ -265,6 +283,19 @@ resource staticSite_roleAssignments 'Microsoft.Authorization/roleAssignments@202
     scope: staticSite
   }
 ]
+
+module staticSite_privateDnsZone 'br/amavm:res/network/private-dns-zone:0.2.0' = if (!empty(privateEndpoints) && createPrivateDnsZone == 'Enabled') {
+  name: '${uniqueString(deployment().name, location)}-staticsite-privatednszone'
+  params: {
+    name: 'privatelink.${staticSite.properties.defaultHostname}.azurestaticapps.net'
+    enableTelemetry: enableTelemetry
+    virtualNetworkLinks: [
+      {
+        virtualNetworkResourceId: virtualNetworkResourceId
+      }
+    ]
+  }
+}
 
 var defaultPrivateEndpoints = [
   for service in privateEndpointDefaultServices ?? []: {
@@ -317,6 +348,15 @@ module staticSite_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0'
         'Full'
       ).location
       lock: privateEndpoint.?lock ?? lock
+      privateDnsZoneGroup: privateEndpoint.?privateDnsZoneGroup ?? (createPrivateDnsZone == 'Enabled'
+        ? {
+            privateDnsZoneGroupConfigs: [
+              {
+                privateDnsZoneResourceId: staticSite_privateDnsZone.outputs.resourceId
+              }
+            ]
+          }
+        : null)
       roleAssignments: privateEndpoint.?roleAssignments
       tags: privateEndpoint.?tags ?? finalTags
       customDnsConfigs: privateEndpoint.?customDnsConfigs

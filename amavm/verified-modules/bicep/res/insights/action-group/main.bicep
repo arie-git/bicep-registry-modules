@@ -15,6 +15,10 @@ param groupShortName string
 @description('Optional. Indicates whether this action group is enabled. If an action group is not enabled, then none of its receivers will receive communications.')
 param enabled bool = true
 
+import { lockType } from '../../../../bicep-shared/types.bicep'
+@description('Optional. The lock settings of the service.')
+param lock lockType?
+
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType?
 
@@ -50,6 +54,9 @@ param azureFunctionReceivers array?
 
 @description('Optional. The list of ARM role receivers that are part of this action group. Roles are Azure RBAC roles and only built-in roles are supported.')
 param armRoleReceivers array?
+
+@description('Optional. The list of incident receivers that are part of this action group.')
+param incidentReceivers array?
 
 @description('Optional. Tags of the resource.')
 param tags object?
@@ -118,7 +125,19 @@ resource actionGroup 'Microsoft.Insights/actionGroups@2024-10-01-preview' = {
     logicAppReceivers: logicAppReceivers
     azureFunctionReceivers: azureFunctionReceivers
     armRoleReceivers: armRoleReceivers
+    incidentReceivers: incidentReceivers
   }
+}
+
+resource actionGroup_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock ?? {}) && lock.?kind != 'None') {
+  name: lock.?name ?? 'lock-${name}'
+  properties: {
+    level: lock.?kind ?? ''
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
+      ? 'Cannot delete resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
+  }
+  scope: actionGroup
 }
 
 resource actionGroup_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [

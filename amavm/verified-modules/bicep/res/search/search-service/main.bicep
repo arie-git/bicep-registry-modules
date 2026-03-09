@@ -98,6 +98,9 @@ Setting this parameter to 'Enabled' will make the resource non-compliant.
 ])
 param publicNetworkAccess string = 'Disabled'
 
+@description('Optional. Key vault reference and secret settings for the module\'s secrets export.')
+param secretsExportConfiguration secretsExportConfigurationType?
+
 @description('Optional. The number of replicas in the search service. If specified, it must be a value between 1 and 12 inclusive for standard SKUs or between 1 and 3 inclusive for basic SKU.')
 @minValue(1)
 @maxValue(12)
@@ -266,6 +269,13 @@ resource searchService_diagnosticSettings 'Microsoft.Insights/diagnosticSettings
       workspaceId: diagnosticSetting.?workspaceResourceId
       eventHubAuthorizationRuleId: diagnosticSetting.?eventHubAuthorizationRuleResourceId
       eventHubName: diagnosticSetting.?eventHubName
+      metrics: [
+        for group in (diagnosticSetting.?metricCategories ?? [{ category: 'AllMetrics' }]): {
+          category: group.category
+          enabled: group.?enabled ?? true
+          timeGrain: null
+        }
+      ]
       logs: [
         for group in (diagnosticSetting.?logCategoriesAndGroups ?? defaultLogCategories): {
           categoryGroup: group.?categoryGroup
@@ -284,9 +294,9 @@ resource searchService_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!em
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: searchService
 }
@@ -377,6 +387,36 @@ module searchService_sharedPrivateLinkResources 'shared-private-link-resource/ma
   }
 ]
 
+module secretsExport 'modules/keyVaultExport.bicep' = if (secretsExportConfiguration != null) {
+  name: '${uniqueString(deployment().name, location)}-secrets-kv'
+  scope: resourceGroup(
+    split(secretsExportConfiguration.?keyVaultResourceId!, '/')[2],
+    split(secretsExportConfiguration.?keyVaultResourceId!, '/')[4]
+  )
+  params: {
+    keyVaultName: last(split(secretsExportConfiguration.?keyVaultResourceId!, '/'))
+    secretsToSet: union(
+      [],
+      contains(secretsExportConfiguration!, 'primaryAdminKeyName')
+        ? [
+            {
+              name: secretsExportConfiguration!.?primaryAdminKeyName
+              value: searchService.listAdminKeys().primaryKey
+            }
+          ]
+        : [],
+      contains(secretsExportConfiguration!, 'secondaryAdminKeyName')
+        ? [
+            {
+              name: secretsExportConfiguration!.?secondaryAdminKeyName
+              value: searchService.listAdminKeys().secondaryKey
+            }
+          ]
+        : []
+    )
+  }
+}
+
 // =========== //
 //   Outputs   //
 // =========== //
@@ -395,6 +435,33 @@ output systemAssignedMIPrincipalId string? = searchService.?identity.?principalI
 
 @description('The location the resource was deployed into.')
 output location string = searchService.location
+
+@description('The endpoint of the search service.')
+output endpoint string = searchService.properties.endpoint
+
+@description('The private endpoints of the search service.')
+output privateEndpoints privateEndpointOutputType[] = [
+  for (item, index) in (privateEndpoints ?? []): {
+    name: searchService_privateEndpoints[index].outputs.name
+    resourceId: searchService_privateEndpoints[index].outputs.resourceId
+    groupId: searchService_privateEndpoints[index].outputs.?groupId!
+    customDnsConfigs: searchService_privateEndpoints[index].outputs.customDnsConfigs
+    networkInterfaceResourceIds: searchService_privateEndpoints[index].outputs.networkInterfaceResourceIds
+  }
+]
+
+@description('A hashtable of references to the secrets exported to the provided Key Vault. The key of each reference is each secret\'s name.')
+output exportedSecrets secretsOutputType = (secretsExportConfiguration != null)
+  ? toObject(secretsExport!.outputs.secretsSet, secret => last(split(secret.secretResourceId, '/')), secret => secret)
+  : {}
+
+@secure()
+@description('The primary admin API key of the search service.')
+output primaryKey string = searchService.listAdminKeys().primaryKey
+
+@secure()
+@description('The secondaryKey admin API key of the search service.')
+output secondaryKey string = searchService.listAdminKeys().secondaryKey
 
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = !disableLocalAuth || publicNetworkAccess=='Enabled' || !contains(dataExfiltrationProtections, 'All')
@@ -421,3 +488,44 @@ import {
   privateEndpointType
   roleAssignmentType
 } from '../../../../bicep-shared/types.bicep'
+
+@export()
+type privateEndpointOutputType = {
+  @description('The name of the private endpoint.')
+  name: string
+
+  @description('The resource ID of the private endpoint.')
+  resourceId: string
+
+  @description('The group Id for the private endpoint Group.')
+  groupId: string?
+
+  @description('The custom DNS configurations of the private endpoint.')
+  customDnsConfigs: {
+    @description('FQDN that resolves to private endpoint IP address.')
+    fqdn: string?
+
+    @description('A list of private IP addresses of the private endpoint.')
+    ipAddresses: string[]
+  }[]
+
+  @description('The IDs of the network interfaces associated with the private endpoint.')
+  networkInterfaceResourceIds: string[]
+}
+
+type secretsExportConfigurationType = {
+  @description('Required. The key vault name where to store the API Admin keys generated by the modules.')
+  keyVaultResourceId: string
+
+  @description('Optional. The primaryAdminKey secret name to create.')
+  primaryAdminKeyName: string?
+
+  @description('Optional. The secondaryAdminKey secret name to create.')
+  secondaryAdminKeyName: string?
+}
+
+import { secretSetType } from 'modules/keyVaultExport.bicep'
+type secretsOutputType = {
+  @description('An exported secret\'s references.')
+  *: secretSetType
+}

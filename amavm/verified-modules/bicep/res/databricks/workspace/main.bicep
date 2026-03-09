@@ -244,13 +244,11 @@ param privateEndpoints privateEndpointType
 Required if defaultStorageFirewall parameter is 'Enabled'''')
 param accessConnectorResourceId string = ''
 
-// param defaultCatalog {
-//   initialName: string?
-//   initialType: ('UnityCatalog' | 'HiveMetastore')?
-// } = {
-//   initialName: name
-//   initialType: 'UnityCatalog'
-// }
+@description('Optional. The default catalog configuration for the Databricks workspace.')
+param defaultCatalog defaultCatalogType?
+
+@description('Optional. The compliance standards array for the security profile. Should be a list of compliance standards like "HIPAA", "NONE" or "PCI_DSS".')
+param complianceStandards array = (complianceSecurityProfile == 'Enabled') ? ['NONE'] : []
 
 // Variables
 import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId, databricksManagedResourceGroupSuffix } from '../../../../bicep-shared/environments.bicep'
@@ -340,28 +338,30 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
-  name: last(split((customerManagedKey.?keyVaultResourceId ?? 'dummyVault'), '/'))
-  scope: resourceGroup(
-    split((customerManagedKey.?keyVaultResourceId ?? '//'), '/')[2],
-    split((customerManagedKey.?keyVaultResourceId ?? '////'), '/')[4]
-  )
-
-  resource cMKKey 'keys@2023-02-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
-    name: customerManagedKey.?keyName ?? 'dummyKey'
+var isHSMManagedCMK = split(customerManagedKey.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
+module cMKKeyVaultRef 'modules/cmkReferences.bicep' = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
+  name: '${uniqueString(deployment().name)}-cmkKeyVault'
+  params: {
+    keyVaultResourceId: customerManagedKey!.keyVaultResourceId
+    keyName: customerManagedKey!.keyName
   }
+  scope: resourceGroup(
+    split(customerManagedKey.?keyVaultResourceId!, '/')[2],
+    split(customerManagedKey.?keyVaultResourceId!, '/')[4]
+  )
 }
 
-resource cMKManagedDiskKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = if (!empty(customerManagedKeyManagedDisk.?keyVaultResourceId)) {
-  name: last(split((customerManagedKeyManagedDisk.?keyVaultResourceId ?? 'dummyVault'), '/'))
-  scope: resourceGroup(
-    split((customerManagedKeyManagedDisk.?keyVaultResourceId ?? '//'), '/')[2],
-    split((customerManagedKeyManagedDisk.?keyVaultResourceId ?? '////'), '/')[4]
-  )
-
-  resource cMKKey 'keys@2023-02-01' existing = if (!empty(customerManagedKeyManagedDisk.?keyVaultResourceId) && !empty(customerManagedKeyManagedDisk.?keyName)) {
-    name: customerManagedKeyManagedDisk.?keyName ?? 'dummyKey'
+var isHSMManagedCMKDisk = split(customerManagedKeyManagedDisk.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
+module cMKManagedKeyVaultDiskRef 'modules/cmkReferences.bicep' = if (!empty(customerManagedKeyManagedDisk) && !isHSMManagedCMKDisk) {
+  name: '${uniqueString(deployment().name)}-cmkDiskKeyVault'
+  params: {
+    keyVaultResourceId: customerManagedKeyManagedDisk!.keyVaultResourceId
+    keyName: customerManagedKeyManagedDisk!.keyName
   }
+  scope: resourceGroup(
+    split(customerManagedKeyManagedDisk.?keyVaultResourceId!, '/')[2],
+    split(customerManagedKeyManagedDisk.?keyVaultResourceId!, '/')[4]
+  )
 }
 
 resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' = {
@@ -375,18 +375,16 @@ resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' = {
       managedResourceGroupId: !empty(managedResourceGroupResourceId)
         ? managedResourceGroupResourceId
         : '${subscription().id}/resourceGroups/${name}${databricksManagedResourceGroupSuffix}'
-      enhancedSecurityCompliance:{
-        automaticClusterUpdate:{
+      enhancedSecurityCompliance: {
+        automaticClusterUpdate: {
           value: automaticClusterUpdate
         }
-        enhancedSecurityMonitoring:{
+        enhancedSecurityMonitoring: {
           value: enhancedSecurityMonitoring
         }
-        complianceSecurityProfile:{
+        complianceSecurityProfile: {
           value: complianceSecurityProfile
-          complianceStandards: (complianceSecurityProfile == 'Enabled') ? [
-            'NONE'
-          ] : null
+          complianceStandards: complianceStandards
         }
       }
       parameters: union(
@@ -482,9 +480,6 @@ resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' = {
       // storageAccountIdentity: {} // This is a read-only property
       // updatedBy: {} // This is a read-only property
       defaultStorageFirewall: defaultStorageFirewall
-      //defaultCatalog: defaultCatalog ?? {} // API gives error "Currently custom initial catalog name is not supported. This capability will be added in future. (Code: InvalidInitialCatalogName)"
-      //authorizations: // TODO
-      //uiDefinitionUri: // TODO
       publicNetworkAccess: publicNetworkAccess
       requiredNsgRules: requiredNsgRules
       encryption: !empty(customerManagedKey) || !empty(customerManagedKeyManagedDisk)
@@ -494,11 +489,15 @@ resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' = {
                 ? {
                     keySource: 'Microsoft.Keyvault'
                     keyVaultProperties: {
-                      keyVaultUri: cMKKeyVault.properties.vaultUri
+                      keyVaultUri: !isHSMManagedCMK
+                        ? cMKKeyVaultRef!.outputs.vaultUri
+                        : 'https://${last(split((customerManagedKey.?keyVaultResourceId!), '/'))}.managedhsm.azure.net/'
                       keyName: customerManagedKey!.keyName
-                      keyVersion: !empty(customerManagedKey.?keyVersion ?? '')
-                        ? customerManagedKey!.keyVersion!
-                        : last(split(cMKKeyVault::cMKKey.properties.keyUriWithVersion, '/'))
+                      keyVersion: !empty(customerManagedKey.?keyVersion)
+                        ? customerManagedKey!.?keyVersion!
+                        : !isHSMManagedCMK
+                            ? cMKKeyVaultRef!.outputs.keyVersion
+                            : fail('Managed HSM CMK encryption requires specifying the \'keyVersion\'.')
                     }
                   }
                 : null
@@ -506,11 +505,15 @@ resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' = {
                 ? {
                     keySource: 'Microsoft.Keyvault'
                     keyVaultProperties: {
-                      keyVaultUri: cMKManagedDiskKeyVault.properties.vaultUri
+                      keyVaultUri: !isHSMManagedCMKDisk
+                        ? cMKManagedKeyVaultDiskRef!.outputs.vaultUri
+                        : 'https://${last(split((customerManagedKeyManagedDisk.?keyVaultResourceId!), '/'))}.managedhsm.azure.net/'
                       keyName: customerManagedKeyManagedDisk!.keyName
-                      keyVersion: !empty(customerManagedKeyManagedDisk.?keyVersion ?? '')
-                        ? customerManagedKeyManagedDisk!.keyVersion!
-                        : last(split(cMKManagedDiskKeyVault::cMKKey.properties.keyUriWithVersion, '/'))
+                      keyVersion: !empty(customerManagedKeyManagedDisk.?keyVersion)
+                        ? customerManagedKeyManagedDisk!.?keyVersion!
+                        : (!isHSMManagedCMKDisk
+                            ? cMKManagedKeyVaultDiskRef!.outputs.keyVersion
+                            : fail('Managed HSM CMK encryption requires specifying the \'keyVersion\'.'))
                     }
                     rotationToLatestKeyVersionEnabled: customerManagedKeyManagedDisk.?rotationToLatestKeyVersionEnabled ?? true
                   }
@@ -523,6 +526,12 @@ resource workspace 'Microsoft.Databricks/workspaces@2024-05-01' = {
       accessConnector: {
         id: accessConnectorResourceId
         identityType: 'SystemAssigned'
+      }
+    } : {},
+    !empty(defaultCatalog) ? {
+      defaultCatalog: {
+        initialName: ''
+        initialType: defaultCatalog.?initialType
       }
     } : {}
   )
@@ -749,6 +758,9 @@ output workspaceUrl string = workspace.properties.workspaceUrl
 @description('The unique identifier of the databricks workspace in databricks control plane.')
 output workspaceId string = workspace.properties.workspaceId
 
+@description('The principal ID of the managed disk identity created by the workspace if CMK for managed disks is enabled.')
+output managedDiskIdentityPrincipalId string? = workspace.properties.?managedDiskIdentity.?principalId
+
 @description('The private endpoints for the Databricks Workspace.')
 output privateEndpoints array = [
   for (pe, i) in (!empty(applyingPrivateEndpoints) ? applyingPrivateEndpoints : []): {
@@ -782,4 +794,8 @@ import {
   roleAssignmentType
 } from '../../../../bicep-shared/types.bicep'
 
-
+@description('The type for a default catalog configuration.')
+type defaultCatalogType = {
+  @description('Required. Choose between HiveMetastore or UnityCatalog.')
+  initialType: 'HiveMetastore' | 'UnityCatalog'
+}

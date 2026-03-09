@@ -46,12 +46,13 @@ param curveName string = 'P-256'
   'decrypt'
   'encrypt'
   'import'
+  'release'
   'sign'
   'unwrapKey'
   'verify'
   'wrapKey'
 ])
-param keyOps array?
+param keyOps string[]?
 
 @description('Optional. The key size in bits. For example: 2048, 3072, or 4096 for RSA.')
 param keySize int?
@@ -141,8 +142,12 @@ resource key 'Microsoft.KeyVault/vaults/keys@2024-11-01' = {
     keyOps: keyOps
     keySize: keySize
     kty: kty
-    rotationPolicy: rotationPolicy
-    release_policy: releasePolicy
+    release_policy: releasePolicy ?? {}
+    ...(!empty(rotationPolicy)
+      ? {
+          rotationPolicy: rotationPolicy
+        }
+      : {})
   }
 }
 
@@ -206,23 +211,23 @@ type rotationPolicyType = {
     expiryTime: string?
   }?
 
-  @description('Optional. The lifetimeActions for key rotation action.')
+  @description('Optional. The key rotation policy lifetime actions.')
   lifetimeActions: {
-    @description('Optional. The action of key rotation policy lifetimeAction.')
+    @description('Optional. The type of the action.')
     action: {
-      @description('Optional. The type of action.')
-      type: ('notify' | 'rotate')
-    }
+      @description('Optional. The type of the action.')
+      type: ('rotate' | 'notify')?
+    }?
 
-    @description('Optional. The trigger of key rotation policy lifetimeAction.')
+    @description('Optional. The time duration for rotating the key.')
     trigger: {
       @description('Optional. The time duration after key creation to rotate the key. It only applies to rotate. It will be in ISO 8601 duration format. Eg: "P90D", "P1Y".')
       timeAfterCreate: string?
 
       @description('Optional. The time duration before key expiring to rotate or notify. It will be in ISO 8601 duration format. Eg: "P90D", "P1Y".')
       timeBeforeExpiry: string?
-    }
-  }[]
+    }?
+  }[]?
 }?
 
 @export()

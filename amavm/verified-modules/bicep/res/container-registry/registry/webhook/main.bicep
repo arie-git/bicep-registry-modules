@@ -5,10 +5,10 @@ metadata owner = 'AMCCC'
 @description('Conditional. The name of the parent registry. Required if the template is used in a standalone deployment.')
 param registryName string
 
-@description('Required. The name of the registry webhook.')
+@description('Optional. The name of the registry webhook.')
 @minLength(5)
 @maxLength(50)
-param name string
+param name string = '${registryName}webhook'
 
 @description('Required. The service URI for the webhook to post notifications.')
 param serviceUri string
@@ -21,7 +21,7 @@ param serviceUri string
 param status string = 'enabled'
 
 @description('Optional. The list of actions that trigger the webhook to post notifications.')
-param action array = [
+param action string[] = [
   'chart_delete'
   'chart_push'
   'delete'
@@ -81,29 +81,32 @@ output provistioningState string = webhook.properties.provisioningState
 @description('The location the resource was deployed into.')
 output location string = webhook.location
 
-@description('The type to describe the webhook configuration.')
+@description('The type for a webhook.')
 @export()
 type webhookType = {
-
-  @description('Required. Name of the webhook.')
-  name: string
-
-  @description('''Required. Actions that will trigger the webhook to post notifications.
-  Select one or more from 'chart_delete', 'chart_push', 'delete', 'push', 'quarantine'''')
-  action: ('chart_delete' | 'chart_push' | 'delete' | 'push' | 'quarantine')[]
-
-  @description('''Optioanl. Custom headers that will be added to the webhook notifications. Specify each header in 'Key:Value' format in each line.''')
-  customHeaders: object?
-
-  @description('''Optional. The scope of repositories where the event can be triggered.
-  For example, 'foo:*' means events for all tags under repository 'foo'. 'foo:bar' means events for 'foo:bar' only. 'foo' is equivalent to 'foo:latest'.
-  Empty means events for all repositories.
-  ''')
-  scope: string?
+  @description('Optional. The name of the registry webhook.')
+  @minLength(5)
+  @maxLength(50)
+  name: string?
 
   @description('Required. The service URI for the webhook to post notifications.')
   serviceUri: string
 
-  @description('Required. Indicates whether the webhook is activated or deactivated.')
-  status: ('disabled' | 'enabled')
+  @description('Optional. The status of the webhook at the time the operation was called.')
+  status: ('enabled' | 'disabled')?
+
+  @description('Optional. The list of actions that trigger the webhook to post notifications.')
+  action: string[]?
+
+  @description('Optional. Location for all resources.')
+  location: string?
+
+  @description('Optional. Tags of the resource.')
+  tags: object?
+
+  @description('Optional. Custom headers that will be added to the webhook notifications.')
+  customHeaders: object?
+
+  @description('Optional. The scope of repositories where the event can be triggered. For example, \'foo:*\' means events for all tags under repository \'foo\'. \'foo:bar\' means events for \'foo:bar\' only. \'foo\' is equivalent to \'foo:latest\'. Empty means all events.')
+  scope: string?
 }[]?

@@ -72,7 +72,7 @@ param lock lockType?
 param roleAssignments roleAssignmentType?
 
 @description('Optional. The subscriptions of the topic.')
-param subscriptions subscriptionType?
+param subscriptions subscriptionType[]?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
@@ -169,9 +169,9 @@ resource topic_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock
   name: lock.?name ?? 'lock-${name}'
   properties: {
     level: lock.?kind ?? ''
-    notes: lock.?kind == 'CanNotDelete'
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
       ? 'Cannot delete resource or child resources.'
-      : 'Cannot delete or modify the resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
   }
   scope: topic
 }
@@ -231,7 +231,7 @@ output resourceGroupName string = resourceGroup().name
 //   Definitions   //
 // =============== //
 
-import { ruleType } from 'subscription/main.bicep'
+import { ruleType } from 'subscription/rule/main.bicep'
 @export()
 @description('The type for a subscription.')
 type subscriptionType = {
@@ -300,7 +300,7 @@ type subscriptionType = {
     | 'Deleting'
     | 'Renaming'
     | 'Unknown')?
-}[]?
+}
 
 import {
   lockType

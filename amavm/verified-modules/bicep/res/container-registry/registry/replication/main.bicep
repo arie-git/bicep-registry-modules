@@ -51,17 +51,21 @@ output resourceGroupName string = resourceGroup().name
 @description('The location the resource was deployed into.')
 output location string = replication.location
 
-@description('')
+@description('The type for a replication.')
 @export()
 type replicationType = {
-
-  @description('Required. Name of the replication.')
+  @description('Required. The name of the replication.')
   name: string
 
-  @description('''Required. Specifies whether the replication's regional endpoint is enabled. Requests will not be routed to a replication whose regional endpoint is disabled, 
-  however its data will continue to be synced with other replications''')
-  regionEndpointEnabled: bool
+  @description('Optional. Location for all resources.')
+  location: string?
+
+  @description('Optional. Tags of the resource.')
+  tags: object?
+
+  @description('Optional. Specifies whether the replication regional endpoint is enabled. Requests will not be routed to a replication whose regional endpoint is disabled, however its data will continue to be synced with other replications.')
+  regionEndpointEnabled: bool?
 
   @description('Optional. Whether or not zone redundancy is enabled for this container registry.')
-  zoneRedundancy: ('Disabled' | 'Enabled')
+  zoneRedundancy: ('Disabled' | 'Enabled')?
 }[]?

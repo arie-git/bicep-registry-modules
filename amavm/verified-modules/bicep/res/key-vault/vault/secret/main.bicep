@@ -9,7 +9,9 @@ metadata complianceVersion = '20260309'
 @description('Conditional. The name of the parent key vault. Required if the template is used in a standalone deployment.')
 param keyVaultName string
 
-@description('Required. The name of the secret.')
+@description('Required. The name of the secret (letters (upper and lower case), numbers, -).')
+@minLength(1)
+@maxLength(127)
 param name string
 
 @description('Optional. Resource tags.')

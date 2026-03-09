@@ -64,7 +64,10 @@ Setting this object in non-Dev enviroment will make the Data Factory resource no
 param gitconfiguration gitRepoConfig
 
 @description('Optional. List of Global Parameters for the factory.')
-param globalParameters object = {}
+param globalParameters resourceInput<'Microsoft.DataFactory/factories@2018-06-01'>.properties.globalParameters?
+
+@description('Optional. Purview Account resource identifier.')
+param purviewResourceId string?
 
 @description('''Optional. The diagnostic settings of the service.
 Currently known available log categories are:
@@ -169,23 +172,24 @@ var defaultLogCategories = [
   }
 ]
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
-  name: last(split((customerManagedKey.?keyVaultResourceId ?? 'dummyVault'), '/'))
+var isHSMManagedCMK = split(customerManagedKey.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
+  name: last(split((customerManagedKey.?keyVaultResourceId!), '/'))
   scope: resourceGroup(
-    split((customerManagedKey.?keyVaultResourceId ?? '//'), '/')[2],
-    split((customerManagedKey.?keyVaultResourceId ?? '////'), '/')[4]
+    split(customerManagedKey.?keyVaultResourceId!, '/')[2],
+    split(customerManagedKey.?keyVaultResourceId!, '/')[4]
   )
 
-  resource cMKKey 'keys@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
-    name: customerManagedKey.?keyName ?? 'dummyKey'
+  resource cMKKey 'keys@2025-05-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
+    name: customerManagedKey.?keyName!
   }
 }
 
 resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
-  name: last(split(customerManagedKey.?userAssignedIdentityResourceId ?? 'dummyMsi', '/'))
+  name: last(split(customerManagedKey.?userAssignedIdentityResourceId!, '/'))
   scope: resourceGroup(
-    split((customerManagedKey.?userAssignedIdentityResourceId ?? '//'), '/')[2],
-    split((customerManagedKey.?userAssignedIdentityResourceId ?? '////'), '/')[4]
+    split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[2],
+    split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[4]
   )
 }
 
@@ -242,7 +246,7 @@ resource dataFactory 'Microsoft.DataFactory/factories@2018-06-01' = {
             : {}),
           {}
         )
-    globalParameters: !empty(globalParameters) ? globalParameters : null
+    globalParameters: globalParameters
     publicNetworkAccess: !empty(publicNetworkAccess)
       ? any(publicNetworkAccess)
       : (!empty(privateEndpoints) ? 'Disabled' : null)
@@ -254,10 +258,21 @@ resource dataFactory 'Microsoft.DataFactory/factories@2018-06-01' = {
               }
             : null
           keyName: customerManagedKey!.keyName
-          keyVersion: !empty(customerManagedKey.?keyVersion ?? '')
-            ? customerManagedKey!.?keyVersion
-            : last(split(cMKKeyVault::cMKKey.properties.keyUriWithVersion, '/'))
-          vaultBaseUrl: cMKKeyVault.properties.vaultUri
+          keyVersion: !empty(customerManagedKey.?keyVersion)
+            ? customerManagedKey!.keyVersion!
+            : (customerManagedKey.?autoRotationEnabled ?? true)
+                ? null
+                : (!isHSMManagedCMK
+                    ? last(split(cMKKeyVault::cMKKey!.properties.keyUriWithVersion, '/'))
+                    : fail('Managed HSM CMK encryption requires either specifying the \'keyVersion\' or omitting the \'autoRotationEnabled\' property. Setting \'autoRotationEnabled\' to false without a \'keyVersion\' is not allowed.'))
+          vaultBaseUrl: !isHSMManagedCMK
+            ? cMKKeyVault!.properties.vaultUri
+            : 'https://${last(split((customerManagedKey.?keyVaultResourceId!), '/'))}.managedhsm.azure.net/'
+        }
+      : null
+    purviewConfiguration: !empty(purviewResourceId)
+      ? {
+          purviewResourceId: purviewResourceId
         }
       : null
   }
@@ -416,6 +431,7 @@ module dataFactory_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0
         'Full'
       ).location
       lock: privateEndpoint.?lock ?? lock
+      privateDnsZoneGroup: privateEndpoint.?privateDnsZoneGroup
       roleAssignments: privateEndpoint.?roleAssignments
       tags: privateEndpoint.?tags ?? tags
       customDnsConfigs: privateEndpoint.?customDnsConfigs
@@ -445,7 +461,18 @@ output systemAssignedMIPrincipalId string = dataFactory.?identity.?principalId ?
 output location string = dataFactory.location
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = !empty(managedVirtualNetworkName) || !empty(managedPrivateEndpoints) || publicNetworkAccess != 'Disabled' || (!gitConfigureLater && gitconfiguration.?gitRepoType != gitRepoType && gitconfiguration.?gitAccountName != adoOrgnization)
+output evidenceOfNonCompliance bool = !empty(managedVirtualNetworkName) || !empty(managedPrivateEndpoints) || publicNetworkAccess != 'Disabled' || (!gitConfigureLater && gitconfiguration.?gitRepoType != gitRepoType && gitconfiguration.?gitAccountName != adoOrgnization) || !empty(purviewResourceId)
+
+@description('The private endpoints of the Data Factory.')
+output privateEndpoints privateEndpointOutputType[] = [
+  for (item, index) in (privateEndpoints ?? []): {
+    name: dataFactory_privateEndpoints[index].outputs.name
+    resourceId: dataFactory_privateEndpoints[index].outputs.resourceId
+    groupId: dataFactory_privateEndpoints[index].outputs.?groupId!
+    customDnsConfigs: dataFactory_privateEndpoints[index].outputs.customDnsConfigs
+    networkInterfaceResourceIds: dataFactory_privateEndpoints[index].outputs.networkInterfaceResourceIds
+  }
+]
 
 // ================ //
 // Definitions      //
@@ -506,3 +533,26 @@ type gitRepoConfig = {
   @description('Optional. Add the tenantId of your Azure subscription.')
   gitTenantId: 'c1f94f0d-9a3d-4854-9288-bb90dcf2a90d'
 }?
+
+type privateEndpointOutputType = {
+  @description('The name of the private endpoint.')
+  name: string
+
+  @description('The resource ID of the private endpoint.')
+  resourceId: string
+
+  @description('The group Id for the private endpoint Group.')
+  groupId: string?
+
+  @description('The custom DNS configurations of the private endpoint.')
+  customDnsConfigs: {
+    @description('FQDN that resolves to private endpoint IP address.')
+    fqdn: string?
+
+    @description('A list of private IP addresses of the private endpoint.')
+    ipAddresses: string[]
+  }[]
+
+  @description('The IDs of the network interfaces associated with the private endpoint.')
+  networkInterfaceResourceIds: string[]
+}

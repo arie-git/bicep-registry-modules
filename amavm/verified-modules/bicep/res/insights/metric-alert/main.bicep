@@ -69,6 +69,9 @@ param actions array = []
 @description('Required. Maps to the \'odata.type\' field. Specifies the type of the alert criteria.')
 param criteria alertType
 
+@description('Optional. The lock settings of the service.')
+param lock lockType?
+
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType?
 
@@ -149,6 +152,17 @@ resource metricAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
   }
 }
 
+resource metricAlert_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock ?? {}) && lock.?kind != 'None') {
+  name: lock.?name ?? 'lock-${name}'
+  properties: {
+    level: lock.?kind ?? ''
+    notes: lock.?notes ?? (lock.?kind == 'CanNotDelete'
+      ? 'Cannot delete resource or child resources.'
+      : 'Cannot delete or modify the resource or child resources.')
+  }
+  scope: metricAlert
+}
+
 resource metricAlert_roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for (roleAssignment, index) in (formattedRoleAssignments ?? []): {
     name: roleAssignment.?name ?? guid(metricAlert.id, roleAssignment.principalId, roleAssignment.roleDefinitionId)
@@ -222,5 +236,6 @@ type alertWebtestType = {
 }
 
 import {
+  lockType
   roleAssignmentType
 } from '../../../../bicep-shared/types.bicep'

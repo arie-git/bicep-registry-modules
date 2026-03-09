@@ -25,6 +25,12 @@ param tenantId string?
 @description('Optional. The Azure AD administrators when AAD authentication enabled. This is the only copmliant authentication method.')
 param administrators administratorType[]?
 
+@description('Optional. The authentication configuration for the server.')
+param authConfig resourceInput<'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-preview'>.properties.authConfig = {
+  activeDirectoryAuth: 'Enabled'
+  passwordAuth: 'Disabled'
+}
+
 @description('Optional. Location for all resources.')
 param location string = resourceGroup().location
 
@@ -107,6 +113,7 @@ param autoGrow string?
   '15'
   '16'
   '17'
+  '18'
 ])
 @description('Optional. PostgreSQL Server version. Version lower than 16 will result in non-compliancy')
 param version string = '17'
@@ -205,9 +212,18 @@ param configurations configurationType[] =[
 
 @description('Optional. The lock settings of the service.')
 param lock lockType
-@description('Optional. The replication settings for the server. Can only be set on existing flexible servers.')
 
+@description('Optional. The replication settings for the server. Can only be set on existing flexible servers.')
 param replica replicaType?
+
+@description('Optional. The replication role for the server.')
+@allowed([
+  'Primary'
+  'AsyncReplica'
+  'GeoAsyncReplica'
+  'None'
+])
+param replicationRole string = 'None'
 
 @description('Optional. Enable/Disable advanced threat protection. Compliant usage requires this option be True.')
 param enableAdvancedThreatProtection bool = true
@@ -312,24 +328,17 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableT
   }
 }
 
-resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
+var isHSMManagedCMK = split(customerManagedKey.?keyVaultResourceId ?? '', '/')[?7] == 'managedHSMs'
+resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
   name: last(split((customerManagedKey.?keyVaultResourceId!), '/'))
   scope: resourceGroup(
     split(customerManagedKey.?keyVaultResourceId!, '/')[2],
     split(customerManagedKey.?keyVaultResourceId!, '/')[4]
   )
 
-  resource cMKKey 'keys@2024-11-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
+  resource cMKKey 'keys@2024-11-01' existing = if (!empty(customerManagedKey) && !isHSMManagedCMK) {
     name: customerManagedKey.?keyName!
   }
-}
-
-resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = if (!empty(customerManagedKey.?userAssignedIdentityResourceId)) {
-  name: last(split(customerManagedKey.?userAssignedIdentityResourceId!, '/'))
-  scope: resourceGroup(
-    split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[2],
-    split(customerManagedKey.?userAssignedIdentityResourceId!, '/')[4]
-  )
 }
 
 resource flexibleServer 'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-preview' = {
@@ -345,11 +354,7 @@ resource flexibleServer 'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-pr
     administratorLogin: administratorLogin
     #disable-next-line use-secure-value-for-secure-inputs // Is defined as secure(). False-positive
     administratorLoginPassword: administratorLoginPassword
-    authConfig: {
-      activeDirectoryAuth: !empty(administrators) ? 'enabled' : 'disabled'  //drcp-psql-02
-      passwordAuth: !empty(administratorLogin) && !empty(administratorLoginPassword) ? 'enabled' : 'disabled'
-      tenantId: tenantId
-    }
+    authConfig: authConfig
     availabilityZone: availabilityZone != -1 ? string(availabilityZone) : null
     highAvailability: {
       mode: highAvailability
@@ -357,15 +362,23 @@ resource flexibleServer 'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-pr
     }
     backup: {
       backupRetentionDays: backupRetentionDays
-      geoRedundantBackup: geoRedundantBackup
+      geoRedundantBackup: createMode != 'Replica' ? geoRedundantBackup : null
     }
     createMode: createMode
     dataEncryption: !empty(customerManagedKey)
       ? {
           primaryKeyURI: !empty(customerManagedKey.?keyVersion)
-            ? '${cMKKeyVault::cMKKey!.properties.keyUri}/${customerManagedKey!.keyVersion!}'
-            : cMKKeyVault::cMKKey!.properties.keyUriWithVersion
-          primaryUserAssignedIdentityId: cMKUserAssignedIdentity.id
+            ? (!isHSMManagedCMK
+                ? '${cMKKeyVault::cMKKey!.properties.keyUri}/${customerManagedKey!.keyVersion!}'
+                : 'https://${last(split((customerManagedKey.?keyVaultResourceId!), '/'))}.managedhsm.azure.net/keys/${customerManagedKey!.keyName}/${customerManagedKey!.keyVersion!}')
+            : (customerManagedKey.?autoRotationEnabled ?? true)
+                ? (!isHSMManagedCMK
+                    ? cMKKeyVault::cMKKey!.properties.keyUri
+                    : 'https://${last(split((customerManagedKey.?keyVaultResourceId!), '/'))}.managedhsm.azure.net/keys/${customerManagedKey!.keyName}')
+                : (!isHSMManagedCMK
+                    ? cMKKeyVault::cMKKey!.properties.keyUriWithVersion
+                    : fail('Managed HSM CMK encryption requires either specifying the \'keyVersion\' or omitting the \'autoRotationEnabled\' property. Setting \'autoRotationEnabled\' to false without a \'keyVersion\' is not allowed.'))
+          primaryUserAssignedIdentityId: customerManagedKey.?userAssignedIdentityResourceId
           type: 'AzureKeyVault'
         }
       : null
@@ -386,6 +399,7 @@ resource flexibleServer 'Microsoft.DBforPostgreSQL/flexibleServers@2025-06-01-pr
       : { publicNetworkAccess: publicNetworkAccess }
     pointInTimeUTC: createMode == 'PointInTimeRestore' ? pointInTimeUTC : null
     replica: !empty(replica) ? replica : null
+    replicationRole: replicationRole
     sourceServerResourceId: (createMode == 'PointInTimeRestore' || createMode == 'Replica')
       ? sourceServerResourceId
       : null
@@ -592,22 +606,13 @@ output resourceGroupName string = resourceGroup().name
 output location string = flexibleServer.location
 
 @description('The FQDN of the PostgreSQL Flexible server.')
-output fqdn string = flexibleServer.properties.fullyQualifiedDomainName
+output fqdn string? = flexibleServer.properties.?fullyQualifiedDomainName
 
-// @description('The private endpoints of the PostgreSQL Flexible server.')
-// output privateEndpoints array = [
-//   for (item, index) in (privateEndpoints ?? []): {
-//     name: server_privateEndpoints[index].outputs.name
-//     resourceId: server_privateEndpoints[index].outputs.resourceId
-//     groupId: server_privateEndpoints[index].outputs.groupId
-//     customDnsConfigs: server_privateEndpoints[index].outputs.customDnsConfig
-//     networkInterfaceResourceIds: server_privateEndpoints[index].outputs.networkInterfaceIds
-//   }
-// ]
-
+@description('The principal ID of the system assigned managed identity.')
+output systemAssignedMIPrincipalId string? = flexibleServer.?identity.?principalId
 
 @description('Is there evidence of usage in non-compliance with policies?')
-output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || empty(delegatedSubnetResourceId ?? '') || flexibleServer.properties.authConfig.activeDirectoryAuth != 'enabled' || int(version) < 16)
+output evidenceOfNonCompliance bool = (publicNetworkAccess != 'Disabled' || empty(delegatedSubnetResourceId ?? '') || flexibleServer.properties.authConfig.activeDirectoryAuth != 'Enabled' || int(version) < 16)
 
 
 

@@ -19,7 +19,7 @@ param name string
 param groupId string
 
 @description('Required. Fully qualified domain names.')
-param fqdns array
+param fqdns string[]
 
 @description('Required. The ARM resource ID of the resource to which the managed private endpoint is created.')
 param privateLinkResourceId string

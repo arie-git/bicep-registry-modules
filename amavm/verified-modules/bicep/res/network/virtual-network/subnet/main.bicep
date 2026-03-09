@@ -65,6 +65,7 @@ resource subnetRes 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
   parent: virtualNetwork
   properties: {
     addressPrefix: subnet.?addressPrefix
+    ipamPoolPrefixAllocations: subnet.?ipamPoolPrefixAllocations
     networkSecurityGroup: !empty(subnet.?networkSecurityGroupResourceId)
       ? {
           id: subnet.networkSecurityGroupResourceId
@@ -90,6 +91,8 @@ resource subnetRes 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {
     applicationGatewayIPConfigurations: subnet.?applicationGatewayIPConfigurations ?? []
     ipAllocations: ipAllocations ?? []
     serviceEndpointPolicies: subnet.?serviceEndpointPolicies ?? []
+    defaultOutboundAccess: subnet.?defaultOutboundAccess
+    sharingScope: subnet.?sharingScope
   }
 }
 
@@ -126,6 +129,9 @@ output subnetAddressPrefix string = subnetRes.properties.?addressPrefix ?? ''
 
 @description('List of address prefixes for the subnet.')
 output subnetAddressPrefixes array = !empty(subnet.?addressPrefixes) ? subnetRes.properties.?addressPrefixes : []
+
+@description('The IPAM pool prefix allocations for the subnet.')
+output ipamPoolPrefixAllocations array = subnetRes.properties.?ipamPoolPrefixAllocations ?? []
 
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = empty(subnet.?networkSecurityGroupResourceId) || empty(subnet.?routeTableResourceId) || !contains(['Enabled', 'RouteTableEnabled'], subnet.?privateEndpointNetworkPolicies)
@@ -232,6 +238,19 @@ type subnetType = {
   @description('Conditional. List of address prefixes for the subnet. Required if `addressPrefix` is empty.')
   addressPrefixes: string[]?
 
+  @description('Conditional. The address space for the subnet, deployed from IPAM Pool. Required if `addressPrefixes` and `addressPrefix` is empty and the VNet address space configured to use IPAM Pool.')
+  ipamPoolPrefixAllocations: [
+    {
+      @description('Required. The Resource ID of the IPAM pool.')
+      pool: {
+        @description('Required. The Resource ID of the IPAM pool.')
+        id: string
+      }
+      @description('Required. Number of IP addresses allocated from the pool.')
+      numberOfIpAddresses: string
+    }
+  ]?
+
   @description('Optional. Application gateway IP configurations of virtual network resource.')
   applicationGatewayIPConfigurations: applicationGatewayIPConfiguration[]?
 
@@ -271,9 +290,9 @@ type subnetType = {
   @description('Optional. The service endpoints to enable on the subnet.')
   serviceEndpoints: object[]?
 
-  // @description('Optional. Set this property to false to disable default outbound connectivity for all VMs in the subnet. This property can only be set at the time of subnet creation and cannot be updated for an existing subnet.')
-  // defaultOutboundAccess: bool?
+  @description('Optional. Set this property to false to disable default outbound connectivity for all VMs in the subnet. This property can only be set at the time of subnet creation and cannot be updated for an existing subnet.')
+  defaultOutboundAccess: bool?
 
-  // @description('Optional. Set this property to Tenant to allow sharing subnet with other subscriptions in your AAD tenant. This property can only be set if defaultOutboundAccess is set to false, both properties can only be set if subnet is empty.')
-  // sharingScope: ('DelegatedServices' | 'Tenant')?
+  @description('Optional. Set this property to Tenant to allow sharing subnet with other subscriptions in your AAD tenant. This property can only be set if defaultOutboundAccess is set to false, both properties can only be set if subnet is empty.')
+  sharingScope: ('DelegatedServices' | 'Tenant')?
 }
