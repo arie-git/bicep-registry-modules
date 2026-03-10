@@ -1,23 +1,37 @@
-# Scenario 2
+# Scenario 2 — Function App + Cosmos DB (NoSQL)
 
-KeyVault + Function App + CosmosDB (Core API)
+Function App + Key Vault + Cosmos DB (Core/NoSQL API) + Storage Account, deployed with VNet integration and private endpoints.
 
-## Installing the application infrastructure
+## Components
 
-Execute following script in powershell console
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Subnets (x3) | `br/amavm:res/network/virtual-network/subnet` | PE (x2), Function egress |
+| Key Vault | `br/amavm:res/key-vault/vault` | Secret storage |
+| Cosmos DB | `br/amavm:res/document-db/database-account` | NoSQL database (SQL API) with inline DB + container |
+| Application Insights | `br/amavm:res/insights/component` | Application monitoring |
+| App Service Plan | `br/amavm:res/web/serverfarm` | Hosting for Function App |
+| Function App | `br/amavm:res/web/site` (kind: functionapp) | Application compute |
+| Storage Account | `br/amavm:res/storage/storage-account` | Function App backing storage |
 
-$cmd = "az deployment sub create ``
---location westeurope ``
---name '906main.bicep--what-if' ``
---template-file 'C:\Users\aa01675\source\repo\S02-App-AM-CCC-DrcpTestCases\scenario2\infra\main.bicep' ``
---parameters whatIf='' ``
---parameters location='westeurope' ``
---parameters deploymentId='007' --parameters engineersGroupObjectId='2ed0754e-8aec-41ec-8d60-a956dc578666' --parameters vnetPrefix='10.238.0' --parameters environmentType='dev' --parameters applicationInstanceCode='04' --parameters applicationCode='scne2' --parameters departmentCode='ccc' --parameters organizationCode='s2' --parameters namePrefix='' --parameters environmentId='ENV23145' --parameters applicationId='AM-CCC'"
+## Deployment
 
-Invoke-Expression -Command $cmd
+### Deploy
 
-### Unintalling the application infrastructure
+```
+az deployment sub create --location swedencentral \
+  -f scenario2/infra/main.bicep \
+  --name=drcptst0201 \
+  --parameters environmentId=<ENV_ID>
+```
 
-.\modules\scripts\removeApplicationInfra.ps1 -groupName scne204-dev-westeurope-rg -vnetGroupName AM-CCC-ENV23145-VirtualNetworks -vnetName AM-CCC-ENV23145-VirtualNetwork -resourceFilter scne204`
+### Remove
 
-** Note - Parameters in the above mentioned scripts are for guidance, those need to be replaced with actual values
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcptst0201
+```

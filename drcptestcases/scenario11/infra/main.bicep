@@ -598,7 +598,7 @@ module webAppApiMod 'br/amavm:res/web/site:0.1.0' = {
         name: 'SqlDbConnection'
         type: 'SQLAzure'
         slotSetting: true
-        connectionString: 'server=tcp:${sqlServerMod.outputs.fullyQualifiedDomainName};database=${sqlServerMod.outputs.databases[0].name};'
+        connectionString: 'server=tcp:${sqlServerMod.outputs.fullyQualifiedDomainName};database=${sqlServerMod.outputs.databases[0].name};Authentication=Active Directory Default;'
       }
     ]
     webSiteConfigurationAdditional: {

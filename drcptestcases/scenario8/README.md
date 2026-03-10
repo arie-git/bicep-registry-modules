@@ -1,62 +1,47 @@
-# Scenario 8
+# Scenario 8 — Function Apps + Cosmos DB + APIM
 
-main: Function App on App Service Plan -> CosmosDb -> Function App on App Service Plan -> Azure Storage Account (blob/file)
-extra: KeyVault + Log Analytics + Application Insights
+Frontend and backend Function Apps with Cosmos DB data store, APIM gateway, and Storage Account. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 
-## Source code
+## Components
 
-Infrastructure - `scenario7\infra\main.bicep`
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| User-Assigned MI | `br/amavm:res/managed-identity/user-assigned-identity` | Cross-resource identity |
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Subnet (x4) | `br/amavm:res/network/virtual-network/subnet` | PE, frontend egress, backend egress, APIM |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Application Insights | `br/amavm:res/insights/component` | Application telemetry |
+| Key Vault | `br/amavm:res/key-vault/vault` | Secret management |
+| App Service Plan (x2) | `br/amavm:res/web/serverfarm` | Frontend + backend hosting |
+| Function App (frontend) | `br/amavm:res/web/site` | HTTP API gateway consumer |
+| Function App (backend) | `br/amavm:res/web/site` | Cosmos DB data processor |
+| Storage Account | `br/amavm:res/storage/storage-account` | Function App backing + blob/file |
 
-## Main components
+### Local modules (no AMAVM equivalent)
 
-...
+| Module | Purpose |
+|---|---|
+| Cosmos DB + PE + role-assignment | Pending migration to AMAVM `document-db/database-account` |
+| APIM | Not a DRCP-whitelisted AMAVM component |
+| Public IP | Blocked on AMAVM `network/public-ip-address` module |
 
-## Extra components
+## Deployment
 
-Log analytics workspace is used to collect diagnostic logs from all deployed resources. Application Insights is used to collect application logs from the App Service.
+### Deploy
 
-Azure Storage and Keyvault: These components are not integrated into the solution and are used only for component testing, and not for integration testing.
+```
+az deployment sub create --location swedencentral \
+  -f scenario8/infra/main.bicep \
+  --name=drcptst0801 \
+  --parameters environmentId=<ENV_ID> \
+  engineersGroupObjectId='<GROUP_OID>'
+```
 
-## How-to's
+### Remove
 
-### How to deploy manually
-
-`az login`
-
-`az account set -s AM-CCC-ENV23148-DEV`
-
-`az deployment sub create --location westeurope -f scenario8/infra/main.bicep --name=drcptst0801`
-
-OR if not default values
-`az deployment sub create --location westeurope -f scenario8/infra/main.bicep --name=drcptst0801 --parameters applicationInstanceCode=0801 environmentId=ENV23148 engineersGroupObjectId='522abf2a-8625-4ceb-9548-3f8e050bfe7a'`
-
-where:
-name - is the name of the deployment
-applicationSystemCode - is the code for the combination of 'system+instance' within the application
-environmentId - is the DRCP environment id as received from service now, used in naming subscriptions and VNets
-vnetPrefix - is not a real network prefix, but a string used to compose subnet addresses
-engineersGroupObjectId - is the objectId for the Engineers group that will receive RBAC assignments to deployed resources
-
-To deploy applications manually:
-
-- frontend function
-    `cd src/frontend-dotnet`
-    `func azure functionapp publish s2c3drcptst0801devweapp-fe`
-- backend function
-    `cd src/backend-dotnet`
-    `func azure functionapp publish s2c3drcptst0801devweapp-be`
-
-To test the application:
-
-- endpoint to call https://s2c3drcptst0801devweapp-fe.azurewebsites.net/api/httptrigger1?name=hellopython60
-- look for created files in the storage account
-
-### How to remove manually
-
-`.\modules\scripts\removeApplicationInfra.ps1 -snowEnvironmentId ENV23148 -resourceFilter drcptst0801`
-
-where:
-groupName - is the name of the resource group where infra is deployed
-vnetGroupName - is the name of the Virtual Network resource group
-vnetName - is the name of the Virtual Network
-resourceFilter - is the string used in part of the resource names to be removed in Virtual Network resource group
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcptst0801
+```

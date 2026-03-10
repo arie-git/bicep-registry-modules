@@ -1,35 +1,48 @@
-# Scenario 1
+# Scenario 4 — Event Hub Broker
 
-Function App, function 1 (write) -> EventHub <- (read) Function App, function 2 (write) -> Storage Account
+Function App with two functions: one writes events to Event Hub, the other reads from Event Hub and writes to a Storage Account blob container. Deployed with VNet integration and private endpoints.
 
-## How to deploy infra manually
+## Components
 
-`az login`
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Subnets (x2) | `br/amavm:res/network/virtual-network/subnet` | PE, Function egress |
+| Key Vault | `br/amavm:res/key-vault/vault` | Secret storage |
+| Event Hub Namespace | `br/amavm:res/event-hub/namespace` | Event streaming (inline hub + consumer group) |
+| Application Insights | `br/amavm:res/insights/component` | Application monitoring |
+| App Service Plan | `br/amavm:res/web/serverfarm` | Hosting for Function App |
+| Function App | `br/amavm:res/web/site` (kind: functionapp) | Event processing |
+| Storage Account | `br/amavm:res/storage/storage-account` | Function App backing storage + event destination |
 
-`az account set -s AM-CCC-ENV23101-DEV`
+## Deployment
 
-`az deployment sub create --location westeurope -f scenario4/infra/main.bicep --name=drcptst0401 --parameters scenario4/infra/main-23101.bicepparam`
+### Deploy
 
-## How to remove infra manually
+```
+az deployment sub create --location swedencentral \
+  -f scenario4/infra/main.bicep \
+  --name=drcptst0401 \
+  --parameters environmentId=<ENV_ID>
+```
 
-`.\modules\scripts\removeApplicationInfra.ps1 -snowEnvironmentId <environmentId> -resourceFilter drcptst0401`
+### Remove
 
-where:
-groupName - is the name of the resource group where infra is deployed
-vnetGroupName - is the name of the Virtual Network resource group
-vnetName - is the name of the Virtual Network
-resourceFilter - is the string used in part of the resource names to be removed in Virtual Network resource group
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcptst0401
+```
 
-## How to deploy application manually
+## Application
 
-To deploy applications manually:
+To deploy the function app code:
 
-`cd src/eventHubFunctionApp`
-`func azure functionapp publish <funcappname>` (for example, funcappname: s2c3drcptst0401devweapp)
+```
+cd src/eventHubFunctionApp
+func azure functionapp publish <funcappname>
+```
 
-To test the application:
-
-- endpoint to call `https://<funcappname>.azurewebsites.net/api/generateevents` with some query string parameter
-(for example, https://s2c3drcptst0401devweapp.azurewebsites.net/api/generateevents?param=testing21)
-
-- look in function app logs for the output
+Test endpoint: `https://<funcappname>.azurewebsites.net/api/generateevents?param=testing21`

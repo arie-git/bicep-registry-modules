@@ -62,6 +62,23 @@ The `AzurePowerShell@5` task sets `$ErrorActionPreference = 'Stop'` at the proce
 ### 18. Parallel PowerShell may not help CPU-bound workloads on pipeline agents
 `ForEach-Object -Parallel` showed ~6x speedup locally but zero improvement on Azure DevOps pipeline agents. Pipeline agents are likely single/dual-vCPU — parallel runspaces just compete for the same CPU when the workload is CPU-bound (`az bicep build` = compiler). Parallelism only helps if the bottleneck is I/O (network, disk) or if agents have spare cores.
 
+### 19. AMAVM param names differ from Azure API property names
+The AMAVM module params use their own naming convention — not always matching the Azure REST API property name. Example: Cosmos DB's `disableLocalAuth` (API property) is `disableLocalAuthentication` (AMAVM param). Always check the AMAVM module's `main.bicep` for the exact param name, or read the BCP037 error message which lists all permissible properties. Don't assume API docs map 1:1 to module params.
+
+### 20. Always validate Bicep changes with `bicep build` before marking done
+Never mark a code change as complete without running `bicep build`. Use the swap-build-restore workflow:
+1. Run `localBuildHelper.ps1 -Action Replace` to swap ACR refs in AMAVM modules
+2. Also swap ACR refs in the scenario files (helper only handles AMAVM, not scenarios)
+3. Run `bicep build <file>` on each changed scenario
+4. Restore all refs (helper `-Action Restore` for AMAVM, regex restore for scenarios)
+Warnings from upstream modules are expected. Only errors indicate real problems.
+
+### 21. Deprecated VNet routing params affect ALL web/site modules
+When `vnetRouteAllEnabled`, `vnetContentShareEnabled`, `vnetImagePullEnabled` were replaced by `outboundVnetRouting` in the AMAVM web/site module, this affects EVERY scenario that uses `br/amavm:res/web/site` — not just the one you're currently working on. When fixing deprecated params, grep ALL scenarios for the old param names and fix them all in one pass. Missing one causes a build failure you only discover later.
+
+### 22. Circular dependency pattern for cross-resource RBAC
+When resource A's managed identity needs a role on resource B, but resource B references resource A's outputs (e.g., ACR needs WebApp MI for AcrPull, WebApp needs ACR loginServer), you cannot use inline `roleAssignments` on either. Extract the RBAC to a separate helper module (e.g., `acrRoleAssignment.bicep`) that takes the resource name + principal ID + role GUID as params. Follow the pattern established in scenario 4 (`roleAssignment.bicep`, `evhRoleAssignment.bicep`, `kvRoleAssignment.bicep`).
+
 ### 14. Parameter defaults must be driven by compliance policy
 Input parameters (optional, required, conditional) and their defaults should be based on required compliance from `policy/Generic/`. The AMAVM fork's purpose is to enforce policy compliance by default:
 - If a policy requires a value, make the param `required` or set a compliant default

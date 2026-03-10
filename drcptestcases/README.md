@@ -1,74 +1,77 @@
-# Introduction
+# DRCP Test Cases
 
-DRCP Test Cases
+Integration test scenarios that validate AMAVM Bicep modules deploy correctly to the hardened DRCP platform. Each scenario combines multiple modules into a realistic architecture, deploys via scheduled pipeline, and tears down afterwards.
 
+## Scenarios
 
-**7th**
-main: App Service with Docker + Azure Container Registry + Azure Storage Account (blob/file) + LogicApp
-extra: KeyVault + Log Analytics + Application Insights
+| # | Architecture | Key AMAVM Modules | Status |
+|---|---|---|---|
+| 1 | Function App + Key Vault + SQL | web/site, key-vault/vault, sql/server | Fully AMAVM |
+| 2 | Function App + Key Vault + Cosmos DB | web/site, document-db/database-account | Fully AMAVM |
+| 3 | Function App + Logic App + Storage | web/site, storage/storage-account | Fully AMAVM |
+| 4 | Function App + Event Hub | web/site, event-hub/namespace | Fully AMAVM |
+| 5 | App Gateway + Web Apps + Function App | network/application-gateway, web/site | Nearly AMAVM |
+| 7 | Docker App Service + ACR + Logic App | container-registry/registry, web/site | Nearly AMAVM |
+| 8 | Function Apps + Cosmos DB + APIM | web/site, key-vault/vault | Partial |
+| 9 | AKS + ACR + Storage | container-service/managed-cluster, container-registry/registry | Fully AMAVM |
+| 10 | Data Factory + Databricks | databricks/workspace, storage/storage-account | Partial |
+| 11 | Web Apps + SQL | web/site, sql/server | Fully AMAVM |
+| 12 | N-Tier SQL (pattern module) | ptn/ntier/sql | Complete |
+| 13 | Redis Cache (standalone) | cache/redis | Implemented |
+| 14 | Event Hub + Function App | event-hub/namespace, web/site | Implemented |
+| 15 | Cosmos DB NoSQL (standalone) | document-db/database-account | Implemented |
+| 16 | AI Chatbot: OpenAI + AI Search | cognitive-services/account, search/search-service | Planned |
 
-**8th**
-main: Function App on App Service Plan -> CosmosDb -> Function App on App Service Plan -> Azure Storage Account (blob/file)
-extra: KeyVault + Log Analytics + Application Insights
+> Scenario 6 does not exist. See each scenario's `README.md` for components, deployment commands, and DRCP policy details.
 
-**9th**
-main: ACR -> Azure Kubernetes Service -> Application Gateway -> CosmosDb
-extra: AKV, Storage Account, Log Analytics
+## Nightly Runs
 
+Each scenario runs nightly. The schedule is: scenario 1 at 1am (UTC), scenario 2 at 2am, etc. Test cases deploy as `tst` type.
 
-## Nightly Run
+### Environments
 
-Each scenario runs nightly. The schedule is as follows: scenario1 at 1am (UTC), scenario2 at 2am, etc.
+Environments are in `AM-CCC` application system (Sweden Central only — West Europe deprecated):
 
-Test cases are deployed as 'tst' type.
+| Environment | Address Space | Type | Region | Purpose |
+|---|---|---|---|---|
+| ENV23968 | 10.238.18.0/24 | DEV | Sweden Central | Less restrictive — dev iteration |
+| ENV23969 | 10.238.19.0/24 | DEV | Sweden Central | Less restrictive — dev iteration |
+| ENV23978 | 10.238.64.0/24 | TST | Sweden Central | Strict policies — production mirror |
+| ENV23979 | 10.238.65.0/24 | TST | Sweden Central | Strict policies — production mirror |
 
-### Environments used for nightly runs
+> West Europe environments (ENV23148, ENV23684) are deprecated. No new deployments to West Europe.
 
-Environments are in 'AM-CCC' application system:
+### Network Space — DEV (Sweden Central)
 
-- ENV23148 with '10.238.2.0/24' of DEV in West Europe
-- ENV23684 with '10.238.6.0/24' of DEV in West Europe
-- ENV23968 with '10.238.18.0/24' of DEV in Sweden Central
-- ENV23969 with '10.238.19.0/24' of DEV in Sweden Central
-- ENV23978 with '10.238.64.0/24' of TST in Sweden Central
-- ENV23979 with '10.238.65.0/24' of TST in Sweden Central
+| Scenario | CIDR | Size | Status |
+|---|---|---|---|
+| 1 | 10.238.18.0/27 | /27 | Active |
+| 2 | 10.238.18.32/27 | /27 | Active |
+| 3 | 10.238.18.64/27 | /27 | Active |
+| 4 | 10.238.18.96/27 | /27 | Active |
+| 7 | 10.238.18.128/26 | /26 | Active |
+| 5 | 10.238.18.192/26 | /26 | Active |
+| 8 | 10.238.19.0/26 | /26 | Active |
+| 10 | 10.238.19.64/27 | /27 | Active |
+| 13 | 10.238.19.96/27 | /27 | **Planned** |
+| 9 | 10.238.19.128/26 | /26 | Active |
+| 11 | 10.238.19.192/26 | /26 | Active |
+| 14-16 | TBD | /27-/26 | **Needs new address space** |
 
-### Network space used for nightly runs - DEV
+### Network Space — TST (Sweden Central)
 
-West Europe:
-
-- scenario 1: '10.238.2.0/27'
-- scenario 2: '10.238.2.32/27'
-- scenario 3: '10.238.2.64/27'
-- scenario 4: '10.238.2.96/27'
-- scenario 5: '10.238.2.192/26'
-- scenario 7: '10.238.2.128/26'
-- scenario 8: '10.238.6.0/26'
-- scenario 10: '10.238.6.64/27'
-
-Central Sweden:
-
-- scenario 1: '10.238.18.0/27'
-- scenario 2: '10.238.18.32/27'
-- scenario 3: '10.238.18.64/27'
-- scenario 4: '10.238.18.96/27'
-- scenario 5: '10.238.18.192/26'
-- scenario 7: '10.238.18.128/26'
-- scenario 8: '10.238.19.0/26'
-- scenario 9: '10.238.19.128/26'
-- scenario 10: '10.238.19.64/27'
-- scenario 11: '10.238.19.196/26'
-
-### Network space used for nightly runs - TST
-
-Central Sweden:
-
-- scenario 1: '10.238.64.0/27'
-- scenario 2: '10.238.64.32/27'
-- scenario 3: '10.238.64.64/27'
-- scenario 4: '10.238.64.96/27'
-- scenario 5: '10.238.64.192/26'
-- scenario 7: '10.238.64.128/26'
-- scenario 8: '10.238.65.0/26'
-- scenario 10: '10.238.65.64/27'
-- scenario 11: '10.238.65.196/26'
+| Scenario | CIDR | Size | Status |
+|---|---|---|---|
+| 1 | 10.238.64.0/27 | /27 | Active |
+| 2 | 10.238.64.32/27 | /27 | Active |
+| 3 | 10.238.64.64/27 | /27 | Active |
+| 4 | 10.238.64.96/27 | /27 | Active |
+| 7 | 10.238.64.128/26 | /26 | Active |
+| 5 | 10.238.64.192/26 | /26 | Active |
+| 8 | 10.238.65.0/26 | /26 | Active |
+| 10 | 10.238.65.64/27 | /27 | Active |
+| 13 | 10.238.65.96/27 | /27 | **Planned** |
+| 14 | 10.238.65.128/27 | /27 | **Planned** |
+| 15 | 10.238.65.160/27 | /27 | **Planned** |
+| 11 | 10.238.65.192/26 | /26 | Active |
+| 16 | TBD | /26 | **Needs address space** |

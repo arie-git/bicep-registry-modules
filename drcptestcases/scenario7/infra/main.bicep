@@ -552,9 +552,11 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
     siteConfigurationAdditional: {
       linuxFxVersion: 'DOCKER|${acr.outputs.loginServer}/${dockerImage}'
     }
-    vnetRouteAllEnabled: true
-    vnetContentShareEnabled: true
-    vnetImagePullEnabled: true
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     tags: mytags
     }
   }
@@ -563,18 +565,16 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
 var appIdentity = webApp.outputs.systemAssignedMIPrincipalId
 
 // use app identity to grant access to read from the ACR
-module acrFuncAppRbac '../../modules/infra/compute/container-registry/modules/role-assignment.bicep' = {
+// Separate helper module: acr ↔ webApp cycle prevents inline roleAssignments
+// (acr needs webApp.MI for AcrPull, webApp needs acr.loginServer for Docker image)
+module acrFuncAppRbac 'acrRoleAssignment.bicep' = {
   scope: resourceGroup
   name: '${deployment().name}-acr-webapp-rbac'
   params: {
-    resourceName: acr.outputs.name
-    principals: [
-      {
-        objectId: appIdentity
-        principalType: 'ServicePrincipal'
-      }
-    ]
-    roleDefinitionIdOrName: 'AcrPull'
+    containerRegistryName: acr.outputs.name
+    principalId: appIdentity
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: '7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
   }
 }
 
@@ -617,8 +617,10 @@ module logicApp 'br/amavm:res/web/site:0.1.0' = {
       location: vNet.location
       kind: 'functionapp,workflowapp'
       serverFarmResourceId: appServicePlan2.outputs.resourceId
-      vnetRouteAllEnabled: true
-      vnetContentShareEnabled: true
+      outboundVnetRouting: {
+        allTraffic: true
+        contentShareTraffic: true
+      }
       enabled: true
       storageAccountResourceId: storageAccountMod.outputs.resourceId
       storageAccountUseIdentityAuthentication: false

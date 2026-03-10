@@ -1,84 +1,73 @@
-# Scenario 10 - Azure Data Factory
+# Scenario 10 — Data Factory + Databricks + Unity Catalog
 
-Scenario 10 focuses on Azure Data Factory (ADF) component which is enabled by DRCP team.
-The goal of this scenarion is to successfully deploy the ADF following the guardrails and create basic data pipelines
+Azure Data Factory as data orchestrator with Databricks workspace for compute, ADLS Gen2 for data lake storage, and Unity Catalog for data governance. Includes 3 data pipelines (SQL-to-ADLS, FileShare-to-ADLS, staged copy) and Self-Hosted Integration Runtime for on-premises connectivity. Full DRCP compliance with private endpoints, managed identity, VNet injection, and diagnostics.
 
 ## Components
 
-Scenarion 10 makes use of following Azure resources
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Subnet (x3) | `br/amavm:res/network/virtual-network/subnet` | PE, Databricks public, Databricks private |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Key Vault | `br/amavm:res/key-vault/vault` | Secrets + SHIR auth keys |
+| ADLS Gen2 | `br/amavm:res/storage/storage-account` | Data lake (HNS enabled) |
+| Storage Account | `br/amavm:res/storage/storage-account` | Blob + file share for pipelines |
+| Databricks Workspace | `br/amavm:res/databricks/workspace` | Premium, VNet-injected compute |
+| Databricks Access Connector | `br/amavm:res/databricks/access-connector` | MI bridge for UC storage access |
 
-- Azure Data Factory - Orchestrator for data pipelines
-- Key Vault - Store for secrets
-- Data lake store - Used in data pipeline execution
-- Storage account with Blob and File Share - Used in data pipeline execution
+### Local modules (pending AMAVM migration)
 
-It also makes use of on-premises
+| Module | Purpose |
+|---|---|
+| Data Factory | ADF with SHIR, git integration, PE |
+| ADF Integration Runtime | Self-Hosted IR linked to central shared IR |
+| ADF Role Assignment | RBAC for SHIR access cross-subscription |
+| ADF Private Endpoint | PE for Data Factory |
 
-- Sql server - Used on data pipeline execution
-- Windows Server 2019 - Used as Integration Runtime
+### Data Pipelines (`src/`)
 
-### Changes to repo
+| Pipeline | Pattern |
+|---|---|
+| DataPipeline1 | SQL Server → ADLS (JSON) |
+| DataPipeline2 | File Share → ADLS (binary) |
+| DataPipeline3 | SQL Server → ADLS with blob staging |
 
-As a part of development of this scenario, following changes are made to source repo
+## DRCP Policy Compliance
 
-- a new module is created for Azure Data Factory
-- a new module is created for ADF Triggers
-- a new module is created for ADF linked services which are required for Data pipelines
-- a change is made in Key-vault module for allowing access to Resource managers to secrets during deployments
+| Policy Group | Controls | Key Requirements |
+|---|---|---|
+| Databricks (8 policies) | drcp-adb-r01 to r05, w10, w22 | Premium SKU, VNet injection, no public IP, PE, infra encryption, managed RG naming |
+| Data Factory (10 policies) | drcp-adf-01 to 07 | Self-hosted IR only, secrets in KV, whitelisted linked services, no public access, no repos |
 
-## Source Code
-
-The infrastructure source code is stored under `scenario10\infra\main.bicep`
-The data pipeline source code is stored under `scenario10\src`
+See `scenario10/todo.md` for the full policy checklist and Unity Catalog implementation plan.
 
 ## Deployment
 
-The scenario 10 can be deployed using following pipelines
+### Infrastructure
 
-- Manual trigger- https://dev.azure.com/connectdrcpapg1/S02-App-AM-CCC/_build?definitionId=269
-- Scheduled Trigger - https://dev.azure.com/connectdrcpapg1/S02-App-AM-CCC/_build?definitionId=284
+```
+az deployment sub create --location swedencentral \
+  -f scenario10/infra/main.bicep \
+  --name=drcpdev1002 \
+  --parameters @scenario10/infra/parameters.json \
+  --parameters location=swedencentral
+```
 
-### Local deployment
+### Data Pipelines
 
-In order to deploy the scenario from local machine
-`az login`
+```
+az deployment group create \
+  --resource-group <rg> \
+  --name drcpdev1002 \
+  --template-file scenario10/src/DataPipeline1.bicep \
+  --parameters adfName='<adf>' kvName='<kv>' adlsName='<adls>'
+```
 
-`az account set -s AM-CCC-ENV23455-DEV`
+### Remove
 
-`az deployment sub create --location westeurope -f scenario7/infra/main.bicep --name=drcpdev0801`
-
-`$location = 'westeurope'`
-
-`az deployment sub create --location $location --name drcpdev1002 --template-file scenario10/infra/main.bicep --parameters location=$location --parameters deploymentId=$deploymeId --parameters '.\scenario10\infra\parameters.json'`
-
-### Un-install the infra
-
-#### Azure Pipeline
-
-The infrastrucure can be removed using the `Run Remove stage` switch in manually triggerred pipeline. The scheduled pipeline does it automatically.
-
-#### From Local Machine
-
-execute `.\modules\scripts\removeApplicationInfra.ps1 -snowEnvironmentId ENV23455 -resourceFilter drcpdev1002`
-
-where:
-groupName - is the name of the resource group where infra is deployed
-vnetGroupName - is the name of the Virtual Network resource group
-vnetName - is the name of the Virtual Network
-resourceFilter - is the string used in part of the resource names to be removed in Virtual Network resource group
-
-## Data pipelines
-Once the ADF and other infrastrucutre components are created successfully, following pipelines need to be deployed
-
- - [Pipeline 1 ](src/DataPipeline1.bicep) to copy from SQL server table into `parquet` on datalake
- - [Pipeline 2](src/DataPipeline2.bicep) to copy from fileshare table `as binary` to datalake
- - [Pipeline 3](src/DataPipeline3.bicep) to test `staging` of data in Storage account blobs
-
-use following syntax to deploy the pipelines -
-
-`az deployment group create --resource-group $resourceGroup --name drcpdev1002 --template-file scenario10/src/datapipeline*.bicep --parameters adfName='<>' --parameters kvName='<>'--parameters adlsName='<>'`
-
-Where-
- - adfName - Name of the ADF
- - kvName - Name of the key vault
- - adlsName - Name of the ADLS
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcpdev1002
+```

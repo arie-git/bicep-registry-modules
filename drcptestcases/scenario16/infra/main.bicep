@@ -667,9 +667,11 @@ module webAppFront 'br/amavm:res/web/site:0.1.0' = {
     siteConfigurationAdditional: {
       linuxFxVersion: 'PYTHON|3.12'
     }
-    vnetRouteAllEnabled: true
-    vnetContentShareEnabled: true
-    vnetImagePullEnabled: true
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     tags: tags
     }
 }
@@ -744,9 +746,11 @@ module webAppBack 'br/amavm:res/web/site:0.1.0' = {
     siteConfigurationAdditional: {
       linuxFxVersion: 'PYTHON|3.12'
     }
-    vnetRouteAllEnabled: true
-    vnetContentShareEnabled: true
-    vnetImagePullEnabled: true
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     tags: tags
     }
   }

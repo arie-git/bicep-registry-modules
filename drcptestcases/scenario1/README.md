@@ -1,31 +1,40 @@
-# Scenario 1
+# Scenario 1 — Function App + Key Vault + SQL Database
 
-Function App + KeyVault + SQL db
+Function App with Key Vault secret management and Azure SQL backend. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 
-## How to deploy manually
+## Components
 
-`az login`
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Subnet | `br/amavm:res/network/virtual-network/subnet` | PE + egress subnets |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Application Insights | `br/amavm:res/insights/component` | Application telemetry |
+| Key Vault | `br/amavm:res/key-vault/vault` | Secret management |
+| Key Vault Secret | `br/amavm:res/key-vault/vault/secret` | SQL connection string |
+| Storage Account | `br/amavm:res/storage/storage-account` | Function App backing storage |
+| User-Assigned MI | `br/amavm:res/managed-identity/user-assigned-identity` | Managed identity for SQL |
+| SQL Server | `br/amavm:res/sql/server` | Azure SQL with PE + Entra auth |
+| App Service Plan | `br/amavm:res/web/serverfarm` | Function App hosting |
+| Function App | `br/amavm:res/web/site` | Application compute |
 
-`az account set -s AM-CCC-ENV23109-DEV`
+## Deployment
 
-`az deployment sub create --location swedencentral -f scenario1/infra/main.bicep --name=drcptst0113`
+### Deploy
 
-OR if not default values
-`az deployment sub create --location swedencentral -f scenario1/infra/main.bicep --name=drcptst0113 --parameters applicationInstanceCode=0909 environmentId=ENV24508 engineersGroupObjectId='623a26f3-3341-4911-bfe2-0e9da839c26e'`
+```
+az deployment sub create --location swedencentral \
+  -f scenario1/infra/main.bicep \
+  --name=drcptst0113 \
+  --parameters environmentId=<ENV_ID> \
+  engineersGroupObjectId='<GROUP_OID>'
+```
 
-where:
-name - is the name of the deployment
-applicationSystemCode - is the code for the combination of 'system+instance' within the application
-environmentId - is the DRCP environment id as received from service now, used in naming subscriptions and VNets
-vnetPrefix - is not a real network prefix, but a string used to compose subnet addresses
-engineersGroupObjectId - is the objectId for the Engineers group that will receive RBAC assignments to deployed resources
+### Remove
 
-## How to remove manually
-
-`.\modules\scripts\removeApplicationInfra.ps1 -groupName s2-c3-drcptst0104-dev-westeurope-rg -vnetGroupName AM-CCC-ENV23109-VirtualNetworks -vnetName AM-CCC-ENV23109-VirtualNetwork -resourceFilter drcptst0104`
-
-where:
-groupName - is the name of the resource group where infra is deployed
-vnetGroupName - is the name of the Virtual Network resource group
-vnetName - is the name of the Virtual Network
-resourceFilter - is the string used in part of the resource names to be removed in Virtual Network resource group
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcptst0113
+```

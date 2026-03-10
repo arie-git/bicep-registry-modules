@@ -1,6 +1,6 @@
-# Scenario 1
+# Scenario 11 — Multi-Tier Web Application
 
-Web App with ASP.NET Web + Web App with ASP.NET API + KeyVault + SQL db
+Web App (ASP.NET UI) + Web App (ASP.NET API) + KeyVault + SQL db
 
 ## How to deploy manually
 

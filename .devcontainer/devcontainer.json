@@ -18,8 +18,8 @@
       ]
     }
   },
-  "postCreateCommand": "dotnet tool install -g Azure.Bicep.RegistryModuleTool",
-  "postStartCommand": "sudo chmod -R g+w /usr/local/share/npm-global/lib/node_modules/@anthropic-ai 2>/dev/null || true",
+  "postCreateCommand": "claude plugin marketplace add microsoft/azure-skills && claude plugin install azure@azure-skills",
+  "postStartCommand": "sudo chmod -R g+w /usr/local/share/npm-global/lib/node_modules/@anthropic-ai 2>/dev/null || true && claude plugin update azure https://github.com/microsoft/azure-skills 2>/dev/null || true",
   "remoteEnv": {
     "PATH": "${containerEnv:PATH}:/home/node/.dotnet/tools:/home/node/.azure/bin"
   },

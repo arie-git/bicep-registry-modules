@@ -1,21 +1,31 @@
-# Scenario 12
+# Scenario 12 — Data Factory + Databricks + SQL
 
-ResourceGroup + NSG + RouteTable + LogAnalytics + Subnet + Azure Data Factory + Storage Account + DataBricks
+Azure Data Factory with Databricks compute and SQL backend. Uses the `ptn/ntier/sql` pattern module. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 
-## How to deploy manually
+## Components
 
-`az login`
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| N-Tier SQL Pattern | `br/amavm:ptn/ntier/sql` | Full-stack pattern (NSG, UDR, subnet, SQL, storage) |
 
-`az account set -s AM-CCC-ENVxxxxx-DEV`
+> Note: This scenario uses the AMAVM pattern module which bundles networking, compute, and data components. The `ptn/data/ingestion` module reference is commented out pending migration.
 
-`az deployment sub create --location swedencentral -f scenario12/infra/main.bicep --name=drcpdev1101`
+## Deployment
 
-OR if not default values
-`az deployment sub create --location swedencentral -f scenario12/infra/main.bicep --name=drcpdev1201 --parameters networkAddressSpace='10.238.0.192/26' applicationInstanceCode=1201 environmentId=ENV24083 engineersGroupObjectId='4ac8afa1-dfbc-4096-967c-4b0fba1f37f6'`
+### Deploy
 
-where:
-name - is the name of the deployment
-applicationSystemCode - is the code for the combination of 'system+instance' within the application
-environmentId - is the DRCP environment id as received from service now, used in naming subscriptions and VNets
-vnetPrefix - is not a real network prefix, but a string used to compose subnet addresses
-engineersGroupObjectId - is the objectId for the Engineers group that will receive RBAC assignments to deployed resources
+```
+az deployment sub create --location swedencentral \
+  -f scenario12/infra/main.bicep \
+  --name=drcpdev1201 \
+  --parameters environmentId=<ENV_ID> \
+  engineersGroupObjectId='<GROUP_OID>'
+```
+
+### Remove
+
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcpdev1201
+```

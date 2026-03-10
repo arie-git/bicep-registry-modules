@@ -508,7 +508,7 @@ module storageAccountMod 'br/amavm:res/storage/storage-account:0.2.0' = {
     location: location
     skuName: 'Standard_ZRS'
     accessTier: 'Hot'
-    // allowSharedKeyAccess: false
+    allowSharedKeyAccess: false  // DRCP: RBAC only, no shared keys
     blobServices: {
       containers:[
         {

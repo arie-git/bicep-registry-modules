@@ -45,7 +45,7 @@ param tags object = {
   deploymentId: deploymentId
 }
 
-param adfRepoConfig object
+param adfRepoConfig object = {}
 
 @description('Does the ADF use linked IR? Required.')
 param linkedIntegrationRuntime bool = false
@@ -337,24 +337,132 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {  //'../../modules/infra
 }
 
 //----------------------------------------------------------------------------
-//  Create ADF
+//  Create ADF (AMAVM module — replaces local data-factory, PE, diagnostics)
+//  Supports pure Bicep deployment (no Git) — set adfRepoConfig = {} or omit
 //----------------------------------------------------------------------------
-module adf '../../modules/infra/integration/data-factory/main.bicep' = {
+var adfName = names.outputs.namingConvention['Microsoft.DataFactory/factories']
+var enableGitConfig = isDevEnvironment && !empty(adfRepoConfig) && contains(adfRepoConfig, 'repoEnabled') && bool(adfRepoConfig.repoEnabled)
+
+// Storage account name vars (for linked service URL construction)
+var adlsName = '${take(storageAccountName, 23)}1'
+var storageBackendName = '${take(storageAccountName, 23)}2'
+var adlsUcName = '${take(storageAccountName, 23)}3'
+
+module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-adf'
   params: {
-    name: names.outputs.namingConvention['Microsoft.DataFactory/factories']
-    publicNetworkAccess: 'Disabled'
-    enableRepo: (isDevEnvironment) ? adfRepoConfig.repoEnabled : false
+    name: adfName
     location: location
-    repoAccountName: (isDevEnvironment) ? adfRepoConfig.repoAccountName : null
-    repoCollaborationBranch: (isDevEnvironment) ? adfRepoConfig.repoCollaborationBranch : null
-    repoProjectName: (isDevEnvironment) ? adfRepoConfig.repoProjectName : null
-    repoRootFolder: (isDevEnvironment) ? adfRepoConfig.repoRootFolder : null
-    repositoryName: (isDevEnvironment) ? adfRepoConfig.repositoryName : null
-    repoType: 'FactoryVSTSConfiguration'
     tags: tags
-    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.resourceId
+    publicNetworkAccess: 'Disabled'
+
+    // Git — only in dev with explicit opt-in; otherwise pure Bicep deployment
+    gitConfigureLater: !enableGitConfig
+    gitconfiguration: enableGitConfig ? {
+      gitRepoType: 'FactoryVSTSConfiguration'
+      gitAccountName: 'connectdrcpapg1'
+      gitProjectName: adfRepoConfig.repoProjectName
+      gitRepositoryName: adfRepoConfig.repositoryName
+      gitCollaborationBranch: contains(adfRepoConfig, 'repoCollaborationBranch') ? adfRepoConfig.repoCollaborationBranch : 'main'
+      gitRootFolder: contains(adfRepoConfig, 'repoRootFolder') ? adfRepoConfig.repoRootFolder : '/'
+      gitDisablePublish: false
+      gitTenantId: 'c1f94f0d-9a3d-4854-9288-bb90dcf2a90d'
+    } : null
+
+    // Private endpoint (replaces separate adfPe module)
+    privateEndpoints: [
+      {
+        name: '${adfName}-pep'
+        subnetResourceId: subnetIn.outputs.resourceId
+        service: 'dataFactory'
+        tags: tags
+      }
+    ]
+
+    // Diagnostics
+    diagnosticSettings: [
+      {
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+
+    // Self-hosted IR for dev (standalone); non-dev uses linked IR below
+    integrationRuntimes: isDevEnvironment ? [
+      {
+        name: 'SelfHostedIR'
+        type: 'SelfHosted'
+      }
+    ] : []
+
+    //--------------------------------------------------------------------------
+    //  Linked Services — pre-configured for pure Bicep pipeline deployment
+    //  All use Managed Identity auth (DRCP: no keys, no secrets in config)
+    //--------------------------------------------------------------------------
+    linkedServices: [
+      // Key Vault — secret store for pipeline credentials
+      {
+        name: 'ls_keyvault'
+        type: 'AzureKeyVault'
+        typeProperties: {
+          azureKeyVaultLinkedServiceConfig: {
+            baseUrl: 'https://${keyVaultName}${environment().suffixes.keyvaultDns}/'
+          }
+        }
+        description: 'Key Vault for pipeline secret references'
+      }
+      // ADLS Gen2 — primary data lake (landing/staging)
+      {
+        name: 'ls_adls'
+        type: 'AzureBlobFS'
+        typeProperties: {
+          azureBlobFSLinkedServiceConfig: {
+            url: 'https://${adlsName}.dfs.${environment().suffixes.storage}/'
+          }
+        }
+        description: 'ADLS Gen2 data lake'
+      }
+      // Blob Storage — file share & container backend
+      {
+        name: 'ls_blob'
+        type: 'AzureBlobStorage'
+        typeProperties: {
+          azureBlobStorageLinkedServiceConfig: {
+            serviceEndpoint: 'https://${storageBackendName}.blob.${environment().suffixes.storage}/'
+            accountKind: 'StorageV2'
+          }
+        }
+        description: 'Blob storage for ADF staging and file operations'
+      }
+      // ADLS Gen2 Unity Catalog — medallion architecture
+      {
+        name: 'ls_adls_uc'
+        type: 'AzureBlobFS'
+        typeProperties: {
+          azureBlobFSLinkedServiceConfig: {
+            url: 'https://${adlsUcName}.dfs.${environment().suffixes.storage}/'
+          }
+        }
+        description: 'Unity Catalog ADLS — bronze/silver/gold medallion layers'
+      }
+      // Databricks — compute for data transformations
+      {
+        name: 'ls_databricks'
+        type: 'AzureDatabricks'
+        typeProperties: {
+          azureDatabricksLinkedServiceConfig: {
+            domain: 'https://${workspaceMod.outputs.workspaceUrl}'
+            authentication: 'MSI'
+            workspaceResourceId: workspaceMod.outputs.resourceId
+            newClusterVersion: '14.3.x-scala2.12'
+            newClusterNodeType: 'Standard_DS3_v2'
+            clusterOption: 'Fixed'
+            newClusterNumOfWorker: '1'
+          }
+        }
+        description: 'Databricks workspace for data transformations'
+      }
+    ]
   }
 }
 
@@ -364,20 +472,19 @@ var masterAdfResourceGroupName = split(masterAdfIrId, '/')[4]
 var masterAdfName = split(masterAdfIrId, '/')[8]
 var masterAdfIrName = split(masterAdfIrId, '/')[10]
 
-// Knowing the system-assigned managed identity of the new ADF, we can now authorize it to access the shared integration runtime in another subsciption
-// provided that the deployment identity has the necessary permissions to do so.
-module roleAssignment '../../modules/infra/integration/data-factory/modules/role-assignment.bicep' =  if (!isDevEnvironment) {
+// Cross-subscription RBAC for shared IR access (non-dev only — linked IR pattern)
+module roleAssignment '../../modules/infra/integration/data-factory/modules/role-assignment.bicep' = if (!isDevEnvironment) {
   name: '${deployment().name}-shir-rbac'
   scope: az.resourceGroup(masterAdfSubscriptionId, masterAdfResourceGroupName)
   params: {
     resourceName: '${masterAdfName}/${masterAdfIrName}'
     resourceType: 'integrationRuntimes'
-    principalIds: [adf.outputs.principalId]
+    principalIds: [adf.outputs.systemAssignedMIPrincipalId]
     principalType: 'ServicePrincipal'
-    roleDefinitionIdOrName: 'Data Factory Contributor' //'APG Custom - DRCP - Contributor (FP-MG) - ${toUpper(environmentType)}'
+    roleDefinitionIdOrName: 'Data Factory Contributor'
   }
 }
-// After the role assignment, we can now create the self-hosted integration runtime that links to the central shared integration runtime
+// After the role assignment, create the linked self-hosted IR (non-dev only)
 module adfIntegrationRuntime '../../modules/infra/integration/data-factory/integrationRuntime.bicep' = if (!isDevEnvironment) {
   scope: resourceGroup
   name: '${deployment().name}-selfhostedIR'
@@ -389,18 +496,6 @@ module adfIntegrationRuntime '../../modules/infra/integration/data-factory/integ
   dependsOn: [
     roleAssignment
   ]
-}
-
-module adfPe '../../modules/infra/network/private-endpoint/main.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-adf-pe'
-  params: {
-    location: vNet.location
-    privateEndpointName: '${adf.outputs.name}-pep'
-    privateLinkResource: adf.outputs.id
-    subnet: subnetIn.outputs.resourceId
-    targetSubResource: 'dataFactory'
-  }
 }
 
 //----------------------------------------------------------------------------
@@ -417,14 +512,14 @@ module storageAccountAdls 'br/amavm:res/storage/storage-account:0.2.0' = {
   params: {
     location: location
     #disable-next-line BCP334
-    name: '${take(storageAccountName,23)}1'
+    name: adlsName
     skuName: 'Standard_LRS'
     accessTier: 'Hot'
     allowSharedKeyAccess: false
     enableHierarchicalNamespace: true
     publicNetworkAccess: 'Disabled'
     roleAssignments: [for role in adlsRoles: {
-      principalId: adf.outputs.principalId
+      principalId: adf.outputs.systemAssignedMIPrincipalId
       principalType: 'ServicePrincipal'
       roleDefinitionIdOrName: role
     }]
@@ -460,7 +555,7 @@ module storageAccount2 'br/amavm:res/storage/storage-account:0.2.0' = {
   params: {
     location: location
     #disable-next-line BCP334
-    name: '${take(storageAccountName,23)}2'
+    name: storageBackendName
     skuName: 'Standard_LRS'
     accessTier: 'Hot'
     allowSharedKeyAccess: false
@@ -496,7 +591,7 @@ module storageAccount2 'br/amavm:res/storage/storage-account:0.2.0' = {
       }
     ]
     roleAssignments: [for role in storageAccountBackendRoles: {
-      principalId: adf.outputs.principalId
+      principalId: adf.outputs.systemAssignedMIPrincipalId
       principalType: 'ServicePrincipal'
       roleDefinitionIdOrName: role
     }]
@@ -524,7 +619,8 @@ module workspaceMod 'br/amavm:res/databricks/workspace:0.3.0' = {
     customPublicSubnetName: publicSubnet.outputs.name
     customVirtualNetworkResourceId: vNet.id
     defaultStorageFirewall: 'Enabled'
-    accessConnectorResourceId:accessConnectorMod.outputs.resourceId
+    accessConnectorResourceId: accessConnectorMod.outputs.resourceId
+    managedResourceGroupResourceId: '${subscription().id}/resourceGroups/${resourceGroupName}-adbmanaged-rg'  // drcp-adb-w22: managed RG name suffix
     name: workspaceName
     privateEndpoints: [
       {
@@ -541,6 +637,63 @@ module accessConnectorMod 'br/amavm:res/databricks/access-connector:0.2.0' = {
   params: {
     name: '${workspaceName}-ac'
     location: location
+    tags: tags
+  }
+}
+
+//----------------------------------------------------------------------------
+//  Unity Catalog — ADLS Gen2 storage for managed tables + external locations
+//  Access Connector MI gets Storage Blob Data Contributor for UC data access
+//  ADF MI also gets access for pipeline writes to medallion containers
+//----------------------------------------------------------------------------
+module storageAccountUc 'br/amavm:res/storage/storage-account:0.2.0' = {
+  scope: resourceGroup
+  name: '${deployment().name}-adls-uc'
+  params: {
+    #disable-next-line BCP334
+    name: adlsUcName
+    location: location
+    skuName: 'Standard_LRS'
+    accessTier: 'Hot'
+    allowSharedKeyAccess: false                   // DRCP: RBAC only
+    enableHierarchicalNamespace: true              // Required for Delta Lake / Unity Catalog
+    publicNetworkAccess: 'Disabled'                // DRCP: no public access
+    privateEndpoints: [
+      {
+        subnetResourceId: subnetIn.outputs.resourceId
+        service: 'dfs'                             // Data Lake endpoint for UC
+      }
+    ]
+    blobServices: {
+      containers: [
+        { name: 'unity-catalog' }                  // UC metastore root container
+        { name: 'bronze' }                         // Medallion: raw landing zone
+        { name: 'silver' }                         // Medallion: cleansed/conformed
+        { name: 'gold' }                           // Medallion: business-level aggregates
+      ]
+      diagnosticSettings: [
+        {
+          workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        }
+      ]
+    }
+    diagnosticSettings: [
+      {
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+    roleAssignments: [
+      {
+        principalId: accessConnectorMod.outputs.systemAssignedMIPrincipalId
+        principalType: 'ServicePrincipal'
+        roleDefinitionIdOrName: 'Storage Blob Data Contributor'  // UC data access via Access Connector MI
+      }
+      {
+        principalId: adf.outputs.systemAssignedMIPrincipalId
+        principalType: 'ServicePrincipal'
+        roleDefinitionIdOrName: 'Storage Blob Data Contributor'  // ADF pipeline writes to medallion
+      }
+    ]
     tags: tags
   }
 }

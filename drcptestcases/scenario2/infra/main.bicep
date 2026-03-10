@@ -243,66 +243,64 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
   ]
 }
 
-// Cosmos DB
+// Cosmos DB (AMAVM module — replaces local cosmos-db, secureKeys, sqldatabase, container, and PE modules)
 var cosmosDbName = names.outputs.namingConvention['Microsoft.DocumentDB/databaseAccounts']
-module cosmosDb '../../modules/infra/storage/cosmos-db/main.bicep' = {
+module cosmosDb 'br/amavm:res/document-db/database-account:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-cosmosDb'
   params: {
-    location: location
     name: cosmosDbName
-    periodicBackupStorageRedundancy: 'Local'
-    logAnalyticsWorkspaceId: logAnalyticsWorkspace.outputs.resourceId
-    tags: tags
-  }
-}
-
-module storeCosmosDbSecret '../../modules/infra/storage/cosmos-db/secureKeys.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-storeCosmosDbSecret'
-  params: {
-    cosmosDbName: cosmosDb.outputs.name
-    keyVaultName: keyVault.outputs.name
-  }
-}
-
-// Cosmos DB private endpoint
-module cosmosDbPe '../../modules/infra/network/private-endpoint/main.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-cosmos-pep'
-  params: {
-    privateEndpointName: '${cosmosDbName}pep'
     location: location
-    privateLinkResource: cosmosDb.outputs.id
-    subnet: subnetIn.outputs.resourceId
-    targetSubResource: 'Sql'
-    privateDnsZoneName: 'privatelink.documents.azure.com'
     tags: tags
+    disableLocalAuthentication: true                // DRCP: drcp-cosmos-01 — Entra ID only, no access keys
+    disableKeyBasedMetadataWriteAccess: true       // DRCP: drcp-cosmos-02 — prevent key-based metadata writes
+    backupStorageRedundancy: 'Local'
+    sqlDatabases: [
+      {
+        name: cosmosSqlDatabaseName
+        containers: [
+          {
+            name: 'humidity'
+            paths: ['/Eui']
+          }
+        ]
+      }
+    ]
+    privateEndpoints: [
+      {
+        name: '${privateEndpointsName}-cosmos'
+        subnetResourceId: subnetIn.outputs.resourceId
+        service: 'Sql'
+        tags: tags
+      }
+    ]
+    diagnosticSettings: [
+      {
+        name: '${cosmosDbName}_diagnostics'
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+        logCategoriesAndGroups: [
+          { category: 'ControlPlaneRequests' }
+          { category: 'DataPlaneRequests' }
+          { category: 'PartitionKeyStatistics' }
+          { category: 'PartitionKeyRUConsumption' }
+          { category: 'QueryRuntimeStatistics' }
+        ]
+        metricCategories: [
+          { category: 'AllMetrics' }
+        ]
+      }
+    ]
+    roleAssignments: [
+      {
+        principalId: functionApp.outputs.systemAssignedMIPrincipalId
+        principalType: 'ServicePrincipal'
+        roleDefinitionIdOrName: 'DocumentDB Account Contributor'  // Function App MI → Cosmos DB control-plane access
+      }
+    ]
   }
   dependsOn: [
     subnetOut
   ]
-}
-
-// Cosmos DB Database
-module cosmosSqlDb '../../modules/infra/storage/cosmos-db/apis/sql/sqldatabase.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-cosmossqlapi'
-  params: {
-    cosmosDbAccountName: cosmosDb.outputs.name
-    cosmosSqlDatabaseName: cosmosSqlDatabaseName
-  }
-}
-
-module cosmosSqlDbcontainer '../../modules/infra/storage/cosmos-db/apis/sql/container.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-cosmossqlcontainer'
-  params: {
-    containerName: 'humidity'
-    cosmosDbAccountName: cosmosDb.outputs.name
-    cosmosSqlDatabaseName: cosmosSqlDb.outputs.name
-    partitionKey: 'Eui'
-  }
 }
 
 // Application insights

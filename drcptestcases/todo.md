@@ -15,10 +15,10 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | 3 | Function App + Logic App + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 12 |
 | 4 | Function App + Event Hub | **Fully AMAVM** | 1 (`naming.bicep`) + `roleAssignment.bicep` | 14 |
 | 5 | App Gateway + Web Apps + Function App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (public-ip-address) | 15 |
-| 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 1 (`naming.bicep`) + 2 (ACR task + RBAC) | 13 |
+| 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (ACR task) + 1 (`acrRoleAssignment.bicep`) | 13 |
 | 8 | Function Apps + Cosmos DB + APIM | **Partial** | 12 active local refs (worst offender) | 12 |
 | 9 | AKS + ACR + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 16 |
-| 10 | Data Factory + Databricks | **Partial** | main.bicep: 6 local + central.bicep: 11 local (0 AMAVM) | main: 11 |
+| 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 3 local (naming, IR, role-assignment) + central.bicep: 11 local | main: 12 |
 | 11 | Web Apps + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 15 |
 | 12 | N-Tier SQL (pattern module) | **Complete** | 0 (only scenario with zero local refs) | 2 |
 | **13** | **Redis Cache (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
@@ -92,35 +92,22 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
 - [x] Update README
 
-### Scenario 10 — Data Factory + Databricks migration (17 local refs across 2 files)
+### Scenario 10 — Data Factory + Databricks + Unity Catalog (17 local refs across 2 files)
 
 **Architecture note:** Scenario 10 has a two-tier Bicep structure:
 - `main.bicep` — 6 active local refs + 11 AMAVM refs
 - `central.bicep` — 11 active local refs + **0 AMAVM refs** (100% local, worst file in all scenarios)
 
-**Migration plan (main.bicep — 6 local refs):**
-1. Replace `data-factory/main.bicep` → `br/amavm:res/data-factory/factory`
-2. Pass `integrationRuntimes` and `linkedServices` as params (AMAVM has child modules)
-3. Remove `private-endpoint/main.bicep` — use `privateEndpoints` param
-4. Remove `role-assignment.bicep` — use `roleAssignments` param
+**See `scenario10/todo.md` for detailed plan** — includes Unity Catalog example, full DRCP policy checklist (8 Databricks + 10 Data Factory policies), AMAVM migration plan, and medallion architecture pipeline updates.
 
-| Local module (main.bicep) | AMAVM replacement | Approach |
-|---|---|---|
-| `integration/data-factory/main.bicep` | `br/amavm:res/data-factory/factory` | Replace |
-| `integration/data-factory/integrationRuntime.bicep` | `integrationRuntimes` param | Inline |
-| `integration/data-factory/modules/role-assignment.bicep` | `roleAssignments` param | Inline |
-| `network/private-endpoint/main.bicep` | `privateEndpoints` param | Inline |
-
-**Migration plan (central.bicep — 11 local refs, 0 AMAVM):**
-- [ ] Audit `central.bicep` — identify which local modules have AMAVM equivalents
-- [ ] Migrate applicable modules (likely: VNet, NSG, storage, KV, managed identity, private endpoints)
-- [ ] Use `/azure:azure-rbac` to verify role assignments in central infrastructure
-
-- [ ] Migrate Data Factory in main.bicep to AMAVM `data-factory/factory`
+- [x] Add Unity Catalog infra (ADLS Gen2 + Access Connector RBAC + managed RG name)
+- [x] Migrate Data Factory in main.bicep to AMAVM `data-factory/factory` (inline PE, diagnostics, linked services, IR)
+- [x] Add linked services (ls_keyvault, ls_adls, ls_blob, ls_adls_uc, ls_databricks) — MI auth, no hardcoded URLs
+- [x] Support pure Bicep deployment (gitConfigureLater, adfRepoConfig optional)
+- [x] Validate `bicep build` passes (warnings only, no errors)
 - [ ] Migrate central.bicep local modules to AMAVM where equivalents exist
-- [ ] Validate `bicep build` passes (requires ACR access or local PE path swap via `swapPeReferences.ps1`)
-- [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
-- [ ] Update README
+- [ ] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory)
+- [ ] Update README with UC architecture and policy compliance table
 
 ### Scenario 8 — Cosmos DB + APIM + helpers (12 active local refs → 2 blocked)
 
@@ -137,7 +124,7 @@ Same Cosmos DB pattern as scenario 2, plus role-assignments, function.bicep, sto
 
 ### Scenario 7 — ACR helpers (2 local refs → 1)
 
-- [ ] Replace ACR `role-assignment.bicep` with AMAVM `roleAssignments` param
+- [x] Replace ACR `role-assignment.bicep` with local helper (`acrRoleAssignment.bicep`) — cycle `acr ↔ webApp` prevents inline
 - [ ] Keep `task.bicep` local (ACR Tasks not in AMAVM)
 - [ ] Validate `bicep build` passes
 
@@ -195,22 +182,22 @@ az deployment sub create --location swedencentral \
 
 | Scenario | Current | Issues | Action |
 |---|---|---|---|
-| 1 | 30 lines | OK structure | Minor: add components table |
+| 1 | Updated | Components table + standard format | Done |
 | 2 | Updated | Rewritten with Cosmos migration | Done |
 | 3 | Updated | Was empty, now written | Done |
 | 4 | Updated | Title fixed, components added | Done |
-| 5 | 54 lines | Good quality | Minor formatting |
-| 7 | 63 lines | Good quality | Minor: add components table |
-| 8 | 61 lines | Good quality | Update after APIM removal |
-| 9 | 78 lines | Good quality | Minor formatting |
-| 10 | 83 lines | Good quality, typos | Fix typos |
+| 5 | Updated | Components table + standard format | Done |
+| 7 | Updated | Components table + circular dep notes | Done |
+| 8 | Updated | Components table + standard format | Done |
+| 9 | Updated | Components table + standard format | Done |
+| 10 | Updated | Components + UC + policy table | Done |
 | 11 | Updated | Title fixed | Done |
-| 12 | 21 lines | Minimal | Expand with pattern explanation |
+| 12 | Updated | Pattern module + standard format | Done |
 
 - [x] Fix wrong titles (scenarios 4, 11)
 - [x] Write scenario 3 README
-- [ ] Standardize all READMEs to template format (after P0 migrations)
-- [ ] Update top-level README with scenario inventory
+- [x] Standardize all READMEs to template format (scenarios 1, 5, 7, 9, 12)
+- [x] Update top-level README with scenario inventory table
 - [ ] Use `/azure:azure-resource-visualizer` to generate architecture diagrams for each scenario README (requires deployed resource group)
 
 ---
@@ -403,11 +390,11 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Copy chatbot-poc infra to `drcptestcases/scenario16/infra/`
 - [x] Copy pipelines, bicepconfig.json, src/ (backend + frontend)
 - [ ] Replace `rbac.bicep` with inline `roleAssignments` where possible — use `/azure:azure-rbac` to verify roles
-- [ ] Fix deprecated VNet routing params → `outboundVnetRouting`
+- [x] Fix deprecated VNet routing params → `outboundVnetRouting` (both web apps)
 - [ ] Parameterize hardcoded values (engineer object IDs, subscription IDs)
 - [ ] Use `/azure:entra-app-registration` to validate the app registration pattern
 - [ ] Create `drcptestcases/scenario16/pipelines/` with deploy + teardown
-- [ ] Create `drcptestcases/scenario16/README.md` using standard template
+- [x] Create `drcptestcases/scenario16/README.md` using standard template
 - [ ] Validate `bicep build` passes (note: `microsoftGraphV1` extension may require special bicepconfig)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 - [ ] Use `/azure:azure-ai` for AI Search and OpenAI configuration best practices
@@ -451,24 +438,130 @@ All scenarios should use Entra ID RBAC (managed identity + role assignments) ins
 
 | Scenario | Resource | Auth Method | Status |
 |---|---|---|---|
-| 1 | SQL, KV, Storage | MI RBAC | [ ] Verify |
-| 2 | Cosmos DB, KV, Storage | MI RBAC (`disableLocalAuth: true`) | [ ] Verify |
-| 3 | Logic App, Storage | Connection string (Logic App exception) | [ ] Document exception |
+| 1 | SQL, KV, Storage | MI RBAC | [x] Compliant — system MI + UAMI for SQL, no keys |
+| 2 | Cosmos DB, KV, Storage | MI RBAC (`disableLocalAuth: true`) | [x] Fixed — added disableLocalAuth + disableKeyBasedMetadataWriteAccess + roleAssignments |
+| 3 | Logic App, Storage | Connection string (Logic App exception) | [x] Verified — keys in KV, UAMI for KV access, documented exception |
 | 4 | Event Hub, KV, Storage | MI RBAC (`disableLocalAuth: true`) | [x] Confirmed — separate RBAC modules |
-| 5 | App Gateway, Web Apps, Storage | MI RBAC | [ ] Verify |
-| 7 | ACR, Logic App, Storage | Mixed (Logic App exception) | [ ] Verify |
-| 8 | Cosmos DB, APIM, Storage | MI RBAC where possible | [ ] Verify |
-| 9 | AKS, ACR, Storage | MI RBAC | [ ] Verify |
-| 10 | Data Factory, Databricks, Storage | MI RBAC | [ ] Verify |
-| 11 | Web Apps, SQL, Storage | MI RBAC | [ ] Verify |
+| 5 | App Gateway, Web Apps, Storage | MI RBAC | [x] Mostly compliant — FuncApp MI → KV, Storage `allowSharedKeyAccess: false` |
+| 7 | ACR, Logic App, Storage | Mixed (Logic App exception) | [x] Verified — ACR RBAC via helper, Logic App exception same as S3 |
+| 8 | Cosmos DB, APIM, Storage | MI RBAC where possible | [ ] Verify (blocked on P0 migration) |
+| 9 | AKS, ACR, Storage | MI RBAC | [x] Fixed — uncommented `allowSharedKeyAccess: false` on storage |
+| 10 | Data Factory, Databricks, Storage | MI RBAC | [x] Verified — ADF MI + RBAC on storage; SHIR keys in KV (platform exception) |
+| 11 | Web Apps, SQL, Storage | MI RBAC | [x] Fixed — SQL connection string now uses `Authentication=Active Directory Default` |
 | 13 | Redis | MI RBAC (`disableAccessKeyAuthentication: true`) | [x] Built with Entra auth |
 | 14 | Event Hub, Function App | MI RBAC (`disableLocalAuth: true`) | [x] Built with Entra auth |
 | 15 | Cosmos DB | MI RBAC (`disableLocalAuthentication: true`) | [x] Built with Entra auth |
-| 16 | OpenAI, AI Search, Storage | UAMI RBAC | [ ] Verify |
+| 16 | OpenAI, AI Search, Storage | UAMI RBAC + FIC | [x] Verified — full RBAC, federated identity credentials, no keys |
 
-- [ ] Audit scenarios 1, 2, 5, 7, 8, 9, 10, 11 for RBAC compliance
-- [ ] Document Logic App exception in scenario 3 README
+- [x] Audit scenarios 1, 2, 5, 7, 9, 10, 11, 16 for RBAC compliance
+- [x] Document Logic App exception in scenario 3 (verified: keys in KV, UAMI for access)
+- [ ] Audit scenario 8 for RBAC compliance (blocked on P0 migration)
 - [ ] Use `/azure:azure-rbac` to verify least-privilege roles per scenario
+
+---
+
+## P2.7 — Region Cleanup + Environment Mapping
+
+### West Europe Deprecation
+
+West Europe is no longer used for deployments. All references should be cleaned up.
+
+- [x] Remove West Europe network space from top-level `drcptestcases/README.md`
+- [x] Remove West Europe environments (ENV23148, ENV23684) from top-level README
+- [ ] Update files that reference `westeurope`:
+  - [ ] `scenario5/infra/main.bicep` — line 94: location mapping (keep — used as abbreviation lookup)
+  - [ ] `scenario7/README.md` — deploy command uses `westeurope` location
+  - [ ] `scenario8/README.md` — deploy command uses `westeurope` location
+  - [ ] `scenario10/README.md` — deploy command uses `westeurope` location
+  - [ ] `scenario10/pipeline/scenario10-DataPipelines.yaml` — pipeline references
+  - [ ] `scenario16/pipelines/main.yaml` — pipeline references
+  - [ ] `scenario16/pipelines/deploy-app.yaml` — pipeline references
+  - [ ] `pipelines/universalPipeline.yaml` — shared pipeline template
+  - [ ] `modules/pipelines/tpl/variables/commonVariables.yaml` — shared variables
+  - [ ] `modules/pipelines/tpl/tasks/*.yaml` (5 files) — shared task templates
+  - [ ] `modules/infra/naming.bicep` — location abbreviation mapping
+  - [ ] `modules/infra/network/virtual-network/README.md` — documentation
+
+### Environment Mapping for New Scenarios (13-16)
+
+New scenarios need DEV and TST network allocations in Sweden Central that don't overlap with existing ranges.
+
+**Current DEV allocations (10.238.18.0/24 + 10.238.19.0/24):**
+
+| Scenario | CIDR | Range | Size |
+|---|---|---|---|
+| 1 | 10.238.18.0/27 | .0-.31 | /27 |
+| 2 | 10.238.18.32/27 | .32-.63 | /27 |
+| 3 | 10.238.18.64/27 | .64-.95 | /27 |
+| 4 | 10.238.18.96/27 | .96-.127 | /27 |
+| 7 | 10.238.18.128/26 | .128-.191 | /26 |
+| 5 | 10.238.18.192/26 | .192-.255 | /26 |
+| 8 | 10.238.19.0/26 | .0-.63 | /26 |
+| 10 | 10.238.19.64/27 | .64-.95 | /27 |
+| 9 | 10.238.19.128/26 | .128-.191 | /26 |
+| 11 | 10.238.19.192/26 | .192-.255 | /26 |
+
+**Free DEV ranges:**
+- `10.238.19.96/27` (.96-.127) — between scenario 10 and 9
+
+That's only 1 free /27 in the existing /24 blocks. New scenarios need additional address space or a new /24 block.
+
+**Proposed DEV allocations for new scenarios (ENV23968/ENV23969):**
+
+| Scenario | CIDR | Size | Justification |
+|---|---|---|---|
+| 12 | (uses ntier pattern, may not need VNet) | /27 | Verify if VNet is abstracted |
+| 13 | 10.238.19.96/27 | /27 | 1 subnet (PE only) |
+| 14 | needs new /24 block or reuse freed WE space | /27 | 2 subnets (PE + egress) |
+| 15 | needs new /24 block | /27 | 1 subnet (PE only) |
+| 16 | needs new /24 block | /26 | 3 subnets (PE + 2 egress) |
+
+**Current TST allocations (10.238.64.0/24 + 10.238.65.0/24):**
+
+| Scenario | CIDR | Range | Size |
+|---|---|---|---|
+| 1 | 10.238.64.0/27 | .0-.31 | /27 |
+| 2 | 10.238.64.32/27 | .32-.63 | /27 |
+| 3 | 10.238.64.64/27 | .64-.95 | /27 |
+| 4 | 10.238.64.96/27 | .96-.127 | /27 |
+| 7 | 10.238.64.128/26 | .128-.191 | /26 |
+| 5 | 10.238.64.192/26 | .192-.255 | /26 |
+| 8 | 10.238.65.0/26 | .0-.63 | /26 |
+| 10 | 10.238.65.64/27 | .64-.95 | /27 |
+| 11 | 10.238.65.192/26 | .192-.255 | /26 |
+
+**Free TST ranges:**
+- `10.238.65.96/27` (.96-.127)
+- `10.238.65.128/26` (.128-.191)
+
+**Proposed TST allocations:**
+
+| Scenario | CIDR | Size |
+|---|---|---|
+| 13 | 10.238.65.96/27 | /27 |
+| 14 | 10.238.65.128/27 | /27 |
+| 15 | 10.238.65.160/27 | /27 |
+| 16 | 10.238.65.192/26 | /26 (conflicts with S11 — needs resolution) |
+
+**Action items:**
+- [ ] Confirm with platform team: available address space for DEV scenarios 14-16 (need new /24 block or freed West Europe space)
+- [ ] Confirm TST scenario 11 actual start address (.192 or .196 — README says .196 which is not /26-aligned)
+- [ ] Assign DEV CIDR for scenario 13: `10.238.19.96/27`
+- [ ] Assign TST CIDRs for scenarios 13-15 in free TST range `10.238.65.96/26`
+- [ ] Request new address space for scenario 16 (DEV + TST) — needs /26 for 3 subnets
+- [ ] Update scenario `main.bicep` defaults with assigned `networkAddressSpace` values
+- [ ] Create pipeline YAML for scenarios 13, 14, 15 (deploy + teardown, nightly schedule)
+- [ ] Add nightly schedule slots: scenario 12 at 12am, 13 at 1:13am (offset to avoid collision), etc.
+- [ ] Ensure all pipelines include teardown stage so environments stay clean
+
+### Environment Strategy
+
+| Environment | Purpose | Policy Strictness | Used By |
+|---|---|---|---|
+| DEV (ENV23968/ENV23969) | Development + initial validation | Less restrictive — allows engineer RBAC, conditional dev features | All scenarios (primary) |
+| TST (ENV23978/ENV23979) | Policy compliance validation | Strict — mirrors production policies, no dev shortcuts | Scenarios with nightly pipeline |
+
+**Principle:** Every scenario should deploy to DEV first (less restrictive, faster iteration). Once stable, add TST pipeline to validate under strict policies. Teardown must always run — no leftover resources.
 
 ---
 
