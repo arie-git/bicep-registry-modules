@@ -21,12 +21,12 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | 10 | Data Factory + Databricks | **Partial** | main.bicep: 6 local + central.bicep: 11 local (0 AMAVM) | main: 11 |
 | 11 | Web Apps + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 15 |
 | 12 | N-Tier SQL (pattern module) | **Complete** | 0 (only scenario with zero local refs) | 2 |
-| **13** | **Redis Cache + Web App** | **Planned** | — | — |
-| **14** | **Event Hub Producer/Consumer** | **Planned** | — | — |
-| **15** | **Cosmos DB NoSQL CRUD API** | **Planned** | — | — |
+| **13** | **Redis Cache (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
+| **14** | **Event Hub + Function App** | **Implemented** | 1 (`naming.bicep`) | 11 |
+| **15** | **Cosmos DB NoSQL (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
 | **16** | **AI Chatbot: OpenAI + AI Search** | **Planned** (from chatbot-poc) | — | — |
 
-**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-16 are new test cases for GAP/uncovered modules.
+**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-15 implemented, scenario 16 migrated from chatbot-poc (needs cleanup).
 
 ---
 
@@ -253,10 +253,10 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - `zones: ['1', '2', '3']` (zone redundancy per drcp-redis-05)
 
 **Tasks:**
-- [ ] Create `drcptestcases/scenario13/infra/main.bicep` following scenario 1 pattern
+- [x] Create `drcptestcases/scenario13/infra/main.bicep` — Redis Premium, PE, Entra auth, zone redundant, diagnostics
+- [x] Wire private endpoint, RBAC (Redis Cache Contributor for dev), diagnostic settings
+- [x] Create `drcptestcases/scenario13/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm least-privilege role for Redis data access
-- [ ] Wire private endpoint, managed identity auth, diagnostic settings
-- [ ] Create `drcptestcases/scenario13/README.md` using standard template
 - [ ] Create `drcptestcases/scenario13/pipelines/` with deploy + teardown
 - [ ] Validate `bicep build` passes
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
@@ -293,10 +293,10 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - `diagnosticSettings: [{ workspaceResourceId: logAnalytics }]`
 
 **Tasks:**
-- [ ] Create `drcptestcases/scenario14/infra/main.bicep` following scenario 1 pattern
+- [x] Create `drcptestcases/scenario14/infra/main.bicep` — Event Hub + Function App, inline hubs/consumer groups, PE, Entra auth
+- [x] Wire inline eventhubs, consumer groups, private endpoint, RBAC (Data Receiver for Function App)
+- [x] Create `drcptestcases/scenario14/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver roles
-- [ ] Wire inline eventhubs, consumer groups, private endpoint, RBAC
-- [ ] Create `drcptestcases/scenario14/README.md` using standard template
 - [ ] Create `drcptestcases/scenario14/pipelines/` with deploy + teardown
 - [ ] Validate `bicep build` passes
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
@@ -334,10 +334,10 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - Function App settings: `CosmosDbEndpoint: cosmosDb.outputs.endpoint` (identity-based, no keys)
 
 **Tasks:**
-- [ ] Create `drcptestcases/scenario15/infra/main.bicep` following scenario 1 pattern
+- [x] Create `drcptestcases/scenario15/infra/main.bicep` — Cosmos DB NoSQL, inline DB + 2 containers, PE, Entra auth, diagnostics
+- [x] Wire inline sqlDatabases, private endpoint, RBAC (DocumentDB Account Contributor for dev)
+- [x] Create `drcptestcases/scenario15/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm Cosmos DB SQL role definitions for data-plane access
-- [ ] Wire inline sqlDatabases, sqlRoleAssignments, private endpoint
-- [ ] Create `drcptestcases/scenario15/README.md` using standard template
 - [ ] Create `drcptestcases/scenario15/pipelines/` with deploy + teardown
 - [ ] Validate `bicep build` passes
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
