@@ -88,15 +88,24 @@ The script will:
   * 'Cross*referenced modules'
   * 'Data collection' (using hard*coded statement about the telemetry and data collected)
 
-Example of using the script:
+Example of using the script directly:
 
 ```powershell
 Import-Module .\utils\setModuleReadMe.ps1 -Force
-
-Set-ModuleReadMe -TemplateFilePath 'C:\Users\aa03502\Sources\drcpado\verified-modules\bicep\res\databricks\access-connector\main.bicep'
+Set-ModuleReadMe -TemplateFilePath 'bicep/res/databricks/access-connector/main.bicep'
 ```
 
-The script is sources from the upstream AVM repository, and the date of synchronizing its content with the upstream is captured in a comment on line 3 of the script.
+Alternatively, use `buildBicepFiles.ps1` with the `-buildReadme` flag to generate READMEs for one or more modules in a single command (this also runs `az bicep restore` and `az bicep build`):
+
+```powershell
+# Generate README for all modules under a path
+./utils/buildBicepFiles.ps1 -modulesSubpath 'res/storage' -buildReadme 'True'
+
+# Generate README for a single module
+./utils/buildBicepFiles.ps1 -modulesSubpath 'res/sql' -moduleName 'database' -buildReadme 'True'
+```
+
+The script is sourced from the upstream AVM repository, and the date of synchronizing its content with the upstream is captured in a comment on line 3 of the script.
 
 From time to time, the team shall analyze upstream changes and bring them into the script.
 
@@ -117,25 +126,19 @@ Note that generated HTML pages won't be committed to the repo.
 
 ### Building
 
-There are two flavours of building the module: quick and full.
+Building a module validates that the Bicep code compiles and that the README documentation is up to date with the source code.
 
-During the quick building of a module the following happens:
+During the build the following happens:
 
-* code checking
-* generating README.md and checking if there are to diffs compared to the one in the repo
-
-During the full build, additionally the following happens:
-
-* running static analysis unit-tests (not involving test deployments)
-* running deployment unit-tests
-* running security vulnerabilities tests
+* `az bicep restore` restores module dependencies
+* `az bicep build` compiles the module and checks for errors
+* (optionally) README.md is generated from `main.bicep` and compared against the committed version
 
 Building the modules happens on following occasions:
 
-* (CI) automatically run as part of every push to the repository, non-blocking
-* automatically during the PR process, blocking the PR in case of failure
+* (CI) automatically on every push to non-main branches via `pipelines/buildBicepFiles.yaml`
 * (CD) automatically before the Publishing step, blocking the publishing in case of failure
-* manually, when run by a developer from the command line or by triggering a pipeline
+* manually, when run by a developer from the command line
 
 #### Build Tooling
 
@@ -143,45 +146,131 @@ Building the modules happens on following occasions:
 
 Parameters:
 
-* modulesRootPath. Filesystem path to AMAVM bicep modules. Default: "./bicep/".
-* modulesSubpath. Filters which modules to publish to a sub-directory under the modulesRootPath. Default: empty.
-* moduleName. Filters which single module to publish. Default: empty.
-* buildReadme. When 'True' it enables building the README.md from the sources. Default: 'False'.
-
-ADO pipeline in `pipelines/buildBicepFiles.yaml` is used for build-test the modules, to test if the generated MD documentation is in line with the state of code, to convert the documentation into HTML and publish it as a build artifact. The pipeline does not build the MD documentation, it expects that the MD documentation was built during the development.
-
-In one of the steps it uses the above script. Among other important scripts that it uses are `utils/compareReadMe.ps1` and `utils/readmePublisher/convertreadmetohtml.py`.
-
-### Publishing
-
-Publishing the modules involves:
-
-* building the module (see [Building](#building))
-* building the module's documentation as a static HTML, and adding it to the ToC
-* publishing the module to the Azure Container Registry, names as (path_to)/(modulename):x.y.z
-* publishing module's documentation
-* publishing updates to the Change Log
-
-#### Publishing Tooling
-
-`.\utils\publishToBCR.ps1` will publish Bicep modules
-
-Parameters:
-
-* modulesRootPath. Filesystem path to AMAVM bicep modules. Default: "./bicep/"
-* modulesSubpath. Filters which modules to publish to a sub-directory under the modulesRootPath. Default: empty
-* moduleName. Filters which single module to publish. Default: empty.
-* acrName. The name of Azure Container Registry to publish. Default: "s2amavmdevsecacr"
-* repoUri. Uri of the documentation root.
+* `modulesRootPath` — filesystem path to AMAVM bicep modules. Default: `"./bicep/"`.
+* `modulesSubpath` — filters modules to a sub-directory under the modulesRootPath. Default: empty (all modules).
+* `moduleName` — filters to a single module. Default: empty.
+* `buildReadme` — when `'True'` it generates README.md from the sources before building. Default: `'False'`.
 
 Examples:
 
-`.\utils\publishToBCR.ps1 -moduleName "res/storage/storage-account"` will publish a specific module
+```powershell
+# Build all modules
+./utils/buildBicepFiles.ps1
 
-`.\utils\publishToBCR.ps1 -modulesSubpath "res/storage/"` will publish modules under a specific path
+# Build modules under a specific path
+./utils/buildBicepFiles.ps1 -modulesSubpath 'res/sql'
 
-Alternatively, a module can be published with Azure CLI command. Examples:
+# Build a single module
+./utils/buildBicepFiles.ps1 -modulesSubpath 'res/sql' -moduleName 'database'
 
-`az bicep publish --file bicep/res/network/route-table/main.bicep --target br:s2amavmdevsecacr.azurecr.io/res/network/route-table:0.2.0 --documentation-uri 'https://dev.azure.com/connectdrcpapg1/S02-App-AMAVM/_git/verified-modules?path=/bicep/res/network/route-table/README.md'`
+# Build with README generation
+./utils/buildBicepFiles.ps1 -modulesSubpath 'res' -buildReadme 'True'
+```
 
-`Publish-ModuleFromPathToPBR -TemplateFilePath 'bicep\res\network\route-table\main.bicep' -PublicRegistryServer $(ConvertTo-SecureString "s2cccdevweacr.azurecr.io" -AsPlainText -Force)`
+#### Build Pipeline (CI)
+
+ADO pipeline `pipelines/buildBicepFiles.yaml` is triggered on every push to non-main branches. It performs the following steps:
+
+1. **Set BCR configuration** — configures the linter to point to the correct ACR via `utils/setBCRinLinter.ps1`
+2. **Build modules** — runs `utils/buildBicepFiles.ps1` to compile all Bicep modules
+3. **Compare README files** — runs `utils/compareReadMe.ps1` to verify that committed README files match the auto-generated output. If they differ, the build fails — this ensures developers regenerate the README after code changes
+4. **Generate HTML** — converts README.md files to HTML via `utils/readmePublisher/convertreadmetohtml.py` and publishes them as a build artifact
+
+The pipeline does not build the MD documentation; it expects that the developer already ran the README generation during development.
+
+### Publishing
+
+Publishing the modules is a multi-step process that involves building, documentation generation, module publishing to the Azure Container Registry (ACR), and documentation hosting.
+
+The end-to-end publishing workflow:
+
+1. **Build modules** — compile and validate all Bicep modules (see [Building](#building))
+2. **Merge Table of Contents** — merge the local ToC with the previously published ToC from the documentation website, so that older module versions are preserved
+3. **Generate HTML documentation** — convert README.md files to HTML pages and update the ToC
+4. **Publish modules to ACR** — push compiled modules to the Azure Container Registry as `br:<acrName>.azurecr.io/<module>:<version>.0`
+5. **Publish documentation** — upload HTML files to an Azure Storage static website
+
+#### Dependency Handling
+
+The publish script handles module dependencies automatically. If a module has a `dependencies.json` file, all listed dependencies are published first (in order). Circular dependencies are detected and skipped with an error message.
+
+#### Publishing Tooling
+
+##### `utils/publishToBCR.ps1`
+
+Publishes Bicep modules to the Azure Container Registry.
+
+Parameters:
+
+* `acrName` — the name of the ACR to publish to. Default: reads from `AMAVM_ACR_NAME` environment variable. Required.
+* `modulesRootPath` — filesystem path to AMAVM bicep modules. Default: `"./bicep/"`.
+* `modulesSubpath` — filters modules to a sub-directory under the modulesRootPath. Default: empty (all modules).
+* `moduleName` — filters to a single module. Default: empty.
+* `documentationUri` — base URI for the documentation website. Default: reads from `AMAVM_DOCUMENTATION_URI` environment variable, or falls back to the ADO repo path.
+
+The script performs `az bicep restore` and `az bicep publish` for each module. The published version is `<major>.<minor>.0`, derived from the module's `version.json`. The documentation URI is constructed as `<documentationUri>/<module-web-path>/<version-page>.html`.
+
+Examples:
+
+```powershell
+# Publish a specific module
+./utils/publishToBCR.ps1 -acrName 's2amavmdevsecacr' -moduleName 'res/storage/storage-account'
+
+# Publish all modules under a specific path
+./utils/publishToBCR.ps1 -acrName 's2amavmdevsecacr' -modulesSubpath 'res/storage/'
+
+# Using environment variable for ACR name
+$env:AMAVM_ACR_NAME = 's2amavmdevsecacr'
+./utils/publishToBCR.ps1 -modulesSubpath 'res/'
+```
+
+Alternatively, a single module can be published directly with Azure CLI:
+
+```bash
+az bicep publish \
+  --file bicep/res/network/route-table/main.bicep \
+  --target br:s2amavmdevsecacr.azurecr.io/res/network/route-table:0.2.0 \
+  --documentation-uri 'https://<staName>.z1.web.core.windows.net/docs/res-network-route-table/0-2-0.html'
+```
+
+##### `utils/mergeDocumentationTocs.ps1`
+
+Merges the local Table of Contents with a previously published ToC, preserving version history for older module releases.
+
+Parameters:
+
+* `sourcesTocPath` — path to the local ToC file. Default: `"utils/html-assets/readmePublisher/menu/toc.json"`.
+* `additionalTocPath` — path or URL to the ToC to merge in (e.g. the currently published website's ToC). Default: reads from `AMAVM_DOCUMENTATION_STORAGE_URL` environment variable.
+* `resultsPath` — output path for the merged ToC. Default: `"newtoc.json"`.
+
+Example:
+
+```powershell
+./utils/mergeDocumentationTocs.ps1 \
+  -sourcesTocPath 'utils/html-assets/readmePublisher/menu/toc.json' \
+  -additionalTocPath 'https://<staName>.z1.web.core.windows.net/menu/toc.json' \
+  -resultsPath 'utils/html-assets/readmePublisher/menu/toc.json'
+```
+
+#### Publish Pipeline (CD)
+
+ADO pipeline `pipelines/publishToBCR.yaml` is triggered manually and requires the following parameters: environment type (dev/tst/acc/prd), location, and ServiceNow environment ID. The ACR and storage account names are derived from these parameters using the naming convention `s2amavm<env><locationShort>acr` and `s2amavm<env><locationShort>sta`.
+
+The pipeline runs two jobs per module path (res/, ptn/, utl/):
+
+**Job 1: Build and Test**
+
+1. Prepare Azure CLI and install Bicep
+2. Set BCR configuration via `utils/setBCRinLinter.ps1`
+3. Build all modules via `utils/buildBicepFiles.ps1`
+4. Merge ToC from the live website via `utils/mergeDocumentationTocs.ps1`
+5. Generate HTML documentation via `utils/readmePublisher/convertreadmetohtml.py --generate-toc`
+6. Publish HTML as a pipeline artifact
+
+**Job 2: Publish** (depends on Job 1)
+
+1. Prepare Azure CLI and install Bicep
+2. Set BCR configuration
+3. Publish modules to ACR via `utils/publishToBCR.ps1`
+4. Download HTML artifact from Job 1
+5. Upload HTML to Azure Storage static website via `az storage blob upload-batch`
