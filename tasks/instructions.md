@@ -87,6 +87,68 @@ pwsh -Command "./utils/compareReadMe.ps1"
 3. `pwsh buildBicepFiles.ps1` — full build check
 4. `pwsh setModuleReadMe.ps1` + `compareReadMe.ps1` — README drift check
 
+### Azure Skills (Slash Commands)
+
+The following Azure skills are installed and available via `/skill-name` syntax. Use them to leverage Azure-specific capabilities without leaving the agent workflow.
+
+#### Resource & Infrastructure Skills
+
+| Skill | Trigger | Use For |
+|---|---|---|
+| `/azure:azure-prepare` | Creating or modernizing apps, generating Bicep/Terraform, Dockerfiles, `azure.yaml` | Scaffolding new Azure apps, adding infra for deployment |
+| `/azure:azure-validate` | Pre-deployment validation | Deep checks on Bicep/Terraform, config, permissions before deploying |
+| `/azure:azure-deploy` | Deploying already-prepared apps (`azd up`, `bicep deploy`, `terraform apply`) | Executing deployments — requires `.azure/plan.md` from `azure-prepare` |
+| `/azure:azure-resource-lookup` | Listing/finding Azure resources ("list my VMs", "show storage accounts") | Resource inventory and discovery via Azure Resource Graph |
+| `/azure:azure-resource-visualizer` | Architecture diagrams from resource groups | Generating Mermaid diagrams showing resource relationships |
+
+#### Security, Compliance & Identity Skills
+
+| Skill | Trigger | Use For |
+|---|---|---|
+| `/azure:azure-compliance` | Compliance scans, security audits, Key Vault expiration checks | Best-practices assessment, expired certs/secrets, orphaned resources |
+| `/azure:azure-rbac` | Finding the right RBAC role for least-privilege access | Role selection, CLI/Bicep role assignment generation |
+| `/azure:entra-app-registration` | App registration, OAuth, MSAL integration | Configuring Entra ID authentication and service principals |
+
+#### Diagnostics, Cost & Monitoring Skills
+
+| Skill | Trigger | Use For |
+|---|---|---|
+| `/azure:azure-diagnostics` | Debugging production issues (Container Apps, Function Apps, KQL) | Log analysis, health checks, cold start/image pull troubleshooting |
+| `/azure:azure-cost-optimization` | Reducing Azure spend | Utilization analysis, orphaned resources, rightsizing recommendations |
+| `/azure:appinsights-instrumentation` | Instrumenting apps with Application Insights | Telemetry patterns, SDK setup, APM best practices |
+| `/azure:azure-kusto` | KQL queries against Azure Data Explorer / ADX | Log analytics, time series, anomaly detection |
+
+#### Compute, Storage & Messaging Skills
+
+| Skill | Trigger | Use For |
+|---|---|---|
+| `/azure:azure-compute` | VM size recommendations, VMSS, autoscale | Workload-based VM selection, pricing estimates, scale-out guidance |
+| `/azure:azure-storage` | Blob, File Shares, Queue, Table, Data Lake | Upload/download, access tiers, lifecycle management |
+| `/azure:azure-messaging` | Event Hubs / Service Bus SDK issues | AMQP errors, message lock, checkpoint issues, SDK troubleshooting |
+
+#### AI & Agent Skills
+
+| Skill | Trigger | Use For |
+|---|---|---|
+| `/azure:azure-ai` | AI Search, Speech, OpenAI, Document Intelligence | Vector/hybrid search, speech-to-text, OCR |
+| `/azure:azure-aigateway` | API Management as AI Gateway | Semantic caching, token limits, content safety, load balancing |
+| `/azure:microsoft-foundry` | Foundry agents end-to-end | Deploy, evaluate, optimize agents; dataset curation, batch eval |
+| `/azure:azure-hosted-copilot-sdk` | Building GitHub Copilot SDK apps on Azure | Scaffold, deploy, and host Copilot-powered apps |
+
+#### Migration & Other Skills
+
+| Skill | Trigger | Use For |
+|---|---|---|
+| `/azure:azure-cloud-migrate` | Cross-cloud migration (AWS/GCP to Azure) | Assessment reports, code conversion to Azure services |
+
+#### Usage Notes
+
+- Skills are invoked as `/azure:<skill-name>` in conversation.
+- **`azure-prepare` vs `azure-deploy`:** Use `prepare` to scaffold infra and config, then `deploy` to execute. Don't use `deploy` for creating new apps.
+- **`azure-validate`** should run between `prepare` and `deploy` as a pre-flight check.
+- Skills that query live Azure resources (resource-lookup, diagnostics, cost-optimization) require an authenticated Azure CLI session (`az login`).
+- The **compliance** and **rbac** skills are relevant to this project's policy-enforcement workflow — use them to cross-check amavm module RBAC patterns and compliance posture.
+
 ---
 
 ## Whitelisted Components → Module Mapping
