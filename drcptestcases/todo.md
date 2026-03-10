@@ -16,7 +16,7 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | 4 | Function App + Event Hub | **Fully AMAVM** | 1 (`naming.bicep`) + `roleAssignment.bicep` | 14 |
 | 5 | App Gateway + Web Apps + Function App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (public-ip-address) | 15 |
 | 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (ACR task) + 1 (`acrRoleAssignment.bicep`) | 13 |
-| 8 | Function Apps + Cosmos DB + APIM | **Partial** | 12 active local refs (worst offender) | 12 |
+| 8 | **PostgreSQL + Service Bus** (repurposed) | **Planned** | TBD (full rewrite) | TBD |
 | 9 | AKS + ACR + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 16 |
 | 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 3 local (naming, IR, role-assignment) + central.bicep: 11 local | main: 12 |
 | 11 | Web Apps + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 15 |
@@ -26,7 +26,9 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | **15** | **Cosmos DB NoSQL (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
 | **16** | **AI Chatbot: OpenAI + AI Search** | **Planned** (from chatbot-poc) | — | — |
 
-**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-15 implemented, scenario 16 migrated from chatbot-poc (needs cleanup).
+| **17** | **Static Web App + Function API** | **Planned** | — | — |
+
+**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-15 implemented, scenario 16 migrated from chatbot-poc (needs cleanup). Scenario 8 being repurposed from APIM to PostgreSQL + Service Bus. Scenario 17 is new (Static Web App).
 
 ---
 
@@ -109,24 +111,84 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [ ] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory)
 - [ ] Update README with UC architecture and policy compliance table
 
-### Scenario 8 — Cosmos DB + APIM + helpers (12 active local refs → 2 blocked)
+### Scenario 8 — **REPURPOSED:** PostgreSQL + Service Bus (message-driven processing)
 
-Same Cosmos DB pattern as scenario 2, plus role-assignments, function.bicep, storage, and private endpoints. APIM and Public IP remain local (no AMAVM equivalent). This is the worst single-file scenario for local ref count.
+**Decision:** APIM is NOT a whitelisted DRCP component and Cosmos DB is already covered by S2 + S15. Scenario 8 is repurposed to provide **new AMAVM module coverage** for `db-for-postgre-sql/flexible-server` and `service-bus/namespace`.
 
-- [ ] Migrate Cosmos DB to AMAVM (same pattern as scenario 2)
-- [ ] Replace PE and role-assignment helpers with inline params — use `/azure:azure-rbac` to verify role definitions
-- [ ] Evaluate `function.bicep` — app-code deploy helper, keep local
-- [ ] APIM stays local (not a DRCP-whitelisted component)
-- [ ] Public IP stays local (no AMAVM equivalent yet — blocked on GAP-5 in tasks/todo.md)
+**Architecture:** Message-driven processing with relational persistence. A Function App receives messages from a Service Bus queue (trigger), processes them, and writes results to PostgreSQL. Both services use Managed Identity authentication exclusively.
+
+```
+Service Bus Namespace (Premium, zone-redundant)
+  └── Queue: "orders" (dead-letter enabled)
+  └── Topic: "events" + Subscription: "processor"
+Function App (Service Bus trigger → PostgreSQL writer)
+PostgreSQL Flexible Server (v17, Entra-only, VNet-integrated)
+Key Vault (connection config)
+Log Analytics + Diagnostics
+```
+
+**Components:**
+
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| Service Bus Namespace | `br/amavm:res/service-bus/namespace:0.1.0` | Premium, PE, queue + topic, disableLocalAuth |
+| PostgreSQL Flexible Server | `br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0` | v17, Entra-only, VNet-delegated subnet |
+| Function App | `br/amavm:res/web/site:0.1.0` | Service Bus trigger, writes to PostgreSQL |
+| App Service Plan | `br/amavm:res/web/serverfarm:0.1.0` | Linux, S1 |
+| Key Vault | `br/amavm:res/key-vault/vault:0.3.0` | PostgreSQL FQDN, Service Bus namespace |
+| Storage Account | `br/amavm:res/storage/storage-account:0.2.0` | Function App backing storage |
+| VNet + Subnets (x3) | `br/amavm:res/network/virtual-network/subnet:0.2.0` | PE, app egress, PostgreSQL delegated |
+| NSG + Route Table | `br/amavm:res/network/network-security-group:0.1.0` + `route-table:0.1.0` | Network controls |
+| Log Analytics | `br/amavm:res/operational-insights/workspace:0.1.0` | Central logging |
+| App Insights | `br/amavm:res/insights/component:0.1.0` | APM telemetry |
+
+**DRCP policies (11 PostgreSQL + 5 Service Bus):**
+
+| Policy | Property | Required Value |
+|---|---|---|
+| drcp-pgsql-auth | `authConfig.activeDirectoryAuth` | `'Enabled'` |
+| drcp-pgsql-auth | `authConfig.passwordAuth` | `'Disabled'` |
+| drcp-pgsql-network | `network.publicNetworkAccess` | `'Disabled'` |
+| drcp-pgsql-network | `network.delegatedSubnetResourceId` | Must exist |
+| drcp-pgsql-network | `network.privateDnsZoneArmResourceId` | Must exist |
+| drcp-pgsql-tls | `configurations` (ssl_min_protocol_version) | `'TLSv1.2'` |
+| drcp-pgsql-ssl | `configurations` (require_secure_transport) | `'ON'` |
+| drcp-pgsql-version | `version` | `>= 16` |
+| drcp-pgsql-ha | `highAvailability.mode` | `'ZoneRedundant'` |
+| drcp-pgsql-encryption | `dataEncryption.type` | NOT `'AzureKeyVault'` (service-managed) |
+| drcp-pgsql-defender | `serverThreatProtection` | `'Enabled'` |
+| drcp-sb-auth | `disableLocalAuth` | `true` |
+| drcp-sb-network | `publicNetworkAccess` | `'Disabled'` |
+| drcp-sb-tls | `minimumTlsVersion` | `'1.2'` |
+| drcp-sb-pe | PE must be same subscription | Enforced by policy |
+| drcp-sb-dns | Private DNS zone | Auto-deployed by policy |
+
+**AMAVM module defaults already enforce:** authConfig (Entra-only), publicNetworkAccess=Disabled, version=17, highAvailability=ZoneRedundant, serverThreatProtection=Enabled, disableLocalAuth=true, minimumTlsVersion=1.2
+
+**RBAC roles:**
+- Function App MI → `Azure Service Bus Data Receiver` (queue trigger)
+- Function App MI → PostgreSQL Entra admin (via `administrators` param)
+
+**Tasks:**
+- [ ] Delete existing scenario 8 content (APIM-based)
+- [ ] Create `drcptestcases/scenario8/infra/main.bicep` — PostgreSQL + Service Bus, all AMAVM
+- [ ] PostgreSQL: Entra-only auth, VNet-delegated subnet, private DNS zone, v17, zone redundant
+- [ ] Service Bus: Premium, PE, queue + topic, disableLocalAuth, inline roleAssignments
+- [ ] Function App: Service Bus trigger with `__fullyQualifiedNamespace` (identity-based), PostgreSQL Entra token
+- [ ] Validate against all 16 DRCP policies listed above
 - [ ] Validate `bicep build` passes
-- [ ] Use `/azure:azure-validate` for pre-deployment readiness check
-- [ ] Update README
+- [ ] Update README with new architecture
+- [ ] Create pipeline YAML
 
-### Scenario 7 — ACR helpers (2 local refs → 1)
+### Scenario 7 — ACR + Docker Web App (simplify — remove Logic App)
+
+**Change:** Remove Logic App from scenario 7. Logic App is already fully covered by S3. Scenario 7's unique value is ACR + Docker + ACR Build Task.
 
 - [x] Replace ACR `role-assignment.bicep` with local helper (`acrRoleAssignment.bicep`) — cycle `acr ↔ webApp` prevents inline
+- [ ] Remove Logic App module, second App Service Plan, and Logic App subnet — simplify to ACR + Docker only
 - [ ] Keep `task.bicep` local (ACR Tasks not in AMAVM)
 - [ ] Validate `bicep build` passes
+- [ ] Update README to reflect simplified architecture
 
 ### Scenario 5 — Public IP (1 local ref — blocked)
 
@@ -249,17 +311,18 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
-### Scenario 14 — Event Hub Producer/Consumer (event-hub/namespace)
+### Scenario 14 — Event Hub + App Configuration + Function App (event-hub/namespace + app-configuration/configuration-store)
 
-**Existing coverage:** Scenario 4 already exercises `event-hub/namespace`, but was migrated from local modules. This dedicated scenario provides a clean AMAVM-native test with a simpler architecture focused on validating the module's inline `eventhubs`, `consumerGroups`, and `roleAssignments` params.
+**Existing coverage:** Scenario 4 already exercises `event-hub/namespace`, but was migrated from local modules. This dedicated scenario provides a clean AMAVM-native test with a simpler architecture focused on validating the module's inline `eventhubs`, `consumerGroups`, and `roleAssignments` params. **App Configuration added** to provide feature flag support for event consumer enable/disable — realistic pattern for toggling event processing without redeployment.
 
-**Architecture:** A Function App sends events to an Event Hub (HTTP trigger → producer) and a second Function App reads events (Event Hub trigger → consumer → writes to Storage blob). Both connect via managed identity using the `__fullyQualifiedNamespace` pattern (no SAS keys). Validates namespace-level private endpoint, `disableLocalAuth`, and consumer group wiring.
+**Architecture:** A Function App sends events to an Event Hub (HTTP trigger → producer) and a second Function App reads events (Event Hub trigger → consumer → writes to Storage blob). Both connect via managed identity using the `__fullyQualifiedNamespace` pattern (no SAS keys). App Configuration provides feature flags to toggle consumers and configuration values for processing behavior. Validates namespace-level private endpoint, `disableLocalAuth`, and consumer group wiring.
 
 **Components:**
 
 | Component | AMAVM Module | Purpose |
 |---|---|---|
 | Event Hub Namespace | `br/amavm:res/event-hub/namespace` | Standard SKU, PE, inline eventhub + consumer group |
+| App Configuration | `br/amavm:res/app-configuration/configuration-store` | Feature flags, PE, Entra-only auth |
 | Function App (producer) | `br/amavm:res/web/site` | HTTP-triggered, sends events |
 | Function App (consumer) | `br/amavm:res/web/site` | Event Hub-triggered, writes to blob |
 | App Service Plan | `br/amavm:res/web/serverfarm` | Shared plan, Linux |
@@ -270,7 +333,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 | Log Analytics | `br/amavm:res/operational-insights/workspace` | Central logging |
 | App Insights | `br/amavm:res/insights/component` | APM telemetry |
 
-**DRCP-specific config:**
+**DRCP-specific config (Event Hub):**
 - `disableLocalAuth: true` (Entra-only, per drcp-evh-05)
 - `publicNetworkAccess: 'Disabled'` (per drcp-evh-01)
 - `minimumTlsVersion: '1.2'` (per drcp-evh-04)
@@ -280,14 +343,35 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - Function App settings: `EventHubConnection__fullyQualifiedNamespace: '<ns>.servicebus.windows.net'` (identity-based, no connection string)
 - `diagnosticSettings: [{ workspaceResourceId: logAnalytics }]`
 
+**DRCP-specific config (App Configuration — 4 policies):**
+
+| Policy | Property | Required Value |
+|---|---|---|
+| drcp-appconfig-auth | `disableLocalAuth` | `true` |
+| drcp-appconfig-network | `publicNetworkAccess` | `'Disabled'` |
+| drcp-appconfig-pe | PE must be same subscription | Enforced by policy |
+| drcp-appconfig-dns | Private DNS zone | Auto-deployed by policy |
+
+**AMAVM module defaults already enforce:** `disableLocalAuth = true`, `publicNetworkAccess = 'Disabled'` (when PE set), `sku = 'Standard'` (Free tier has no PE support)
+
+**App Configuration setup:**
+- `privateEndpoints: [{ service: 'configurationStores', subnetResourceId: peSubnet }]`
+- `keyValues: [{ name: 'FeatureFlags:ConsumerEnabled', value: 'true' }, { name: 'Processing:BatchSize', value: '100' }]`
+- `roleAssignments:` Function App MI gets `App Configuration Data Reader`
+- Function App settings: `AppConfigEndpoint: appConfig.outputs.endpoint` (identity-based)
+
 **Tasks:**
 - [x] Create `drcptestcases/scenario14/infra/main.bicep` — Event Hub + Function App, inline hubs/consumer groups, PE, Entra auth
 - [x] Wire inline eventhubs, consumer groups, private endpoint, RBAC (Data Receiver for Function App)
 - [x] Create `drcptestcases/scenario14/README.md` using standard template
-- [ ] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver roles
+- [ ] **Add App Configuration module** — PE, disableLocalAuth, inline keyValues for feature flags
+- [ ] Wire App Configuration RBAC (Data Reader) + Function App endpoint setting
+- [ ] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver / App Configuration Data Reader roles
 - [ ] Create `drcptestcases/scenario14/pipelines/` with deploy + teardown
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
+- [ ] Re-validate `bicep build` after adding App Configuration
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
+- [ ] Update README with App Configuration component
 
 ### Scenario 15 — Cosmos DB NoSQL CRUD API (document-db/database-account)
 
@@ -400,31 +484,87 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [ ] Use `/azure:azure-ai` for AI Search and OpenAI configuration best practices
 - [ ] Document shared private link approval process in README (DRCP portal + manual curl approval)
 
+### Scenario 17 — Static Web App + Function API Backend (web/static-site)
+
+**Architecture:** SPA frontend deployed to Azure Static Web Apps (Standard SKU — required for private endpoints) with a linked Function App API backend. Validates the AMAVM `web/static-site` module's private endpoint, linked backend, and app settings support.
+
+**Components:**
+
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| Static Web App | `br/amavm:res/web/static-site` | Standard SKU, PE, linked backend |
+| Function App (API) | `br/amavm:res/web/site` | API backend, linked to SWA |
+| App Service Plan | `br/amavm:res/web/serverfarm` | Linux, S1 |
+| Storage Account | `br/amavm:res/storage/storage-account` | Function backing storage |
+| Key Vault | `br/amavm:res/key-vault/vault` | API config secrets |
+| VNet + Subnets | `br/amavm:res/network/virtual-network/subnet` | PE + app egress |
+| NSG + Route Table | `br/amavm:res/network/network-security-group` + `route-table` | Network controls |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Central logging |
+
+**DRCP policies (4 Static Web App):**
+
+| Policy | Property | Required Value |
+|---|---|---|
+| drcp-swa-network | `publicNetworkAccess` | `'Disabled'` |
+| drcp-swa-sku | `sku.name` / `sku.tier` | `'Standard'` (only tier with PE) |
+| drcp-swa-pe | PE must be same subscription | Enforced by policy |
+| drcp-swa-dns | Private DNS zone | Auto-deployed by policy (partitioned DNS) |
+
+**AMAVM module defaults already enforce:** `publicNetworkAccess = 'Disabled'`, `sku = 'Standard'`
+
+**Key configuration:**
+- `buildProperties: { appLocation: '/', outputLocation: 'dist', apiLocation: 'api' }`
+- `linkedBackend: { resourceId: functionApp.outputs.resourceId }` — links SWA to Function API
+- `privateEndpoints: [{ service: 'staticSites', subnetResourceId: peSubnet }]`
+- Entra ID auth via `staticwebapp.config.json` routes
+- `provider: 'None'` — no source control integration (pure Bicep deployment)
+
+**Tasks:**
+- [ ] Create `drcptestcases/scenario17/infra/main.bicep` — Static Web App + Function API
+- [ ] Static Web App: Standard SKU, PE (staticSites), linked backend, Entra auth
+- [ ] Function App API: PE, MI, VNet integration, linked to SWA
+- [ ] Create `drcptestcases/scenario17/README.md`
+- [ ] Validate `bicep build` passes
+- [ ] Create pipeline YAML
+
 ---
 
 ## P2 — AMAVM Module Coverage
 
-After P0 migrations and P1.5 new scenarios, these modules have integration test coverage:
+After P0 migrations, P1.5 new scenarios, and restructuring, these modules have integration test coverage:
 
 | Module | Covered by |
 |---|---|
 | `cognitive-services/account` | **Scenario 16** |
 | `search/search-service` | **Scenario 16** |
-| `document-db/database-account` | Scenarios 2, 8, **15** |
+| `document-db/database-account` | Scenarios 2, **15** |
 | `event-hub/namespace` | Scenarios 4, **14** |
 | `cache/redis` | **Scenario 13** |
 | `data-factory/factory` | Scenario 10 |
-| `network/private-endpoint` | Scenarios 2, 4, 8, 10, **13, 14, 15, 16** |
-| `web/site` | Scenarios 1, 2, 3, 4, 5, 8, 11, **13, 14, 15, 16** |
-| `key-vault/vault` | Scenarios 1, 2, 3, 4, 5, 8, 11, **13, 14, 15** |
-| `storage/storage-account` | Scenarios 1, 2, 3, 4, 9, **13, 14, 15, 16** |
+| `db-for-postgre-sql/flexible-server` | **Scenario 8** (repurposed) |
+| `service-bus/namespace` | **Scenario 8** (repurposed) |
+| `app-configuration/configuration-store` | **Scenario 14** (added) |
+| `web/static-site` | **Scenario 17** (new) |
+| `databricks/workspace` | Scenario 10 |
+| `databricks/access-connector` | Scenario 10 |
+| `container-registry/registry` | Scenario 7, 9 |
+| `container-service/managed-cluster` | Scenario 9 |
+| `sql/server` | Scenarios 1, 11, 12 |
+| `web/site` | Scenarios 1, 2, 3, 4, 5, 7, 8, 11, 13, 14, 15, 16, **17** |
+| `key-vault/vault` | Scenarios 1, 2, 3, 4, 5, 8, 11, 13, 14, 15, **17** |
+| `storage/storage-account` | Scenarios 1, 2, 3, 4, 9, 10, 13, 14, 15, 16, **17** |
+| `network/application-gateway` | Scenario 5 |
 
-Still uncovered (no test case): `app-configuration/configuration-store`, `service-bus/namespace`, `db-for-postgre-sql/flexible-server`
+**Full coverage achieved!** All 36 AMAVM `res/` modules are now covered by at least one scenario after S8 repurpose, S14 enhancement, and S17 addition.
 
-**Interim validation for uncovered modules:**
+**Still indirectly covered only (consumed as child modules):**
+- `insights/*` monitoring utilities (action-group, metric-alert, webtest, etc.) — used within modules, not standalone
+- `network/private-endpoint` — consumed inline by parent modules
+- `network/virtual-network` — scenarios reference existing VNets
+
+**Interim validation for monitoring modules:**
 - Use `/azure:azure-validate` to run pre-deployment checks on module Bicep without a full test scenario
 - Use `/azure:azure-compliance` to audit deployed instances against DRCP policies
-- Use `/azure:azure-diagnostics` to troubleshoot deployment failures when creating new test scenarios
 
 ---
 
@@ -444,7 +584,7 @@ All scenarios should use Entra ID RBAC (managed identity + role assignments) ins
 | 4 | Event Hub, KV, Storage | MI RBAC (`disableLocalAuth: true`) | [x] Confirmed — separate RBAC modules |
 | 5 | App Gateway, Web Apps, Storage | MI RBAC | [x] Mostly compliant — FuncApp MI → KV, Storage `allowSharedKeyAccess: false` |
 | 7 | ACR, Logic App, Storage | Mixed (Logic App exception) | [x] Verified — ACR RBAC via helper, Logic App exception same as S3 |
-| 8 | Cosmos DB, APIM, Storage | MI RBAC where possible | [ ] Verify (blocked on P0 migration) |
+| 8 | PostgreSQL, Service Bus | MI RBAC (Entra-only for both) | [ ] Implement with repurpose |
 | 9 | AKS, ACR, Storage | MI RBAC | [x] Fixed — uncommented `allowSharedKeyAccess: false` on storage |
 | 10 | Data Factory, Databricks, Storage | MI RBAC | [x] Verified — ADF MI + RBAC on storage; SHIR keys in KV (platform exception) |
 | 11 | Web Apps, SQL, Storage | MI RBAC | [x] Fixed — SQL connection string now uses `Authentication=Active Directory Default` |
@@ -581,8 +721,23 @@ After P0 migrations complete:
 
 - [ ] Remove `modules/infra/storage/cosmos-db/` (after scenarios 2, 8 migrated)
 - [ ] Remove `modules/infra/integration/event-hub/` (after scenario 4 migrated)
-- [ ] Remove `modules/infra/integration/data-factory/` (after scenario 10 migrated)
+- [ ] Remove `modules/infra/integration/data-factory/` (after scenario 10 migrated — keep `integrationRuntime.bicep` + `role-assignment.bicep` for linked IR pattern)
 - [ ] Remove `modules/infra/network/private-endpoint/` (after all PE refs migrated)
 - [ ] Audit remaining `modules/infra/` for other removable modules
 - [ ] Migrate `naming.bicep` references → `br/amavm:utl/amavm/naming:0.1.0` in all scenarios (scenario 16 already uses AMAVM naming; scenarios 1-12 still use local `../../modules/infra/naming.bicep`)
-- [ ] Keep: scenario-specific helpers, deployment scripts, `public-ip-address`, `api-management`
+- [ ] Keep: scenario-specific helpers, deployment scripts, `public-ip-address`
+- [ ] Remove `modules/infra/integration/api-management/` (no longer needed — S8 repurposed)
+
+### Scenario 7 — ACR Task Module Update (LOW PRIORITY)
+
+The ACR task module at `modules/infra/compute/container-registry/task.bicep` uses preview APIs:
+- `Microsoft.ContainerRegistry/registries@2023-01-01-preview` (existing ref)
+- `Microsoft.ContainerRegistry/registries/tasks@2019-06-01-preview` (6+ years old)
+- `Microsoft.ContainerRegistry/registries/taskRuns@2019-06-01-preview`
+
+ACR Tasks are not available as an AMAVM module, so this stays local. But the API versions should be updated.
+
+- [ ] Update ACR task API version from `2019-06-01-preview` to latest GA (`2019-04-01` or check for newer)
+- [ ] Check if `taskRuns` resource type has a GA API version
+- [ ] Validate `bicep build` after update
+- [ ] Consider if ACR Tasks can be replaced by GitHub Actions or ADO pipeline tasks (simpler, no preview API dependency)

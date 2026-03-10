@@ -11,16 +11,17 @@ Integration test scenarios that validate AMAVM Bicep modules deploy correctly to
 | 3 | Function App + Logic App + Storage | web/site, storage/storage-account | Fully AMAVM |
 | 4 | Function App + Event Hub | web/site, event-hub/namespace | Fully AMAVM |
 | 5 | App Gateway + Web Apps + Function App | network/application-gateway, web/site | Nearly AMAVM |
-| 7 | Docker App Service + ACR + Logic App | container-registry/registry, web/site | Nearly AMAVM |
-| 8 | Function Apps + Cosmos DB + APIM | web/site, key-vault/vault | Partial |
+| 7 | Docker App Service + ACR | container-registry/registry, web/site | Nearly AMAVM |
+| 8 | **PostgreSQL + Service Bus** | db-for-postgre-sql/flexible-server, service-bus/namespace | Planned |
 | 9 | AKS + ACR + Storage | container-service/managed-cluster, container-registry/registry | Fully AMAVM |
-| 10 | Data Factory + Databricks | databricks/workspace, storage/storage-account | Partial |
+| 10 | Data Factory + Databricks | data-factory/factory, databricks/workspace | Nearly AMAVM |
 | 11 | Web Apps + SQL | web/site, sql/server | Fully AMAVM |
 | 12 | N-Tier SQL (pattern module) | ptn/ntier/sql | Complete |
 | 13 | Redis Cache (standalone) | cache/redis | Implemented |
-| 14 | Event Hub + Function App | event-hub/namespace, web/site | Implemented |
+| 14 | Event Hub + App Config + Function App | event-hub/namespace, app-configuration/configuration-store | Implemented |
 | 15 | Cosmos DB NoSQL (standalone) | document-db/database-account | Implemented |
 | 16 | AI Chatbot: OpenAI + AI Search | cognitive-services/account, search/search-service | Planned |
+| 17 | Static Web App + Function API | web/static-site, web/site | Planned |
 
 > Scenario 6 does not exist. See each scenario's `README.md` for components, deployment commands, and DRCP policy details.
 
