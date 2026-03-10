@@ -83,6 +83,41 @@ foreach ($filename in $modules) {
     }
 }
 
+# When building READMEs, also generate for child modules that have a README.md but no version.json
+# This matches the discovery logic of compareReadMe.ps1 which finds modules by scanning for *.md files
+if ($buildReadme -eq "True") {
+    $readmeFiles = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'README.md'
+    foreach ($readMeFile in $readmeFiles) {
+        $moduleDir = Split-Path $readMeFile -Parent
+        $versionFileName = Join-Path $moduleDir "version.json"
+        # Skip modules that already have version.json (already processed in the main loop above)
+        if (Test-Path $versionFileName -PathType Leaf) {
+            continue
+        }
+        $bicepFileName = Join-Path $moduleDir "main.bicep"
+        if (!(Test-Path $bicepFileName -PathType Leaf)) {
+            continue
+        }
+        $currentModuleName = $moduleDir.Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
+        if ($currentModuleName -eq "") {
+            $currentModuleName = (Get-Item $moduleDir).Name
+        }
+        if (($moduleName.Length -gt 0) -and ($currentModuleName -ne $moduleName.Replace("\","/"))) {
+            continue
+        }
+        Write-Host "=> $currentModuleName (README only)"
+        try {
+            Set-ModuleReadMe -TemplateFilePath $bicepFileName
+            if ($LASTEXITCODE -gt 0) {
+                throw "Code:$LASTEXITCODE"
+            }
+        }
+        catch {
+            $build_errors.Add($_) > $null
+        }
+    }
+}
+
 # Print found errors
 $numModulesWithErrors = $build_errors.Count
 if ( $numModulesWithErrors -gt 0) {

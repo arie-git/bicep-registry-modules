@@ -510,6 +510,13 @@ The script enters the "outputs with descriptions" branch (line 657) because **so
 - [x] Fixed line 736: same pattern for function descriptions
 - [x] Verified: key-value and replica modules generate README without error
 
+### BF-9: buildBicepFiles.ps1 — child modules without version.json skipped for README generation
+
+**Root cause**: `buildBicepFiles.ps1` discovers modules by scanning for `main.bicep` + `version.json`. Child modules (e.g., `key-value`, `replica`) without `version.json` are skipped entirely — including README generation when `-buildReadme "True"`. Meanwhile, the pipeline's `compareReadMe.ps1` discovers modules by scanning for `README.md` files (no `version.json` check), so it finds and validates child module READMEs. This causes local builds to miss 17 child modules that the pipeline processes.
+
+- [x] Added second pass in `buildBicepFiles.ps1` for `buildReadme` mode: scans for `README.md` files, skips those with `version.json` (already handled), generates READMEs for remaining child modules
+- [x] Verified: 17 child modules now discovered locally (app-configuration/2, db-for-postgre-sql/5, insights/2, search/1, service-bus/7)
+
 ---
 
 ## BUILD-VALIDATE: Local Build Validation (dev-only PE/ACR ref switch)
