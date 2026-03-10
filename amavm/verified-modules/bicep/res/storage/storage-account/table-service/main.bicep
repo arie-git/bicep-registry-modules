@@ -1,6 +1,6 @@
 metadata name = 'Storage Account Table Services'
 metadata description = 'This module deploys a Storage Account Table Service.'
-metadata owner = 'Azure/module-maintainers'
+metadata owner = 'AMCCC'
 metadata compliance = 'inherited from parent'
 metadata complianceVersion = '20260309'
 

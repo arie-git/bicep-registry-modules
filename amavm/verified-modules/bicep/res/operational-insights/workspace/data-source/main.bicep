@@ -1,6 +1,6 @@
 metadata name = 'Log Analytics Workspace Datasources'
 metadata description = 'This module deploys a Log Analytics Workspace Data Source.'
-metadata owner = 'Azure/module-maintainers'
+metadata owner = 'AMCCC'
 metadata compliance = 'inherited from parent'
 metadata complianceVersion = '20260309'
 
