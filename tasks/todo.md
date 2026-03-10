@@ -342,7 +342,9 @@ Commented-out code: `slots` parameter, `app_slots` module loop, slot outputs (sl
 The 16 individual autoScaler params (scanInterval, scaleDown delays, etc.) were stale — already superseded by the active `param autoScalerProfile` which passes through to the resource. Cleaned up:
 
 - [x] Removed 56 lines of stale individual autoScalerProfile params (replaced by single `autoScalerProfile` param)
-- [x] Updated `autoScalerProfile` type from `object?` to `resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.autoScalerProfile?` (matching upstream)
+- [x] Updated `autoScalerProfile` type from `object?` to `resourceInput<...>` (matching upstream)
+- [x] Updated `httpProxyConfig`, `workloadAutoScalerProfile`, `serviceMeshProfile`, `aiToolchainOperatorProfile`, `bootstrapProfile`, `upgradeSettings`, `windowsProfile`, `aksServicePrincipalProfile` to `resourceInput<>` types
+- [x] Set `workloadAutoScalerProfile` default to `{ keda: { enabled: true } }` (secure default for KEDA)
 - [x] Removed unused `privateEndpointType` import
 - [x] `bicep build` passes (only BCP192 for kubernetes-configuration — expected)
 - [ ] Karen: validate
@@ -359,19 +361,32 @@ The 16 individual autoScaler params (scanInterval, scaleDown delays, etc.) were 
 
 ### FEAT-4: container-service/managed-cluster — Ingress, DNS, and Add-ons
 
-**Mostly already implemented.** httpApplicationRouting, webApplicationRouting, AGIC, ACI connector, DNS zone params are all active (not commented out). Remaining commented-out items (kedaAddon, fluxExtension, kubeDashboard, openServiceMesh) are planned future features.
+**All implemented.** All commented-out items were stale duplicates of active params:
+- httpApplicationRouting, webApplicationRouting, AGIC, ACI connector, DNS zone — all active
+- fluxExtension — active at line 505 (+ extension module at line 922), but kubernetes-configuration/extension module not in fork (BCP192). No policy restricts flux, but it's not built in Azure DevOps pipeline. Keeping param as-is (no-op when not provided).
+- kedaAddon — superseded by active `workloadAutoScalerProfile` param (KEDA configured as `{ keda: { enabled: true } }`)
+- kubeDashboard, openServiceMesh — active at lines 543-544
 
-- [x] Ingress/DNS/AGIC/ACI params already active
-- [ ] Evaluate and enable remaining commented-out add-ons (kedaAddon, fluxExtension, kubeDashboard, openServiceMesh)
+Cleaned up all stale commented-out duplicates.
+
+- [x] All add-on params already active
+- [x] Removed stale commented-out duplicates
 - [ ] Update tests
 - [ ] Karen: validate
 
 ### FEAT-5: container-service/managed-cluster — Pod Identity and Security
 
-**Mostly already implemented.** podIdentityProfile, identityProfile, diskEncryptionSetResourceId, httpProxyConfig are all active params. Remaining commented-out items (CMK customerManagedKey, enablePodSecurityPolicy) are planned future features.
+**All implemented.** All relevant params already active:
+- podIdentityProfile, identityProfile — active
+- diskEncryptionSetResourceId — active at line 529
+- httpProxyConfig — active at line 535
+- CMK (customerManagedKey) — removed entirely per decision (not needed for platform)
+- enablePodSecurityPolicy — removed (deprecated since K8s 1.21, removed in 1.25)
 
-- [x] podIdentityProfile, identityProfile, diskEncryptionSetResourceId, httpProxyConfig already active
-- [ ] Evaluate and enable CMK support (customerManagedKey param + cMKKeyVault resource)
+- [x] All security params already active
+- [x] Removed CMK entirely (param, cMKKeyVault resource, customerManagedKeyType import)
+- [x] Removed deprecated enablePodSecurityPolicy
+- [x] `bicep build` passes (only BCP192 expected)
 - [ ] Update tests
 - [ ] Karen: validate
 

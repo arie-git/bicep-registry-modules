@@ -436,9 +436,6 @@ param imageCleaner securityProfileImageCleanerType = {
   intervalHours: 168
 }
 
-// @description('Optional. Whether to enable Kubernetes pod security policy. Requires enabling the pod security policy feature flag on the subscription.')
-// param enablePodSecurityPolicy bool = false
-
 // ---- Logging and metrics ----
 
 @description('''Conditional. Specifies whether the cost analysis add-on is enabled or not. Default is false.
@@ -480,29 +477,6 @@ param azureMonitorProfile azureMonitorProfileType = {
   }
 }
 
-// ---- Other stuff ----
-
-// @description('Optional. The resource ID of the disc encryption set to apply to the cluster. For security reasons, this value should be provided.')
-// param diskEncryptionSetResourceId string?
-
-// @description('Optional. The customer managed key definition.')
-// param customerManagedKey customerManagedKeyType
-
-// @description('Optional. Configurations for provisioning the cluster with HTTP proxy servers.')
-// param httpProxyConfig object?
-
-// @description('Optional. Enables Kubernetes Event-driven Autoscaling (KEDA).')
-// param kedaAddon bool = false
-
-// @description('Optional. Settings and configurations for the flux extension.')
-// param fluxExtension extensionType
-
-// @description('Optional. Specifies whether the kubeDashboard add-on is enabled or not.')
-// param addonKubeDashboardEnabled bool = false
-
-// @description('Optional. Specifies whether the openServiceMesh add-on is enabled or not.')
-// param addonOpenServiceMeshEnabled bool = false
-
 @description('''Optional. Specifies the configuration for Azure Key Vault secrets provider add-on.
 Default is enabled=true and config.enableSecretRotation=true.''')
 #disable-next-line secure-secrets-in-params // Not a secret
@@ -532,34 +506,39 @@ param diskEncryptionSetResourceId string?
 param fluxExtension extensionType?
 
 @description('Optional. Configurations for provisioning the cluster with HTTP proxy servers.')
-param httpProxyConfig object?
+param httpProxyConfig resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.httpProxyConfig?
 
-@description('Optional. Workload Auto-scaler profile for the managed cluster.')
-param workloadAutoScalerProfile object?
+@description('''Optional. Workload Auto-scaler profile for the managed cluster.
+Default enables KEDA for event-driven autoscaling.''')
+param workloadAutoScalerProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.workloadAutoScalerProfile = {
+  keda: {
+    enabled: true
+  }
+}
 
 @description('Optional. Service mesh profile for a managed cluster.')
-param serviceMeshProfile object?
+param serviceMeshProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.serviceMeshProfile?
 
 @description('Optional. AI toolchain operator settings that apply to the whole cluster.')
-param aiToolchainOperatorProfile object?
+param aiToolchainOperatorProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.aiToolchainOperatorProfile?
 
 @description('Optional. Profile of the cluster bootstrap configuration.')
-param bootstrapProfile object?
+param bootstrapProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.bootstrapProfile?
 
 @description('Optional. The FQDN subdomain of the private cluster with custom private dns zone. This cannot be updated once the Managed Cluster has been created.')
 param fqdnSubdomain string?
 
 @description('Optional. Settings for upgrading the cluster with override options.')
-param upgradeSettings object?
+param upgradeSettings resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.upgradeSettings?
 
 @description('Optional. The profile for Windows VMs in the Managed Cluster.')
-param windowsProfile object?
+param windowsProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.windowsProfile?
 
 @description('Optional. Parameters to be applied to the cluster-autoscaler when enabled.')
 param autoScalerProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.autoScalerProfile?
 
 @description('Conditional. Information about a service principal identity for the cluster to use for manipulating Azure APIs. Required if no managed identities are assigned to the cluster.')
-param aksServicePrincipalProfile object?
+param aksServicePrincipalProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.servicePrincipalProfile?
 
 @description('Optional. Specifies whether the openServiceMesh add-on is enabled or not.')
 param openServiceMeshEnabled bool = false
@@ -679,18 +658,6 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableT
     }
   }
 }
-
-// resource cMKKeyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId)) {
-//   name: last(split((customerManagedKey.?keyVaultResourceId ?? 'dummyVault'), '/'))
-//   scope: resourceGroup(
-//     split((customerManagedKey.?keyVaultResourceId ?? '//'), '/')[2],
-//     split((customerManagedKey.?keyVaultResourceId ?? '////'), '/')[4]
-//   )
-
-//   resource cMKKey 'keys@2023-07-01' existing = if (!empty(customerManagedKey.?keyVaultResourceId) && !empty(customerManagedKey.?keyName)) {
-//     name: customerManagedKey.?keyName ?? 'dummyKey'
-//   }
-// }
 
 // ============== //
 // Main Resources //
@@ -1148,7 +1115,6 @@ import {
   lockType
   managedIdentitiesType
   roleAssignmentType
-  customerManagedKeyType
 } from '../../../../bicep-shared/types.bicep'
 
 import { agentPoolType } from 'agent-pool/main.bicep'

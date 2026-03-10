@@ -6,7 +6,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.41.2.15936",
-      "templateHash": "17334227816242018564"
+      "templateHash": "2048822820491811356"
     },
     "name": "Activity Log Alerts",
     "description": "This module deploys an Activity Log Alert.",
@@ -15,6 +15,36 @@
     "compliance": "This is a utility module. No specific compliance requirements."
   },
   "definitions": {
+    "lockType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Specify the name of lock."
+          }
+        },
+        "kind": {
+          "type": "string",
+          "allowedValues": [
+            "CanNotDelete",
+            "None",
+            "ReadOnly"
+          ],
+          "nullable": true,
+          "metadata": {
+            "description": "Optional. Specify the type of lock."
+          }
+        }
+      },
+      "nullable": true,
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "../../../../bicep-shared/types.bicep"
+        }
+      }
+    },
     "roleAssignmentType": {
       "type": "array",
       "items": {
@@ -117,6 +147,9 @@
     },
     "scopes": {
       "type": "array",
+      "items": {
+        "type": "string"
+      },
       "defaultValue": [
         "[subscription().id]"
       ],
@@ -137,8 +170,18 @@
         "description": "Required. An Array of objects containing conditions that will cause this alert to activate. Conditions can also be combined with logical operators `allOf` and `anyOf`. Each condition can specify only one field between `equals` and `containsAny`. An alert rule condition must have exactly one category (Administrative, ServiceHealth, ResourceHealth, Alert, Autoscale, Recommendation, Security, or Policy)."
       }
     },
+    "lock": {
+      "$ref": "#/definitions/lockType",
+      "nullable": true,
+      "metadata": {
+        "description": "Optional. The lock settings of the service."
+      }
+    },
     "roleAssignments": {
-      "$ref": "#/definitions/roleAssignmentType",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/roleAssignmentType"
+      },
       "nullable": true,
       "metadata": {
         "description": "Optional. Array of role assignments to create."
@@ -161,14 +204,6 @@
   },
   "variables": {
     "copy": [
-      {
-        "name": "actionGroups",
-        "count": "[length(parameters('actions'))]",
-        "input": {
-          "actionGroupId": "[coalesce(tryGet(parameters('actions')[copyIndex('actionGroups')], 'actionGroupId'), parameters('actions')[copyIndex('actionGroups')])]",
-          "webhookProperties": "[tryGet(parameters('actions')[copyIndex('actionGroups')], 'webhookProperties')]"
-        }
-      },
       {
         "name": "formattedRoleAssignments",
         "count": "[length(coalesce(parameters('roleAssignments'), createArray()))]",
@@ -219,7 +254,7 @@
     },
     "activityLogAlert": {
       "type": "Microsoft.Insights/activityLogAlerts",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2026-01-01",
       "name": "[parameters('name')]",
       "location": "[parameters('location')]",
       "tags": "[variables('finalTags')]",
@@ -229,11 +264,34 @@
           "allOf": "[parameters('conditions')]"
         },
         "actions": {
-          "actionGroups": "[variables('actionGroups')]"
+          "copy": [
+            {
+              "name": "actionGroups",
+              "count": "[length(parameters('actions'))]",
+              "input": {
+                "actionGroupId": "[coalesce(tryGet(parameters('actions')[copyIndex('actionGroups')], 'actionGroupId'), parameters('actions')[copyIndex('actionGroups')])]",
+                "webhookProperties": "[tryGet(parameters('actions')[copyIndex('actionGroups')], 'webhookProperties')]"
+              }
+            }
+          ]
         },
         "enabled": "[parameters('enabled')]",
         "description": "[parameters('alertDescription')]"
       }
+    },
+    "activityLogAlert_lock": {
+      "condition": "[and(not(empty(coalesce(parameters('lock'), createObject()))), not(equals(tryGet(parameters('lock'), 'kind'), 'None')))]",
+      "type": "Microsoft.Authorization/locks",
+      "apiVersion": "2020-05-01",
+      "scope": "[resourceId('Microsoft.Insights/activityLogAlerts', parameters('name'))]",
+      "name": "[coalesce(tryGet(parameters('lock'), 'name'), format('lock-{0}', parameters('name')))]",
+      "properties": {
+        "level": "[coalesce(tryGet(parameters('lock'), 'kind'), '')]",
+        "notes": "[coalesce(tryGet(parameters('lock'), 'notes'), if(equals(tryGet(parameters('lock'), 'kind'), 'CanNotDelete'), 'Cannot delete resource or child resources.', 'Cannot delete or modify the resource or child resources.'))]"
+      },
+      "dependsOn": [
+        "activityLogAlert"
+      ]
     },
     "activityLogAlert_roleAssignments": {
       "copy": {
@@ -285,7 +343,7 @@
       "metadata": {
         "description": "The location the resource was deployed into."
       },
-      "value": "[reference('activityLogAlert', '2020-10-01', 'full').location]"
+      "value": "[reference('activityLogAlert', '2026-01-01', 'full').location]"
     },
     "evidenceOfNonCompliance": {
       "type": "bool",
