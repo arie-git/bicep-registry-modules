@@ -732,9 +732,49 @@ Current pipeline takes ~30 min for a feature branch (RES only):
 - [x] Parallelize `compareReadMe.ps1` module loop
 - [x] Handle `Set-ModuleReadMe` import in parallel runspaces
 - [x] Local test: 52 parent modules built in ~80s parallel (ThrottleLimit=6)
-- [ ] Test on pipeline (feature branch) with full RES build + README validation
-- [ ] Measure pipeline before/after timing
-- [ ] Evaluate `PreLoadedContent` optimization (phase 2 — eliminate double compilation)
+- [x] Fix: `az bicep build` stderr warnings (e.g. `no-unused-imports`) caused `ErrorActionPreference=Stop` termination in Azure DevOps pipeline. `$ErrorActionPreference='Continue'` in parallel scriptblocks was ineffective due to PowerShell module scope isolation — `Set-ModuleReadMe` runs in its own module scope inheriting process-level `Stop`. Fixed at the source: `2>$null` on `az bicep build --stdout` in `setModuleReadMe.ps1:2175`. Real failures still caught via `$templateFileContent` null-check.
+- [x] Test on pipeline (feature branch) with full RES build + README validation
+- [x] Measure pipeline before/after timing
+
+**Pipeline results (55 parent modules, 69 READMEs — 3 more modules than baseline):**
+
+| Step | Sequential (52 modules) | Parallel ThrottleLimit=6 (55 modules) | Delta |
+|---|---|---|---|
+| Bicep build | ~7:30 min | ~8 min | +7% (but +6% more modules) |
+| README compare | ~20 min | ~24 min | +20% (but +4.5% more modules) |
+
+**Analysis**: Parallelization did NOT improve pipeline times. Despite local testing showing ~80s for 52 modules, the Azure DevOps pipeline agents show no speedup — likely bottlenecked by:
+1. Single-core/limited-vCPU pipeline agents (parallel runspaces compete for the same CPU)
+2. `az bicep build` being CPU-bound (compiler), not I/O-bound — parallelism only helps I/O-bound workloads on constrained agents
+3. Overhead of parallel runspace creation + module re-import per runspace
+
+**Recommendation**: The parallelization code is functionally correct and harmless, but provides no benefit on current pipeline agents. Real gains require the `PreLoadedContent` optimization (phase 2) to eliminate redundant `az bicep build` calls entirely.
+
+#### Phase 2: PreLoadedContent Optimization (eliminate double compilation)
+
+`Set-ModuleReadMe` already supports `-PreLoadedContent @{ TemplateFileContent = <hashtable> }` (setModuleReadMe.ps1:2172-2181). When provided, it skips its internal `az bicep build` call entirely. No changes to setModuleReadMe.ps1 needed.
+
+**Impact**: buildBicepFiles.ps1 currently compiles each parent module TWICE when buildReadme=True (once inside Set-ModuleReadMe, once for build validation). Eliminating the double-compile saves ~55 `az bicep build` invocations (~4 min on pipeline). compareReadMe.ps1 has no double-compile, but moving `az bicep build` outside module scope improves reliability (avoids ErrorActionPreference issues).
+
+**Pattern** (reused across all 5 locations):
+```powershell
+$buildJson = az bicep build --file $bicepFilePath --stdout 2>$null
+if ($LASTEXITCODE -gt 0) { throw "Code:$LASTEXITCODE (build)" }
+$templateContent = $buildJson | ConvertFrom-Json -AsHashtable
+Set-ModuleReadMe -TemplateFilePath $bicepFilePath -PreLoadedContent @{
+    TemplateFileContent = $templateContent
+}
+```
+
+**Files to modify**: buildBicepFiles.ps1 (3 locations), compareReadMe.ps1 (2 locations)
+
+- [ ] **buildBicepFiles.ps1 serial parent** (lines 82-107): Reorder to restore → build (capture stdout) → if buildReadme: pass PreLoadedContent to Set-ModuleReadMe. Remove redundant second `az bicep build` call. Remove stale `$LASTEXITCODE` check after Set-ModuleReadMe.
+- [ ] **buildBicepFiles.ps1 parallel parent** (lines 158-195): Build first (capture stdout) → if buildReadme: parse JSON + pass PreLoadedContent. Remove redundant second build. Remove stale `$LASTEXITCODE` check after Set-ModuleReadMe.
+- [ ] **buildBicepFiles.ps1 parallel child** (lines 224-247): Pre-compile with `az bicep build --stdout 2>$null`, pass as PreLoadedContent. No compile reduction but moves build outside module scope. Remove stale `$LASTEXITCODE` check after Set-ModuleReadMe.
+- [ ] **compareReadMe.ps1 serial** (lines 65-123): Pre-compile, pass PreLoadedContent. Same compile count but outside module scope. Remove stale `$LASTEXITCODE` check after Set-ModuleReadMe.
+- [ ] **compareReadMe.ps1 parallel** (lines 132-206): Pre-compile, pass PreLoadedContent. Same compile count but outside module scope. Remove stale `$LASTEXITCODE` check after Set-ModuleReadMe.
+- [ ] Local build test: `./utils/buildBicepFiles.ps1 -modulesSubpath 'res' -buildReadme 'True'`
+- [ ] Pipeline test: compare timing to 8-min build / 24-min compare baseline
 
 ### FEAT-7: Missing Features vs Upstream
 

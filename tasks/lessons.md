@@ -53,6 +53,15 @@ When modules reference other modules via ACR (`br/amavm:res/network/private-endp
 5. Same applies to other ACR refs: WAF policy (`application-gateway-web-application-firewall-policy`), private-dns-zone, kubernetes-configuration/extension
 6. You can build a single module with: `./utils/buildBicepFiles.ps1 -modulesSubpath 'res/<provider>/<resource>' -moduleName 'res/<provider>/<resource>'`
 
+### 16. PowerShell module scope isolation defeats scriptblock-level ErrorActionPreference
+When a function is loaded via `Import-Module`, it runs in the **module's own scope**, which inherits `$ErrorActionPreference` from the process/global level — NOT from the calling scriptblock. Setting `$ErrorActionPreference = 'Continue'` in a `ForEach-Object -Parallel` scriptblock does NOT propagate into imported module functions. Fix stderr issues at the source (e.g., `2>$null` on `az` commands) rather than trying to override error preferences from the caller.
+
+### 17. Azure DevOps AzurePowerShell task sets ErrorActionPreference=Stop
+The `AzurePowerShell@5` task sets `$ErrorActionPreference = 'Stop'` at the process level. This means ANY stderr output from native commands (`az`, `bicep`, etc.) becomes a terminating error — even harmless warnings. Always redirect stderr (`2>$null`) on `az` commands that may emit warnings, and rely on `$LASTEXITCODE` or output null-checks for real error detection.
+
+### 18. Parallel PowerShell may not help CPU-bound workloads on pipeline agents
+`ForEach-Object -Parallel` showed ~6x speedup locally but zero improvement on Azure DevOps pipeline agents. Pipeline agents are likely single/dual-vCPU — parallel runspaces just compete for the same CPU when the workload is CPU-bound (`az bicep build` = compiler). Parallelism only helps if the bottleneck is I/O (network, disk) or if agents have spare cores.
+
 ### 14. Parameter defaults must be driven by compliance policy
 Input parameters (optional, required, conditional) and their defaults should be based on required compliance from `policy/Generic/`. The AMAVM fork's purpose is to enforce policy compliance by default:
 - If a policy requires a value, make the param `required` or set a compliant default
