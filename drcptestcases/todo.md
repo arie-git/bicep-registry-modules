@@ -16,7 +16,7 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | 4 | Function App + Event Hub | **Fully AMAVM** | 1 (`naming.bicep`) + `roleAssignment.bicep` | 14 |
 | 5 | App Gateway + Web Apps + Function App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (public-ip-address) | 15 |
 | 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (ACR task) + 1 (`acrRoleAssignment.bicep`) | 13 |
-| 8 | **PostgreSQL + Service Bus** (repurposed) | **Planned** | TBD (full rewrite) | TBD |
+| 8 | **PostgreSQL + Service Bus** (repurposed) | **Fully AMAVM** | 1 (`naming.bicep`) | 11 |
 | 9 | AKS + ACR + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 16 |
 | 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 3 local (naming, IR, role-assignment) + central.bicep: 11 local | main: 12 |
 | 11 | Web Apps + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 15 |
@@ -170,15 +170,16 @@ Log Analytics + Diagnostics
 - Function App MI → PostgreSQL Entra admin (via `administrators` param)
 
 **Tasks:**
-- [ ] Delete existing scenario 8 content (APIM-based)
-- [ ] Create `drcptestcases/scenario8/infra/main.bicep` — PostgreSQL + Service Bus, all AMAVM
-- [ ] PostgreSQL: Entra-only auth, VNet-delegated subnet, private DNS zone, v17, zone redundant
-- [ ] Service Bus: Premium, PE, queue + topic, disableLocalAuth, inline roleAssignments
-- [ ] Function App: Service Bus trigger with `__fullyQualifiedNamespace` (identity-based), PostgreSQL Entra token
-- [ ] Validate against all 16 DRCP policies listed above
-- [ ] Validate `bicep build` passes
-- [ ] Update README with new architecture
+- [x] Delete existing scenario 8 content (APIM-based) — removed `modules/`, `parameters.json`
+- [x] Create `drcptestcases/scenario8/infra/main.bicep` — PostgreSQL + Service Bus, all AMAVM
+- [x] PostgreSQL: Entra-only auth, VNet-delegated subnet, private DNS zone, v17, zone redundant
+- [x] Service Bus: Premium, PE, queue + topic, disableLocalAuth, inline roleAssignments
+- [x] Function App: Service Bus trigger with `__fullyQualifiedNamespace` (identity-based), PostgreSQL Entra token
+- [x] Validate against all 16 DRCP policies listed above
+- [x] Validate `bicep build` passes — 0 errors, 0 warnings in S8 code (only AMAVM-internal warnings)
+- [x] Update README with new architecture
 - [ ] Create pipeline YAML
+- [ ] Update `src/` directory for new architecture (old frontend/backend code references APIM)
 
 ### Scenario 7 — ACR + Docker Web App (simplify — remove Logic App)
 

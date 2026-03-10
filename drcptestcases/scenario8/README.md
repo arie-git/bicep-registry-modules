@@ -1,30 +1,58 @@
-# Scenario 8 — Function Apps + Cosmos DB + APIM
+# Scenario 8 — PostgreSQL + Service Bus (message-driven processing)
 
-Frontend and backend Function Apps with Cosmos DB data store, APIM gateway, and Storage Account. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
+Function App with Service Bus trigger writing to PostgreSQL via managed identity. Demonstrates VNet-delegated PostgreSQL (not PE), Premium Service Bus with private endpoint, and identity-based connections throughout.
 
 ## Components
 
 | Component | AMAVM Module | Purpose |
 |---|---|---|
-| User-Assigned MI | `br/amavm:res/managed-identity/user-assigned-identity` | Cross-resource identity |
-| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
-| Route Table | `br/amavm:res/network/route-table` | Custom routing |
-| Subnet (x4) | `br/amavm:res/network/virtual-network/subnet` | PE, frontend egress, backend egress, APIM |
-| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
-| Application Insights | `br/amavm:res/insights/component` | Application telemetry |
-| Key Vault | `br/amavm:res/key-vault/vault` | Secret management |
-| App Service Plan (x2) | `br/amavm:res/web/serverfarm` | Frontend + backend hosting |
-| Function App (frontend) | `br/amavm:res/web/site` | HTTP API gateway consumer |
-| Function App (backend) | `br/amavm:res/web/site` | Cosmos DB data processor |
-| Storage Account | `br/amavm:res/storage/storage-account` | Function App backing + blob/file |
+| NSG | `br/amavm:res/network/network-security-group:0.1.0` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table:0.1.0` | Custom routing |
+| Subnet (x3) | `br/amavm:res/network/virtual-network/subnet:0.2.0` | PE, Function App egress, PostgreSQL delegated |
+| Log Analytics | `br/amavm:res/operational-insights/workspace:0.1.0` | Centralized logging |
+| Application Insights | `br/amavm:res/insights/component:0.1.0` | Application telemetry |
+| Key Vault | `br/amavm:res/key-vault/vault:0.3.0` | Secret management |
+| Storage Account | `br/amavm:res/storage/storage-account:0.2.0` | Function App backing storage |
+| App Service Plan | `br/amavm:res/web/serverfarm:0.1.0` | Function App hosting |
+| Function App | `br/amavm:res/web/site:0.1.0` | Service Bus trigger → PostgreSQL writer |
+| PostgreSQL Flexible Server | `br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0` | Relational data store (Entra-only, VNet-delegated) |
+| Service Bus Namespace | `br/amavm:res/service-bus/namespace:0.1.0` | Message broker (Premium, PE, queue + topic) |
 
-### Local modules (no AMAVM equivalent)
+## DRCP Policy Compliance
 
-| Module | Purpose |
-|---|---|
-| Cosmos DB + PE + role-assignment | Pending migration to AMAVM `document-db/database-account` |
-| APIM | Not a DRCP-whitelisted AMAVM component |
-| Public IP | Blocked on AMAVM `network/public-ip-address` module |
+### PostgreSQL (11 policies)
+
+- Entra-only auth (`passwordAuth: Disabled`, `activeDirectoryAuth: Enabled`)
+- VNet-delegated subnet with private DNS zone (not PE)
+- Public network access disabled
+- TLS 1.2+ enforced (`ssl_min_protocol_version: TLSv1.2`)
+- SSL required (`require_secure_transport: ON`)
+- Version 17 (policy requires >= 16)
+- Zone-redundant HA
+- Service-managed encryption (not CMK)
+- Defender enabled
+
+### Service Bus (5 policies)
+
+- Local auth disabled (`disableLocalAuth: true`)
+- Public network access disabled
+- TLS 1.2 minimum
+- Private endpoint in same subscription
+- Auto DNS zone registration
+
+## Architecture
+
+```
+Service Bus (Premium, PE)
+    ↓ queue trigger (identity-based)
+Function App (VNet-integrated)
+    ↓ Entra token auth
+PostgreSQL Flexible Server (VNet-delegated)
+```
+
+- **No shared keys or SAS tokens** — all connections use managed identity
+- **Service Bus trigger**: `ServiceBusConnection__fullyQualifiedNamespace` (identity-based)
+- **PostgreSQL**: Entra AD administrator with token-based authentication
 
 ## Deployment
 
