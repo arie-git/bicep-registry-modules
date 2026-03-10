@@ -64,7 +64,7 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 | `network/private-endpoint/main.bicep` | `privateEndpoints` param on database-account | Inline as param |
 
 - [x] Migrate Cosmos DB to AMAVM `document-db/database-account`
-- [ ] Validate `bicep build` passes (requires ACR access or local PE path swap via `swapPeReferences.ps1`)
+- [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
 - [x] Update README
 
@@ -87,7 +87,7 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 
 - [x] Migrate Event Hub to AMAVM `event-hub/namespace`
 - [x] Replace role-assignment helpers with inline `roleAssignments` (Event Hub + Storage; 1 kept as helper for circular dep)
-- [ ] Validate `bicep build` passes (requires ACR access or local PE path swap via `swapPeReferences.ps1`)
+- [ ] Validate `bicep build` passes — **BLOCKED**: circular dependency cycle (`eventHubNamespace → functionApp → storageAccount`); needs `roleAssignment.bicep` helper to break cycle
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
 - [x] Update README
 
@@ -258,7 +258,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario13/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm least-privilege role for Redis data access
 - [ ] Create `drcptestcases/scenario13/pipelines/` with deploy + teardown
-- [ ] Validate `bicep build` passes
+- [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
 ### Scenario 14 — Event Hub Producer/Consumer (event-hub/namespace)
@@ -298,7 +298,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario14/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver roles
 - [ ] Create `drcptestcases/scenario14/pipelines/` with deploy + teardown
-- [ ] Validate `bicep build` passes
+- [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
 ### Scenario 15 — Cosmos DB NoSQL CRUD API (document-db/database-account)
@@ -339,7 +339,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario15/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm Cosmos DB SQL role definitions for data-plane access
 - [ ] Create `drcptestcases/scenario15/pipelines/` with deploy + teardown
-- [ ] Validate `bicep build` passes
+- [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
 ### Scenario 16 — AI Chatbot: OpenAI + AI Search + Web Apps (cognitive-services/account + search/search-service)
