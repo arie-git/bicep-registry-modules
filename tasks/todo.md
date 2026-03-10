@@ -579,6 +579,7 @@ Comparison of `amavm/verified-modules/utils/` against `microsoft-avm/avm/` upstr
 
 The `convertreadmetohtml.py` pipeline converts Bicep module READMEs to static HTML for Azure DevOps wiki/documentation portal. Current issues:
 
+- [x] Fix anchor links in generated HTML — markdown2 `toc` extra kept underscores/parens in heading `id` attributes (e.g. `example-1-_deploying_`) but `setModuleReadMe.ps1` strips them from link targets (e.g. `#example-1-deploying`). Added post-processing regex in `convertreadmetohtml.py` to normalize heading IDs.
 - [ ] Add unit tests for `convertreadmetohtml.py`
 - [ ] Add validation for generated HTML output
 - [ ] Support Bicep code syntax highlighting in generated HTML
@@ -857,14 +858,14 @@ module nestedDependencies '../waf-aligned/dependencies.bicep' = {
 - [x] Update `tests/e2e/defaults/main.test.bicep` to use waf-aligned deps pattern (rewritten with PE + networkRestrictions)
 - [ ] Verify `bicep build` passes on machine with ACR access
 
-### BF-3: event-hub/namespace — waf-aligned + max test build failures
+### BF-3: event-hub/namespace — waf-aligned test build failure (BCP034)
 
-- **Error**: `Exception: Failed to build template [...\event-hub\namespace\tests\e2e\waf-aligned\main.test.bicep]` and `[...\max\main.test.bicep]`
-- **Root cause**: Parent module references `br/amavm:res/network/private-endpoint:0.2.0`. PE not in local cache for this newly added module. Both waf-aligned and max tests reference the parent module which transitively requires PE.
-- **Fix**: Use local PE path temporarily for build validation (BV-1 pattern). The test content itself is correct — the issue is purely the ACR reference resolution.
-- **Note**: The `diagnostic.dependencies.bicep` (from `utils/e2e-template-assets/templates/`) is used by both tests and is a valid reference — there is a working sample included.
-- [ ] Verify tests build with local PE path (BV-1)
-- [ ] Ensure PE is published before running full build
+- **Error**: BCP034 on `diagnosticSettings` and `privateEndpoints` params in waf-aligned test
+- **Root cause**: `diagnosticSettingType` already includes `[]?` and `privateEndpointType` already includes `[]` in `bicep-shared/types.bicep`. Using `diagnosticSettingType[]?` and `privateEndpointType[]?` in main.bicep created array-of-arrays, causing type mismatch (same pattern as BF-5).
+- **Fix**: Changed `param diagnosticSettings diagnosticSettingType[]?` → `diagnosticSettingType` and `param privateEndpoints privateEndpointType[]?` → `privateEndpointType`
+- [x] Fix type declarations in main.bicep
+- [x] Verify all 3 tests build clean (defaults, max, waf-aligned) with local PE path
+- [x] Documented shared type convention in README.md and MEMORY.md
 
 ### BF-4: insights/scheduled-query-rule — waf-aligned + max test build failures
 

@@ -43,6 +43,7 @@ In main.bicep:
 * add 'evidenceOfNonCompliance' output parameter
 * add two variables 'versionInfo' and 'moduleVersion'
 * replace in-file definitions of shared bicep types with imports from '/bicep-shared/types.bicep'
+  * **Important:** AMAVM shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType`) already include the array suffix (`[]` or `[]?`) in their type definitions. This differs from upstream AVM, where types are singular objects and modules append `[]?` themselves. When using AMAVM shared types, do **not** add `[]?` — use the type name directly (e.g. `param diagnosticSettings diagnosticSettingType`, not `diagnosticSettingType[]?`, which would create an array-of-arrays).
 * in resource avmTelemetry replace '46d3xbcp' with '${telemetryId}$' in name field. Also make sure the name field is truncated to 64 chars.
 * modify role definitions
   * add `import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'`

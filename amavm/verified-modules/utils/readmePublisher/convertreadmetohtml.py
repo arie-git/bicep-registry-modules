@@ -148,7 +148,19 @@ def main():
 
         # Convert Markdown to HTML
         # item_other_versions_html
-        html_contents += markdown2.markdown(md_file_contents,extras=["tables","toc","fenced-code-blocks"])
+        raw_html = markdown2.markdown(md_file_contents,extras=["tables","toc","fenced-code-blocks"])
+        # Fix heading IDs: markdown2 keeps underscores/special chars in id attributes (e.g. "example-1-_deploying_")
+        # but setModuleReadMe.ps1 strips non-[A-Za-z0-9\s-] when generating anchor links (e.g. "#example-1-deploying").
+        # Normalize heading IDs to match the link targets.
+        def normalize_heading_id(match):
+            prefix = match.group(1)
+            raw_id = match.group(2)
+            normalized = re.sub(r'[^a-z0-9\s-]', '', raw_id).strip()
+            normalized = re.sub(r'\s+', '-', normalized)
+            normalized = re.sub(r'-+', '-', normalized)
+            return f'{prefix}id="{normalized}"'
+        raw_html = re.sub(r'(<h[1-6]\s+)id="([^"]*)"', normalize_heading_id, raw_html)
+        html_contents += raw_html
 
         # create the pages: one with version for the history, and an index.html with the current version
         for page_name in ["index", module_page_id]:
