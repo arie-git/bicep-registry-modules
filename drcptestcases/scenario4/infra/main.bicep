@@ -1,4 +1,4 @@
-// bicep code to create infra for scenario 1
+// bicep code to create infra for scenario 4
 
 targetScope = 'subscription'
 
@@ -236,8 +236,7 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {  //'../../modules/infra
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
       }
     ]
-    roleAssignments: union (
-      isDevEnvironment ? [
+    roleAssignments: isDevEnvironment ? [
         {
           principalId: engineersGroupObjectId
           roleDefinitionIdOrName: 'a4417e6f-fecd-4de8-b567-7b0420556985' // KeyVault Certificate Officer
@@ -248,15 +247,7 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {  //'../../modules/infra
           roleDefinitionIdOrName: '00482a5a-887f-4fb3-b363-3b7fe8e74483' // KeyVault Admin
           principalType: 'Group'
         }
-      ] : [],
-      [
-        {
-          principalId: functionApp.outputs.systemAssignedMIPrincipalId
-          roleDefinitionIdOrName: '4633458b-17de-408a-b874-0445c86b69e6' //Key Vault Secrets User
-          principalType: 'ServicePrincipal'
-        }
-      ]
-    )
+      ] : []
   }
 }
 
@@ -286,17 +277,17 @@ module storageAccount 'br/amavm:res/storage/storage-account:0.2.0' = {
       bypass: 'None'
     }
     roleAssignments: isDevEnvironment ? [
-      {
-        principalId: engineersGroupObjectId
-        principalType: 'Group'
-        roleDefinitionIdOrName: 'Storage Blob Data Contributor'
-      }
-      {
-        principalId: engineersGroupObjectId
-        principalType: 'Group'
-        roleDefinitionIdOrName: 'Storage File Data Privileged Contributor'
-      }
-    ] : null
+        {
+          principalId: engineersGroupObjectId
+          principalType: 'Group'
+          roleDefinitionIdOrName: 'Storage Blob Data Contributor'
+        }
+        {
+          principalId: engineersGroupObjectId
+          principalType: 'Group'
+          roleDefinitionIdOrName: 'Storage File Data Privileged Contributor'
+        }
+      ] : []
     privateEndpoints:[
       {
         subnetResourceId: subnetIn.outputs.resourceId
@@ -370,31 +361,50 @@ module fileShare 'br/amavm:res/storage/storage-account/file-service/share:0.1.0'
 // Event Hub
 // ----------------------------------------------
 
-// create event hub
+// Event Hub (AMAVM module — replaces local namespace, eventhub, consumer-group, PE, and RBAC modules)
 var eventHubNamespaceName = names.outputs.namingConvention['Microsoft.EventHub/namespaces']
-module eventHubNamespace '../../modules/infra/integration/event-hub/namespace.bicep' = {
+var eventHubName = 'dest'
+module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-evhns'
   params: {
     name: eventHubNamespaceName
     location: vNet.location
-    sku: {
-      name: 'Standard'
-      tier: 'Standard'
-      capacity: 1
-    }
+    tags: mytags
+    skuName: 'Standard'
+    skuCapacity: 1
     isAutoInflateEnabled: true
     maximumThroughputUnits: 10
-    roleAssignments: (isDevEnvironment)
-      ? [
+    managedIdentities: {
+      systemAssigned: true
+    }
+    eventhubs: [
+      {
+        name: eventHubName
+        partitionCount: 1
+        messageRetentionInDays: 1
+        consumergroups: [
           {
-            principalId: engineersGroupObjectId
-            principalType: 'Group'
-            roleDefinitionIdOrName: 'Azure Event Hubs Data Owner'
-            description: 'DEV team access to Event Hub'
+            name: 'drcptesting'
           }
         ]
-      : null
+      }
+    ]
+    privateEndpoints: [
+      {
+        name: '${privateEndpointsNameRoot}-evhns'
+        subnetResourceId: subnetIn.outputs.resourceId
+        service: 'namespace'
+        tags: mytags
+      }
+    ]
+    roleAssignments: isDevEnvironment ? [
+        {
+          principalId: engineersGroupObjectId
+          principalType: 'Group'
+          roleDefinitionIdOrName: 'Azure Event Hubs Data Owner'
+        }
+      ] : []
     diagnosticSettings: [
       {
         name: 'allMetricsAndLogs'
@@ -402,65 +412,10 @@ module eventHubNamespace '../../modules/infra/integration/event-hub/namespace.bi
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
       }
     ]
-    tags: mytags
   }
-}
-
-var eventHubName = 'dest' // names.outputs.namingConvention['Microsoft.EventHub/namespaces/eventhubs']
-module eventHub '../../modules/infra/integration/event-hub/main.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-evh'
-  params: {
-    name: eventHubName
-    eventHubNamespaceName: eventHubNamespace.outputs.name
-    partitionCount: 1
-    messageRetentionInDays: 1
-    doConfigureCapture: false // To capture the event streams, you need ADLS and this testcase we have only storage acount without ADLS
-    captureDestination: 'EventHubArchive.AzureBlockBlob'
-    storageAccountResourceId: storageAccount.outputs.resourceId
-    blobContainer: blobContainer.outputs.name
-    captureEnabled: true
-    captureSkipEmptyArchives: true
-  }
-}
-
-module eventHubConsumerGroup '../../modules/infra/integration/event-hub/consumer-group.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-evh-cg'
-  params: {
-    eventHubNamespaceName: eventHubNamespace.outputs.name
-    eventHubName: eventHub.outputs.name
-    name: 'drcptesting'
-  }
-}
-
-// integrate eventhub namespace to vnet
-module privateEndpointEventHubNamespace '../../modules/infra/network/private-endpoint/main.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-evhns-pep'
-  params: {
-    privateEndpointName: '${privateEndpointsNameRoot}-evhns'
-    location: vNet.location
-    privateLinkResource: eventHubNamespace.outputs.id
-    subnet: subnetIn.outputs.resourceId
-    targetSubResource: 'namespace'
-    tags: mytags
-  }
-}
-
-module storageBlobByEventhubNamespaceRbac '../../modules/infra/storage/storage-account/modules/role-assignment.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-sta-evhns-rbac'
-  params: {
-    resourceName: storageAccount.outputs.name
-    principals: [
-      {
-        objectId: eventHubNamespace.outputs.principalId
-        principalType: 'ServicePrincipal'
-      }
-    ]
-    roleDefinitionIdOrName: 'Storage Blob Data Owner'
-  }
+  dependsOn: [
+    subnetOut
+  ]
 }
 
 // ----------------------------------------------
@@ -540,7 +495,7 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
         FUNCTIONS_EXTENSION_VERSION: '~4'
         FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
         WEBSITE_RUN_FROM_PACKAGE: 1
-        EventHubConnection__fullyQualifiedNamespace: eventHubNamespace.outputs.hostname
+        EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespaceName}.servicebus.windows.net'
       }
       msDeployConfiguration: {
         packageUri: ''
@@ -548,36 +503,52 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
       tags:tags
   }
 }
-// use app identity to grant access to the KeyVault
-var functionAppIdentity = functionApp.outputs.systemAssignedMIPrincipalId
+// --------------------------------------------------
+// Separate RBAC assignments (break circular dependency:
+//   storageAccount → eventHubNamespace → functionApp → storageAccount)
+// --------------------------------------------------
 
-module eventHubByFuncAppRbac '../../modules/infra/integration/event-hub/modules/role-assignment.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-evhns-funcapp-rbac'
-  params: {
-    resourceName: eventHubNamespace.outputs.name
-    principals: [
-      {
-        objectId: functionAppIdentity
-        principalType: 'ServicePrincipal'
-      }
-    ]
-    rbacRole: 'Azure Event Hubs Data Owner'
-  }
-}
-
-module storageBlobByFuncAppRbac '../../modules/infra/storage/storage-account/modules/role-assignment.bicep' = {
+// Function App MI → Storage Blob Data Owner
+module storageBlobByFuncAppRbac 'roleAssignment.bicep' = {
   scope: resourceGroup
   name: '${deployment().name}-sta-funcapp-rbac'
   params: {
-    resourceName: storageAccount.outputs.name
-    principals: [
-      {
-        objectId: functionAppIdentity
-        principalType: 'ServicePrincipal'
-      }
-    ]
-    roleDefinitionIdOrName: 'Storage Blob Data Owner'
+    storageAccountName: storageAccount.outputs.name
+    principalId: functionApp.outputs.systemAssignedMIPrincipalId
+    roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner
+  }
+}
+
+// Event Hub NS MI → Storage Blob Data Owner
+module storageBlobByEvhRbac 'roleAssignment.bicep' = {
+  scope: resourceGroup
+  name: '${deployment().name}-sta-evh-rbac'
+  params: {
+    storageAccountName: storageAccount.outputs.name
+    principalId: eventHubNamespace.outputs.systemAssignedMIPrincipalId
+    roleDefinitionId: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner
+  }
+}
+
+// Function App MI → Event Hubs Data Owner
+module evhByFuncAppRbac 'evhRoleAssignment.bicep' = {
+  scope: resourceGroup
+  name: '${deployment().name}-evh-funcapp-rbac'
+  params: {
+    eventHubNamespaceName: eventHubNamespace.outputs.name
+    principalId: functionApp.outputs.systemAssignedMIPrincipalId
+    roleDefinitionId: 'f526a384-b230-433a-b45c-95f59c4a2dec' // Azure Event Hubs Data Owner
+  }
+}
+
+// Function App MI → Key Vault Secrets User
+module kvByFuncAppRbac 'kvRoleAssignment.bicep' = {
+  scope: resourceGroup
+  name: '${deployment().name}-kv-funcapp-rbac'
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: functionApp.outputs.systemAssignedMIPrincipalId
+    roleDefinitionId: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
   }
 }
 
@@ -585,5 +556,5 @@ output keyvaultName string = keyVault.outputs.name
 output functionAppName string = functionApp.outputs.name
 output functionAppPlanName string = appServicePlan.outputs.name
 output eventHubNamespaceName string = eventHubNamespace.outputs.name
-output eventHubName string = eventHub.outputs.name
+output eventHubName string = eventHubName
 output storageAccountName string = storageAccount.outputs.name

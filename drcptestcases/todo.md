@@ -86,8 +86,9 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 | `storage/storage-account/modules/role-assignment.bicep` | `roleAssignments` param on storage-account | Inline |
 
 - [x] Migrate Event Hub to AMAVM `event-hub/namespace`
-- [x] Replace role-assignment helpers with inline `roleAssignments` (Event Hub + Storage; 1 kept as helper for circular dep)
-- [ ] Validate `bicep build` passes — **BLOCKED**: circular dependency cycle (`eventHubNamespace → functionApp → storageAccount`); needs `roleAssignment.bicep` helper to break cycle
+- [x] Replace role-assignment helpers with inline `roleAssignments` (Event Hub + Storage; separate helpers for cross-deps)
+- [x] Fix circular dependency: extracted 3 cross-resource RBAC assignments into separate modules (`roleAssignment.bicep`, `evhRoleAssignment.bicep`, `kvRoleAssignment.bicep`)
+- [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
 - [x] Update README
 
@@ -437,6 +438,37 @@ Still uncovered (no test case): `app-configuration/configuration-store`, `servic
 - Use `/azure:azure-validate` to run pre-deployment checks on module Bicep without a full test scenario
 - Use `/azure:azure-compliance` to audit deployed instances against DRCP policies
 - Use `/azure:azure-diagnostics` to troubleshoot deployment failures when creating new test scenarios
+
+---
+
+## P2.5 — RBAC Enforcement Across All Scenarios
+
+All scenarios should use Entra ID RBAC (managed identity + role assignments) instead of connection strings or access keys. This is a DRCP requirement: no local auth, no shared keys, no SAS tokens.
+
+**Exception:** Logic App connections (scenario 3) require a connection string due to Logic App connector limitations — this is the only acceptable exception.
+
+**Audit checklist:**
+
+| Scenario | Resource | Auth Method | Status |
+|---|---|---|---|
+| 1 | SQL, KV, Storage | MI RBAC | [ ] Verify |
+| 2 | Cosmos DB, KV, Storage | MI RBAC (`disableLocalAuth: true`) | [ ] Verify |
+| 3 | Logic App, Storage | Connection string (Logic App exception) | [ ] Document exception |
+| 4 | Event Hub, KV, Storage | MI RBAC (`disableLocalAuth: true`) | [x] Confirmed — separate RBAC modules |
+| 5 | App Gateway, Web Apps, Storage | MI RBAC | [ ] Verify |
+| 7 | ACR, Logic App, Storage | Mixed (Logic App exception) | [ ] Verify |
+| 8 | Cosmos DB, APIM, Storage | MI RBAC where possible | [ ] Verify |
+| 9 | AKS, ACR, Storage | MI RBAC | [ ] Verify |
+| 10 | Data Factory, Databricks, Storage | MI RBAC | [ ] Verify |
+| 11 | Web Apps, SQL, Storage | MI RBAC | [ ] Verify |
+| 13 | Redis | MI RBAC (`disableAccessKeyAuthentication: true`) | [x] Built with Entra auth |
+| 14 | Event Hub, Function App | MI RBAC (`disableLocalAuth: true`) | [x] Built with Entra auth |
+| 15 | Cosmos DB | MI RBAC (`disableLocalAuthentication: true`) | [x] Built with Entra auth |
+| 16 | OpenAI, AI Search, Storage | UAMI RBAC | [ ] Verify |
+
+- [ ] Audit scenarios 1, 2, 5, 7, 8, 9, 10, 11 for RBAC compliance
+- [ ] Document Logic App exception in scenario 3 README
+- [ ] Use `/azure:azure-rbac` to verify least-privilege roles per scenario
 
 ---
 
