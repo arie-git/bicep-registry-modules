@@ -534,6 +534,25 @@ The script enters the "outputs with descriptions" branch (line 657) because **so
 - [x] Added second pass in `buildBicepFiles.ps1` for `buildReadme` mode: scans for `README.md` files, skips those with `version.json` (already handled), generates READMEs for remaining child modules
 - [x] Verified: 17 child modules now discovered locally (app-configuration/2, db-for-postgre-sql/5, insights/2, search/1, service-bus/7)
 
+### Pending Karen Validation Batch
+
+All implementations below are code-complete and `bicep build` verified. They await Karen's acceptance gate (checklist re-audit + `/azure:azure-validate` + `/azure:azure-compliance`).
+
+| Task | Module(s) | What changed |
+|---|---|---|
+| FEAT-1 | web/site (slots) | Slot param, module loop, outputs |
+| FEAT-1b | web/site + slot | `resourceInput<>` types, upstream param sync, `slotType` update |
+| FEAT-2 | container-service/managed-cluster | `autoScalerProfile` → `resourceInput<>`, stale params removed |
+| FEAT-3 | container-service/managed-cluster | Agent pools (confirmed already active) |
+| FEAT-4 | container-service/managed-cluster | Ingress/DNS/add-ons (stale comments cleaned) |
+| FEAT-5 | container-service/managed-cluster | Pod identity/security, CMK removed, deprecated PSP removed |
+| FEAT-6 | container-service/managed-cluster + agent-pool | Flux removed, 15 agent-pool params added, tests updated |
+| BF-7 | web/site config--appsettings | Queue/table URIs, AppInsights version, storage auth, relay fix |
+
+- [ ] Run Karen validation on FEAT-1 + FEAT-1b (web/site + slot)
+- [ ] Run Karen validation on FEAT-2/3/4/5/6 (container-service/managed-cluster)
+- [ ] Run Karen validation on BF-7 (web/site config--appsettings)
+
 ---
 
 ## BUILD-VALIDATE: Local Build Validation (dev-only PE/ACR ref switch)
@@ -548,7 +567,7 @@ Temporarily switch ACR module references to local paths, run `buildBicepFiles.ps
 - [x] Switch WAF policy ACR ref to local path in network/application-gateway
 - [x] Remove unused `tenantId` param in db-for-postgre-sql/flexible-server
 - [x] Full `buildBicepFiles.ps1` passes (only 2 BCP192 remain: kubernetes-configuration/extension and private-dns-zone — not in fork)
-- [ ] Restore all ACR refs before committing (PE, WAF policy)
+- [x] Restore all ACR refs before committing (PE, WAF policy) — confirmed: 20 `br/amavm:res/network/private-endpoint:0.2.0` refs in place
 
 ### BV-2: Remaining ACR refs (modules not in fork)
 
@@ -864,6 +883,21 @@ For each module: diff upstream vs fork params, add new params/types/resources, r
 
 - [x] SYNC-27: insights/activity-log-alert — 0.3 → 0.4 (gap: 1) — DONE: deployments to 2024-07-01
 - [x] SYNC-28: insights/metric-alert — 0.3 → 0.4 (gap: 1) — DONE: deployments to 2024-07-01
+
+### SYNC Phase 2: Update upstream.json to match synced versions
+
+**Issue:** SYNC-01 through SYNC-28 updated API versions and parameters within modules, but most `upstream.json` files still show the original fork-point version — not the version that was synced to. Only 5 modules have current `upstream.json`:
+
+| Status | Modules |
+|---|---|
+| **upstream.json current** | cache/redis (0.16), document-db/database-account (0.19), event-hub/namespace (0.14), cognitive-services/account (0.14), storage/storage-account (0.32) |
+| **upstream.json stale** | All other 17 whitelisted modules — upstream.json still shows the pre-SYNC version |
+
+This means `upstream.json` does not accurately reflect what was synced. For traceability:
+
+- [ ] Update `upstream.json` for all 17 stale modules to match the version synced in SYNC-01 through SYNC-28
+- [ ] Update `instructions.md` whitelisted components table (upstream versions column is stale — shows original fork versions)
+- [ ] Use `/azure:azure-validate` to spot-check modules after upstream.json updates
 
 ### SYNC-TD: Technical Debt Comparison vs Upstream (Whitelisted Modules Only)
 

@@ -178,30 +178,32 @@ The following Azure skills are installed and available via `/skill-name` syntax.
 
 ## Whitelisted Components → Module Mapping
 
-| # | Whitelisted Component | AVM Resource Path | Upstream Version | amavm Status |
-|---|---|---|---|---|
-| 1 | AI-Search | search/search-service | 0.9 | Present |
-| 2 | AI-services | cognitive-services/account | 0.9 | Present |
-| 3 | App-Configuration | app-configuration/configuration-store | 0.6 | Present |
-| 4 | Application-Gateway | network/application-gateway | 0.5 | Present |
-| 5 | Application-Insights | insights/component | 0.4 | Present |
-| 6 | App-Service | web/site + web/serverfarm | 0.11, 0.2 | Present |
-| 7 | Container-Registry | container-registry/registry | 0.3 | Present |
-| 8 | **Cosmos-DB** | document-db/database-account | 0.19 | **GAP** |
-| 9 | Databricks | databricks/workspace, databricks/access-connector | 0.5, 0.1 | Present |
-| 10 | Data-Factory | data-factory/factory | 0.3 | Present |
-| 11 | **Event-Hubs** | event-hub/namespace | 0.14 | **GAP** |
-| 12 | Key-Vault | key-vault/vault | 0.6 | Present |
-| 13 | Kubernetes-Service | container-service/managed-cluster | 0.3 | Present |
-| 14 | Log-Analytics-Workspace | operational-insights/workspace | 0.3 | Present |
-| 15 | Monitor | insights/* (action-group, metric-alert, etc.) | various | Present |
-| 16 | **Notification-Hubs** | _(no upstream AVM module)_ | N/A | **GAP** |
-| 17 | PostgreSQL | db-for-postgre-sql/flexible-server | 0.13 | Present |
-| 18 | **Redis** | cache/redis | 0.16 | **GAP** |
-| 19 | Service-Bus | service-bus/namespace | 0.14 | Present |
-| 20 | SQL-Database | sql/server | 0.4 | Present |
-| 21 | Storage-Account | storage/storage-account | 0.10 | Present |
-| 22 | Subscription | _(platform-level, not a res module)_ | N/A | N/A |
+| # | Whitelisted Component | AVM Resource Path | Upstream Version | amavm Synced To | amavm Status |
+|---|---|---|---|---|---|
+| 1 | AI-Search | search/search-service | 0.12 | 0.12 | Present |
+| 2 | AI-services | cognitive-services/account | 0.14 | 0.14 | Present |
+| 3 | App-Configuration | app-configuration/configuration-store | 0.9 | 0.9 | Present |
+| 4 | Application-Gateway | network/application-gateway | 0.9 | 0.9 | Present |
+| 5 | Application-Insights | insights/component | 0.7 | 0.7 | Present |
+| 6 | App-Service | web/site + web/serverfarm | 0.22, 0.7 | 0.22, 0.7 | Present |
+| 7 | Container-Registry | container-registry/registry | 0.11 | 0.11 | Present |
+| 8 | Cosmos-DB | document-db/database-account | 0.19 | 0.19 | Present |
+| 9 | Databricks | databricks/workspace, databricks/access-connector | 0.12, 0.4 | 0.12, 0.4 | Present |
+| 10 | Data-Factory | data-factory/factory | 0.11 | 0.11 | Present |
+| 11 | Event-Hubs | event-hub/namespace | 0.14 | 0.14 | Present (ORPHANED upstream) |
+| 12 | Key-Vault | key-vault/vault | 0.13 | 0.13 | Present |
+| 13 | Kubernetes-Service | container-service/managed-cluster | 0.12 | 0.12 | Present |
+| 14 | Log-Analytics-Workspace | operational-insights/workspace | 0.15 | 0.15 | Present |
+| 15 | Monitor | insights/* (action-group, metric-alert, etc.) | various | various | Present |
+| 16 | **Notification-Hubs** | _(no upstream AVM module)_ | N/A | N/A | **DEFERRED** |
+| 17 | PostgreSQL | db-for-postgre-sql/flexible-server | 0.15 | 0.15 | Present |
+| 18 | Redis | cache/redis | 0.16 | 0.16 | Present |
+| 19 | Service-Bus | service-bus/namespace | 0.16 | 0.16 | Present |
+| 20 | SQL-Database | sql/server | 0.21 | 0.21 | Present |
+| 21 | Storage-Account | storage/storage-account | 0.32 | 0.32 | Present |
+| 22 | Subscription | _(platform-level, not a res module)_ | N/A | N/A | N/A |
+
+**Note:** "amavm Synced To" reflects the upstream version whose API versions and key params were synced into the fork. However, 17 modules' `upstream.json` files still show the original fork-point version — see SYNC Phase 2 in `tasks/todo.md`.
 
 ### Supporting Modules (present in amavm, required by whitelisted modules)
 
@@ -210,7 +212,7 @@ The following Azure skills are installed and available via `/skill-name` syntax.
 - `network/application-gateway-web-application-firewall-policy`
 - `insights/diagnostic-setting`, `insights/data-collection-endpoint`, `insights/data-collection-rule`
 - `insights/private-link-scope`, `insights/scheduled-query-rule`, `insights/webtest`
-- `insights/action-group`, `insights/activity-log-alert`
+- `insights/action-group`, `insights/activity-log-alert`, `insights/metric-alert`
 - `web/static-site`
 
 ---
