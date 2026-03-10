@@ -339,45 +339,40 @@ Commented-out code: `slots` parameter, `app_slots` module loop, slot outputs (sl
 
 ### FEAT-2: container-service/managed-cluster — AutoScaler Profile
 
-~56 lines of commented-out autoscaler parameters (scanInterval, scaleDown delays, utilization threshold, etc.) and ~28 lines of commented autoScalerProfile resource block.
+The 16 individual autoScaler params (scanInterval, scaleDown delays, etc.) were stale — already superseded by the active `param autoScalerProfile` which passes through to the resource. Cleaned up:
 
-- [ ] Uncomment and implement autoScaler profile parameters
-- [ ] Uncomment and implement autoScalerProfile in managedCluster properties
-- [ ] Update tests to cover autoscaler configuration
-- [ ] `bicep build` passes
+- [x] Removed 56 lines of stale individual autoScalerProfile params (replaced by single `autoScalerProfile` param)
+- [x] Updated `autoScalerProfile` type from `object?` to `resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.autoScalerProfile?` (matching upstream)
+- [x] Removed unused `privateEndpointType` import
+- [x] `bicep build` passes (only BCP192 for kubernetes-configuration — expected)
 - [ ] Karen: validate
+- [ ] Update tests to cover autoscaler configuration
 
 ### FEAT-3: container-service/managed-cluster — Agent Pools Module
 
-~43 lines of commented-out agentPools module loop.
+**Already implemented.** The `managedCluster_agentPools` module loop is active (not commented out). Todo was stale.
 
-- [ ] Uncomment and implement agentPools module loop
-- [ ] Update agent-pool/main.bicep API version from preview to stable
-- [ ] Align agent-pool API version with main cluster (`2024-08-01`)
+- [x] Agent pools module loop already active
+- [x] Agent pool API versions already aligned to `2024-08-01` (done in TD-16)
 - [ ] Update tests to cover additional agent pools
-- [ ] `bicep build` passes
 - [ ] Karen: validate
 
 ### FEAT-4: container-service/managed-cluster — Ingress, DNS, and Add-ons
 
-Commented-out: httpApplicationRouting, webApplicationRouting, AGIC, ACI connector, DNS zone, flux extension.
+**Mostly already implemented.** httpApplicationRouting, webApplicationRouting, AGIC, ACI connector, DNS zone params are all active (not commented out). Remaining commented-out items (kedaAddon, fluxExtension, kubeDashboard, openServiceMesh) are planned future features.
 
-- [ ] Evaluate which add-ons are needed for amavm scope
-- [ ] Uncomment and implement selected add-on parameters
-- [ ] Uncomment and implement DNS zone role assignment (if webApplicationRouting enabled)
-- [ ] Uncomment and implement flux extension module (if GitOps required)
+- [x] Ingress/DNS/AGIC/ACI params already active
+- [ ] Evaluate and enable remaining commented-out add-ons (kedaAddon, fluxExtension, kubeDashboard, openServiceMesh)
 - [ ] Update tests
-- [ ] `bicep build` passes
 - [ ] Karen: validate
 
 ### FEAT-5: container-service/managed-cluster — Pod Identity and Security
 
-Commented-out: podIdentityProfile parameters (allowNetworkPluginKubenet, enable, userAssignedIdentities, exceptions), identityProfile, diskEncryptionSetID, httpProxyConfig.
+**Mostly already implemented.** podIdentityProfile, identityProfile, diskEncryptionSetResourceId, httpProxyConfig are all active params. Remaining commented-out items (CMK customerManagedKey, enablePodSecurityPolicy) are planned future features.
 
-- [ ] Evaluate which security features are needed
-- [ ] Uncomment and implement selected parameters
+- [x] podIdentityProfile, identityProfile, diskEncryptionSetResourceId, httpProxyConfig already active
+- [ ] Evaluate and enable CMK support (customerManagedKey param + cMKKeyVault resource)
 - [ ] Update tests
-- [ ] `bicep build` passes
 - [ ] Karen: validate
 
 ---

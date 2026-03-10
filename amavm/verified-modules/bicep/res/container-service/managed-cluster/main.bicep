@@ -350,63 +350,6 @@ param maintenanceConfigurations maintenanceConfigurationsType = [
   }
 ]
 
-// @description('Optional. Specifies the scan interval of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileScanInterval string = '10s'
-
-// @description('Optional. Specifies the scale down delay after add of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileScaleDownDelayAfterAdd string = '10m'
-
-// @description('Optional. Specifies the scale down delay after delete of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileScaleDownDelayAfterDelete string = '20s'
-
-// @description('Optional. Specifies scale down delay after failure of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileScaleDownDelayAfterFailure string = '3m'
-
-// @description('Optional. Specifies the scale down unneeded time of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileScaleDownUnneededTime string = '10m'
-
-// @description('Optional. Specifies the scale down unready time of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileScaleDownUnreadyTime string = '20m'
-
-// @description('Optional. Specifies the utilization threshold of the auto-scaler of the AKS cluster.')
-// param autoScalerProfileUtilizationThreshold string = '0.5'
-
-// @description('Optional. Specifies the max graceful termination time interval in seconds for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileMaxGracefulTerminationSec string = '600'
-
-// @description('Optional. Specifies the balance of similar node groups for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileBalanceSimilarNodeGroups bool = false
-
-// @allowed([
-//   'least-waste'
-//   'most-pods'
-//   'priority'
-//   'random'
-// ])
-// @description('Optional. Specifies the expand strategy for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileExpander string = 'random'
-
-// @description('Optional. Specifies the maximum empty bulk delete for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileMaxEmptyBulkDelete string = '10'
-
-// @description('Optional. Specifies the maximum node provisioning time for the auto-scaler of the AKS cluster. Values must be an integer followed by an "m". No unit of time other than minutes (m) is supported.')
-// param autoScalerProfileMaxNodeProvisionTime string = '15m'
-
-// @description('Optional. Specifies the maximum total unready percentage for the auto-scaler of the AKS cluster. The maximum is 100 and the minimum is 0.')
-// param autoScalerProfileMaxTotalUnreadyPercentage string = '45'
-
-// @description('Optional. For scenarios like burst/batch scale where you do not want CA to act before the kubernetes scheduler could schedule all the pods, you can tell CA to ignore unscheduled pods before they are a certain age. Values must be an integer followed by a unit ("s" for seconds, "m" for minutes, "h" for hours, etc).')
-// param autoScalerProfileNewPodScaleUpDelay string = '0s'
-
-// @description('Optional. Specifies the OK total unready count for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileOkTotalUnreadyCount string = '3'
-
-// @description('Optional. Specifies if nodes with local storage should be skipped for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileSkipNodesWithLocalStorage bool = true
-
-// @description('Optional. Specifies if nodes with system pods should be skipped for the auto-scaler of the AKS cluster.')
-// param autoScalerProfileSkipNodesWithSystemPods bool = true
-
 // ---- Ingress and DNS -----
 
 @description('Optional. Specifies whether the httpApplicationRouting add-on is enabled or not.')
@@ -613,7 +556,7 @@ param upgradeSettings object?
 param windowsProfile object?
 
 @description('Optional. Parameters to be applied to the cluster-autoscaler when enabled.')
-param autoScalerProfile object?
+param autoScalerProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.autoScalerProfile?
 
 @description('Conditional. Information about a service principal identity for the cluster to use for manipulating Azure APIs. Required if no managed identities are assigned to the cluster.')
 param aksServicePrincipalProfile object?
@@ -1204,7 +1147,6 @@ import {
   diagnosticSettingType
   lockType
   managedIdentitiesType
-  privateEndpointType
   roleAssignmentType
   customerManagedKeyType
 } from '../../../../bicep-shared/types.bicep'
