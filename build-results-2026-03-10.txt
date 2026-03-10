@@ -1,32 +1,326 @@
-2026-03-10T16:33:46.2792152Z ##[section]Starting: Compare README files
-2026-03-10T16:33:46.2798867Z ==============================================================================
-2026-03-10T16:33:46.2799000Z Task         : Azure PowerShell
-2026-03-10T16:33:46.2799065Z Description  : Run a PowerShell script within an Azure environment
-2026-03-10T16:33:46.2799157Z Version      : 5.269.2
-2026-03-10T16:33:46.2799217Z Author       : Microsoft Corporation
-2026-03-10T16:33:46.2799300Z Help         : https://aka.ms/azurepowershelltroubleshooting
-2026-03-10T16:33:46.2799370Z ==============================================================================
-2026-03-10T16:33:46.8829022Z AZUREPS_HOST_ENVIRONMENT: ADO/AzurePowerShell@v5_Linux_sha-36-vmss001BFL_AMAVM-Modules-Build_351125__
-2026-03-10T16:33:46.8916024Z Generating script.
-2026-03-10T16:33:46.8916457Z Formatted command: . '/agent/_work/1/s/utils/compareReadMe.ps1' -modulesRootPath "/agent/_work/1/s/bicep/res/" -destinationPathPrefix "/agent/_work/_temp/repocode/bicep/res/"
-2026-03-10T16:33:46.8927251Z [command]/usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command . '/agent/_work/_tasks/AzurePowerShell_72a1931b-effb-4d2e-8fd8-f8472a07cb62/5.269.2/ImportVstsTaskSdk.ps1'; . '/agent/_work/_temp/faee4265-ec1c-4021-ab76-9907dac28e49.ps1'
-2026-03-10T16:33:46.8979916Z File saved!
-2026-03-10T16:33:47.6184468Z ##[command]Import-Module -Name /usr/share/az_14.6.0/Az.Accounts/5.3.2/Az.Accounts.psd1 -Global
-2026-03-10T16:33:48.1990060Z ##[command]Clear-AzContext -Scope Process
-2026-03-10T16:33:48.3156116Z ##[command]Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue
-2026-03-10T16:33:48.3680121Z ##[command]Connect-AzAccount -ServicePrincipal -Tenant c1f94f0d-9a3d-4854-9288-bb90dcf2a90d -Credential System.Management.Automation.PSCredential -Environment AzureCloud @processScope
-2026-03-10T16:33:49.1586891Z ##[command] Set-AzContext -SubscriptionId 1be224b4-ef10-453a-aa1e-9dd04e31bd06 -TenantId c1f94f0d-9a3d-4854-9288-bb90dcf2a90d
-2026-03-10T16:33:49.6882205Z Fetching ReadMe under /agent/_work/1/s/bicep/res/
-2026-03-10T16:33:49.7957849Z Running parallel README validation with ThrottleLimit=6 for 69 modules
-2026-03-10T16:34:21.6499788Z The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: WARNING: /agent/_work/1/s/bicep/res/container-registry/registry/cache-rule/main.bicep(25,30) : Warning no-unused-imports: Import "minimalBuiltInRoleNames" is declared but never used. [https://aka.ms/bicep/linter-diagnostics#no-unused-imports]
-2026-03-10T16:34:21.6503007Z At /agent/_work/1/s/utils/setModuleReadMe.ps1:2175 char:36
-2026-03-10T16:34:21.6702205Z + … ileContent = az bicep build --file $TemplateFilePath --stdout | Conve …
-2026-03-10T16:34:21.6703184Z +                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-2026-03-10T16:34:21.6958770Z 
-2026-03-10T16:34:21.7053600Z ##[error]PowerShell exited with code '1'.
-2026-03-10T16:34:21.7071372Z [command]/usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command . '/agent/_work/_tasks/AzurePowerShell_72a1931b-effb-4d2e-8fd8-f8472a07cb62/5.269.2/RemoveAzContext.ps1'
-2026-03-10T16:34:22.8546910Z ##[command]Disconnect-AzAccount -Scope CurrentUser -ErrorAction Stop
-2026-03-10T16:34:22.9820633Z ##[command]Disconnect-AzAccount -Scope Process -ErrorAction Stop
-2026-03-10T16:34:22.9894663Z ##[command]Clear-AzContext -Scope Process -ErrorAction Stop
-2026-03-10T16:34:23.7724086Z 
-2026-03-10T16:34:23.7816304Z ##[section]Finishing: Compare README files
+2026-03-10T16:51:47.2346824Z ##[section]Starting: Compare README files
+2026-03-10T16:51:47.2351772Z ==============================================================================
+2026-03-10T16:51:47.2351883Z Task         : Azure PowerShell
+2026-03-10T16:51:47.2351942Z Description  : Run a PowerShell script within an Azure environment
+2026-03-10T16:51:47.2352034Z Version      : 5.269.2
+2026-03-10T16:51:47.2352092Z Author       : Microsoft Corporation
+2026-03-10T16:51:47.2352162Z Help         : https://aka.ms/azurepowershelltroubleshooting
+2026-03-10T16:51:47.2352233Z ==============================================================================
+2026-03-10T16:51:47.7795579Z AZUREPS_HOST_ENVIRONMENT: ADO/AzurePowerShell@v5_Linux_sha-36-vmss001BDM_AMAVM-Modules-Build_351130__
+2026-03-10T16:51:47.7829240Z Generating script.
+2026-03-10T16:51:47.7829640Z Formatted command: . '/agent/_work/1/s/utils/compareReadMe.ps1' -modulesRootPath "/agent/_work/1/s/bicep/res/" -destinationPathPrefix "/agent/_work/_temp/repocode/bicep/res/"
+2026-03-10T16:51:47.7838581Z [command]/usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command . '/agent/_work/_tasks/AzurePowerShell_72a1931b-effb-4d2e-8fd8-f8472a07cb62/5.269.2/ImportVstsTaskSdk.ps1'; . '/agent/_work/_temp/a39812ed-95f0-42b6-ab39-503019334d0c.ps1'
+2026-03-10T16:51:47.7839851Z File saved!
+2026-03-10T16:51:48.3644144Z ##[command]Import-Module -Name /usr/share/az_14.6.0/Az.Accounts/5.3.2/Az.Accounts.psd1 -Global
+2026-03-10T16:51:48.8446164Z ##[command]Clear-AzContext -Scope Process
+2026-03-10T16:51:48.9488995Z ##[command]Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue
+2026-03-10T16:51:48.9980739Z ##[command]Connect-AzAccount -ServicePrincipal -Tenant c1f94f0d-9a3d-4854-9288-bb90dcf2a90d -Credential System.Management.Automation.PSCredential -Environment AzureCloud @processScope
+2026-03-10T16:51:49.9773806Z ##[command] Set-AzContext -SubscriptionId 1be224b4-ef10-453a-aa1e-9dd04e31bd06 -TenantId c1f94f0d-9a3d-4854-9288-bb90dcf2a90d
+2026-03-10T16:51:50.4388294Z Fetching ReadMe under /agent/_work/1/s/bicep/res/
+2026-03-10T16:51:50.5590789Z Running parallel README validation with ThrottleLimit=6 for 69 modules
+2026-03-10T16:52:38.4150395Z => app-configuration/configuration-store/replica
+2026-03-10T16:52:38.4153449Z    Comparing [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/replica/README.md] to [/agent/_work/_temp/repocode/bicep/res/app-configuration/configuration-store/replica/README.md]
+2026-03-10T16:52:38.4156205Z    OK
+2026-03-10T16:52:38.4158627Z 
+2026-03-10T16:52:38.4161036Z => app-configuration/configuration-store/key-value
+2026-03-10T16:52:38.4163541Z    Comparing [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/key-value/README.md] to [/agent/_work/_temp/repocode/bicep/res/app-configuration/configuration-store/key-value/README.md]
+2026-03-10T16:52:38.4166358Z    OK
+2026-03-10T16:52:38.4168467Z 
+2026-03-10T16:52:38.4170793Z => container-registry/registry/cache-rule
+2026-03-10T16:52:38.4173339Z    Comparing [/agent/_work/1/s/bicep/res/container-registry/registry/cache-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/container-registry/registry/cache-rule/README.md]
+2026-03-10T16:52:38.4176454Z    OK
+2026-03-10T16:52:38.4177360Z 
+2026-03-10T16:54:13.2616424Z => data-factory/factory/integration-runtime
+2026-03-10T16:54:13.2742697Z    Comparing [/agent/_work/1/s/bicep/res/data-factory/factory/integration-runtime/README.md] to [/agent/_work/_temp/repocode/bicep/res/data-factory/factory/integration-runtime/README.md]
+2026-03-10T16:54:13.2743427Z    OK
+2026-03-10T16:54:13.2743576Z 
+2026-03-10T16:54:15.4012224Z => cognitive-services/account
+2026-03-10T16:54:15.4065989Z    Comparing [/agent/_work/1/s/bicep/res/cognitive-services/account/README.md] to [/agent/_work/_temp/repocode/bicep/res/cognitive-services/account/README.md]
+2026-03-10T16:54:15.4066848Z    OK
+2026-03-10T16:54:15.4067208Z 
+2026-03-10T16:54:15.8185845Z => app-configuration/configuration-store
+2026-03-10T16:54:15.8186653Z    Comparing [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/README.md] to [/agent/_work/_temp/repocode/bicep/res/app-configuration/configuration-store/README.md]
+2026-03-10T16:54:15.8187746Z    OK
+2026-03-10T16:54:15.8187948Z 
+2026-03-10T16:54:20.0136020Z => cache/redis
+2026-03-10T16:54:20.0256298Z    Comparing [/agent/_work/1/s/bicep/res/cache/redis/README.md] to [/agent/_work/_temp/repocode/bicep/res/cache/redis/README.md]
+2026-03-10T16:54:20.0413323Z    OK
+2026-03-10T16:54:20.0608398Z 
+2026-03-10T16:55:43.2668647Z => data-factory/factory/linked-service
+2026-03-10T16:55:43.2707182Z    Comparing [/agent/_work/1/s/bicep/res/data-factory/factory/linked-service/README.md] to [/agent/_work/_temp/repocode/bicep/res/data-factory/factory/linked-service/README.md]
+2026-03-10T16:55:43.2746227Z    OK
+2026-03-10T16:55:43.2807433Z 
+2026-03-10T16:55:54.7976229Z => container-registry/registry
+2026-03-10T16:55:54.8040272Z    Comparing [/agent/_work/1/s/bicep/res/container-registry/registry/README.md] to [/agent/_work/_temp/repocode/bicep/res/container-registry/registry/README.md]
+2026-03-10T16:55:54.8041038Z    OK
+2026-03-10T16:55:54.8165214Z 
+2026-03-10T16:56:46.1310215Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [storageAccountPrivateEndpoints] as resource with identifier [*_storageAccountPrivateEndpoints] was not found in the corresponding linked template.[0m
+2026-03-10T16:56:46.2346959Z => databricks/access-connector
+2026-03-10T16:56:46.2347539Z    Comparing [/agent/_work/1/s/bicep/res/databricks/access-connector/README.md] to [/agent/_work/_temp/repocode/bicep/res/databricks/access-connector/README.md]
+2026-03-10T16:56:46.2347948Z    OK
+2026-03-10T16:56:46.2348107Z 
+2026-03-10T16:56:53.7058968Z => db-for-postgre-sql/flexible-server/administrator
+2026-03-10T16:56:53.7059521Z    Comparing [/agent/_work/1/s/bicep/res/db-for-postgre-sql/flexible-server/administrator/README.md] to [/agent/_work/_temp/repocode/bicep/res/db-for-postgre-sql/flexible-server/administrator/README.md]
+2026-03-10T16:56:53.7060191Z    OK
+2026-03-10T16:56:53.7060497Z 
+2026-03-10T16:56:55.7118170Z => container-service/managed-cluster
+2026-03-10T16:56:55.7118885Z    Comparing [/agent/_work/1/s/bicep/res/container-service/managed-cluster/README.md] to [/agent/_work/_temp/repocode/bicep/res/container-service/managed-cluster/README.md]
+2026-03-10T16:56:55.7119508Z    OK
+2026-03-10T16:56:55.7119748Z 
+2026-03-10T16:56:56.1332209Z => db-for-postgre-sql/flexible-server/advanced-threat-protection-setting
+2026-03-10T16:56:56.1332921Z    Comparing [/agent/_work/1/s/bicep/res/db-for-postgre-sql/flexible-server/advanced-threat-protection-setting/README.md] to [/agent/_work/_temp/repocode/bicep/res/db-for-postgre-sql/flexible-server/advanced-threat-protection-setting/README.md]
+2026-03-10T16:56:56.1333370Z    OK
+2026-03-10T16:56:56.1333636Z 
+2026-03-10T16:57:00.4225503Z => databricks/workspace
+2026-03-10T16:57:00.4226198Z    Comparing [/agent/_work/1/s/bicep/res/databricks/workspace/README.md] to [/agent/_work/_temp/repocode/bicep/res/databricks/workspace/README.md]
+2026-03-10T16:57:00.4229330Z    OK
+2026-03-10T16:57:00.4230257Z 
+2026-03-10T16:57:02.0111608Z => data-factory/factory
+2026-03-10T16:57:02.0112809Z    Comparing [/agent/_work/1/s/bicep/res/data-factory/factory/README.md] to [/agent/_work/_temp/repocode/bicep/res/data-factory/factory/README.md]
+2026-03-10T16:57:02.0113385Z    OK
+2026-03-10T16:57:02.0113682Z 
+2026-03-10T16:57:06.3508621Z => db-for-postgre-sql/flexible-server/configuration
+2026-03-10T16:57:06.3509424Z    Comparing [/agent/_work/1/s/bicep/res/db-for-postgre-sql/flexible-server/configuration/README.md] to [/agent/_work/_temp/repocode/bicep/res/db-for-postgre-sql/flexible-server/configuration/README.md]
+2026-03-10T16:57:06.3509913Z    OK
+2026-03-10T16:57:06.3510074Z 
+2026-03-10T16:57:23.0440880Z => db-for-postgre-sql/flexible-server/database
+2026-03-10T16:57:23.0443922Z    Comparing [/agent/_work/1/s/bicep/res/db-for-postgre-sql/flexible-server/database/README.md] to [/agent/_work/_temp/repocode/bicep/res/db-for-postgre-sql/flexible-server/database/README.md]
+2026-03-10T16:57:23.0447298Z    OK
+2026-03-10T16:57:23.0449342Z 
+2026-03-10T16:57:27.8754777Z => db-for-postgre-sql/flexible-server/firewall-rule
+2026-03-10T16:57:27.8755787Z    Comparing [/agent/_work/1/s/bicep/res/db-for-postgre-sql/flexible-server/firewall-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/db-for-postgre-sql/flexible-server/firewall-rule/README.md]
+2026-03-10T16:57:27.8756311Z    OK
+2026-03-10T16:57:27.8756476Z 
+2026-03-10T16:58:48.3737915Z => insights/component/linkedStorageAccounts
+2026-03-10T16:58:48.3906684Z    Comparing [/agent/_work/1/s/bicep/res/insights/component/linkedStorageAccounts/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/component/linkedStorageAccounts/README.md]
+2026-03-10T16:58:48.3907056Z    OK
+2026-03-10T16:58:48.3907154Z 
+2026-03-10T16:59:12.2223770Z => insights/action-group
+2026-03-10T16:59:12.2245883Z    Comparing [/agent/_work/1/s/bicep/res/insights/action-group/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/action-group/README.md]
+2026-03-10T16:59:12.2246690Z    OK
+2026-03-10T16:59:12.2247029Z 
+2026-03-10T16:59:25.7830876Z => db-for-postgre-sql/flexible-server
+2026-03-10T16:59:25.7831664Z    Comparing [/agent/_work/1/s/bicep/res/db-for-postgre-sql/flexible-server/README.md] to [/agent/_work/_temp/repocode/bicep/res/db-for-postgre-sql/flexible-server/README.md]
+2026-03-10T16:59:25.7832178Z    OK
+2026-03-10T16:59:25.7834479Z 
+2026-03-10T16:59:33.0830009Z => document-db/database-account
+2026-03-10T16:59:33.0832901Z    Comparing [/agent/_work/1/s/bicep/res/document-db/database-account/README.md] to [/agent/_work/_temp/repocode/bicep/res/document-db/database-account/README.md]
+2026-03-10T16:59:33.0835601Z    OK
+2026-03-10T16:59:33.0837755Z 
+2026-03-10T16:59:33.7091327Z => insights/activity-log-alert
+2026-03-10T16:59:33.7092361Z    Comparing [/agent/_work/1/s/bicep/res/insights/activity-log-alert/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/activity-log-alert/README.md]
+2026-03-10T16:59:33.7093041Z    OK
+2026-03-10T16:59:33.7097494Z 
+2026-03-10T16:59:35.4216418Z => event-hub/namespace
+2026-03-10T16:59:35.4217590Z    Comparing [/agent/_work/1/s/bicep/res/event-hub/namespace/README.md] to [/agent/_work/_temp/repocode/bicep/res/event-hub/namespace/README.md]
+2026-03-10T16:59:35.4218188Z    OK
+2026-03-10T16:59:35.4218518Z 
+2026-03-10T17:00:54.2386883Z => insights/component
+2026-03-10T17:00:54.2396793Z    Comparing [/agent/_work/1/s/bicep/res/insights/component/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/component/README.md]
+2026-03-10T17:00:54.2397535Z    OK
+2026-03-10T17:00:54.2526960Z 
+2026-03-10T17:00:54.8536265Z => insights/private-link-scope/scoped-resource
+2026-03-10T17:00:54.8596252Z    Comparing [/agent/_work/1/s/bicep/res/insights/private-link-scope/scoped-resource/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/private-link-scope/scoped-resource/README.md]
+2026-03-10T17:00:54.8596793Z    OK
+2026-03-10T17:00:54.8615548Z 
+2026-03-10T17:00:58.8300220Z => insights/data-collection-endpoint
+2026-03-10T17:00:58.8301139Z    Comparing [/agent/_work/1/s/bicep/res/insights/data-collection-endpoint/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/data-collection-endpoint/README.md]
+2026-03-10T17:00:58.8315941Z    OK
+2026-03-10T17:00:58.8316467Z 
+2026-03-10T17:01:44.3548546Z => insights/diagnostic-setting
+2026-03-10T17:01:44.3549241Z    Comparing [/agent/_work/1/s/bicep/res/insights/diagnostic-setting/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/diagnostic-setting/README.md]
+2026-03-10T17:01:44.3549783Z    OK
+2026-03-10T17:01:44.3550265Z 
+2026-03-10T17:01:47.4688282Z => insights/metric-alert
+2026-03-10T17:01:47.4726111Z    Comparing [/agent/_work/1/s/bicep/res/insights/metric-alert/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/metric-alert/README.md]
+2026-03-10T17:01:47.4726501Z    OK
+2026-03-10T17:01:47.4726599Z 
+2026-03-10T17:02:35.4768570Z => insights/data-collection-rule
+2026-03-10T17:02:35.4769399Z    Comparing [/agent/_work/1/s/bicep/res/insights/data-collection-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/data-collection-rule/README.md]
+2026-03-10T17:02:35.4796353Z    OK
+2026-03-10T17:02:35.4796673Z 
+2026-03-10T17:03:02.9886959Z => key-vault/vault/key
+2026-03-10T17:03:02.9887871Z    Comparing [/agent/_work/1/s/bicep/res/key-vault/vault/key/README.md] to [/agent/_work/_temp/repocode/bicep/res/key-vault/vault/key/README.md]
+2026-03-10T17:03:02.9888432Z    OK
+2026-03-10T17:03:02.9888728Z 
+2026-03-10T17:03:03.4658536Z => key-vault/vault/secret
+2026-03-10T17:03:03.4659437Z    Comparing [/agent/_work/1/s/bicep/res/key-vault/vault/secret/README.md] to [/agent/_work/_temp/repocode/bicep/res/key-vault/vault/secret/README.md]
+2026-03-10T17:03:03.4660028Z    OK
+2026-03-10T17:03:03.4662178Z 
+2026-03-10T17:03:04.9469971Z => insights/scheduled-query-rule
+2026-03-10T17:03:04.9489275Z    Comparing [/agent/_work/1/s/bicep/res/insights/scheduled-query-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/scheduled-query-rule/README.md]
+2026-03-10T17:03:04.9490428Z    OK
+2026-03-10T17:03:04.9507683Z 
+2026-03-10T17:03:05.5366351Z => insights/webtest
+2026-03-10T17:03:05.5439486Z    Comparing [/agent/_work/1/s/bicep/res/insights/webtest/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/webtest/README.md]
+2026-03-10T17:03:05.5440115Z    OK
+2026-03-10T17:03:05.5440243Z 
+2026-03-10T17:03:08.9853379Z => insights/private-link-scope
+2026-03-10T17:03:08.9854286Z    Comparing [/agent/_work/1/s/bicep/res/insights/private-link-scope/README.md] to [/agent/_work/_temp/repocode/bicep/res/insights/private-link-scope/README.md]
+2026-03-10T17:03:08.9854892Z    OK
+2026-03-10T17:03:08.9855405Z 
+2026-03-10T17:05:02.5246409Z => key-vault/vault
+2026-03-10T17:05:02.5486381Z    Comparing [/agent/_work/1/s/bicep/res/key-vault/vault/README.md] to [/agent/_work/_temp/repocode/bicep/res/key-vault/vault/README.md]
+2026-03-10T17:05:02.5687970Z    OK
+2026-03-10T17:05:02.5775619Z 
+2026-03-10T17:05:38.7767000Z => network/application-gateway-web-application-firewall-policy
+2026-03-10T17:05:38.7789933Z    Comparing [/agent/_work/1/s/bicep/res/network/application-gateway-web-application-firewall-policy/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/application-gateway-web-application-firewall-policy/README.md]
+2026-03-10T17:05:38.7791401Z    OK
+2026-03-10T17:05:38.7791685Z 
+2026-03-10T17:05:40.1198772Z => managed-identity/user-assigned-identity
+2026-03-10T17:05:40.1256473Z    Comparing [/agent/_work/1/s/bicep/res/managed-identity/user-assigned-identity/README.md] to [/agent/_work/_temp/repocode/bicep/res/managed-identity/user-assigned-identity/README.md]
+2026-03-10T17:05:40.1257380Z    OK
+2026-03-10T17:05:40.1257970Z 
+2026-03-10T17:05:44.1182791Z => network/network-security-group
+2026-03-10T17:05:44.1183675Z    Comparing [/agent/_work/1/s/bicep/res/network/network-security-group/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/network-security-group/README.md]
+2026-03-10T17:05:44.1184307Z    OK
+2026-03-10T17:05:44.1184495Z 
+2026-03-10T17:05:47.0981400Z => network/private-endpoint
+2026-03-10T17:05:47.1016652Z    Comparing [/agent/_work/1/s/bicep/res/network/private-endpoint/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/private-endpoint/README.md]
+2026-03-10T17:05:47.1018431Z    OK
+2026-03-10T17:05:47.1065907Z 
+2026-03-10T17:05:53.4506001Z => network/application-gateway
+2026-03-10T17:05:53.4605927Z    Comparing [/agent/_work/1/s/bicep/res/network/application-gateway/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/application-gateway/README.md]
+2026-03-10T17:05:53.4643146Z    OK
+2026-03-10T17:05:53.4643629Z 
+2026-03-10T17:06:13.6587540Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [subnet] as resource with identifier [*_subnet] was not found in the corresponding linked template.[0m
+2026-03-10T17:06:26.0996541Z => network/virtual-network/subnet
+2026-03-10T17:06:26.0997537Z    Comparing [/agent/_work/1/s/bicep/res/network/virtual-network/subnet/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/virtual-network/subnet/README.md]
+2026-03-10T17:06:26.0998800Z    OK
+2026-03-10T17:06:26.0999109Z 
+2026-03-10T17:06:26.1656442Z => network/route-table
+2026-03-10T17:06:26.1657316Z    Comparing [/agent/_work/1/s/bicep/res/network/route-table/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/route-table/README.md]
+2026-03-10T17:06:26.1658169Z    OK
+2026-03-10T17:06:26.1660175Z 
+2026-03-10T17:06:29.4717543Z => search/search-service/shared-private-link-resource
+2026-03-10T17:06:29.4736037Z    Comparing [/agent/_work/1/s/bicep/res/search/search-service/shared-private-link-resource/README.md] to [/agent/_work/_temp/repocode/bicep/res/search/search-service/shared-private-link-resource/README.md]
+2026-03-10T17:06:29.4736727Z    OK
+2026-03-10T17:06:29.4736942Z 
+2026-03-10T17:07:55.4818754Z => service-bus/namespace/authorization-rule
+2026-03-10T17:07:55.4819763Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/authorization-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/authorization-rule/README.md]
+2026-03-10T17:07:55.4820413Z    OK
+2026-03-10T17:07:55.4820769Z 
+2026-03-10T17:07:55.5051182Z => service-bus/namespace/disaster-recovery-config
+2026-03-10T17:07:55.5054228Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/disaster-recovery-config/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/disaster-recovery-config/README.md]
+2026-03-10T17:07:55.5055386Z    OK
+2026-03-10T17:07:55.5057757Z 
+2026-03-10T17:07:57.0930530Z => service-bus/namespace/migration-configuration
+2026-03-10T17:07:57.0932114Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/migration-configuration/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/migration-configuration/README.md]
+2026-03-10T17:07:57.0934916Z    OK
+2026-03-10T17:07:57.0935505Z 
+2026-03-10T17:08:01.9446430Z => network/virtual-network
+2026-03-10T17:08:01.9449421Z    Comparing [/agent/_work/1/s/bicep/res/network/virtual-network/README.md] to [/agent/_work/_temp/repocode/bicep/res/network/virtual-network/README.md]
+2026-03-10T17:08:01.9452053Z    OK
+2026-03-10T17:08:01.9454406Z 
+2026-03-10T17:08:04.3368278Z => search/search-service
+2026-03-10T17:08:04.3368840Z    Comparing [/agent/_work/1/s/bicep/res/search/search-service/README.md] to [/agent/_work/_temp/repocode/bicep/res/search/search-service/README.md]
+2026-03-10T17:08:04.3369320Z    OK
+2026-03-10T17:08:04.3369485Z 
+2026-03-10T17:08:05.5921321Z => operational-insights/workspace
+2026-03-10T17:08:05.5924212Z    Comparing [/agent/_work/1/s/bicep/res/operational-insights/workspace/README.md] to [/agent/_work/_temp/repocode/bicep/res/operational-insights/workspace/README.md]
+2026-03-10T17:08:05.5926898Z    OK
+2026-03-10T17:08:05.5927715Z 
+2026-03-10T17:08:29.4646152Z => service-bus/namespace/queue/authorization-rule
+2026-03-10T17:08:29.4662699Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/queue/authorization-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/queue/authorization-rule/README.md]
+2026-03-10T17:08:29.4663375Z    OK
+2026-03-10T17:08:29.4663558Z 
+2026-03-10T17:08:29.6498925Z => service-bus/namespace/network-rule-set
+2026-03-10T17:08:29.6568332Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/network-rule-set/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/network-rule-set/README.md]
+2026-03-10T17:08:29.6568820Z    OK
+2026-03-10T17:08:29.6568915Z 
+2026-03-10T17:08:35.2223962Z => service-bus/namespace/queue
+2026-03-10T17:08:35.2224739Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/queue/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/queue/README.md]
+2026-03-10T17:08:35.2225507Z    OK
+2026-03-10T17:08:35.2225720Z 
+2026-03-10T17:08:37.1046194Z => service-bus/namespace/topic/authorization-rule
+2026-03-10T17:08:37.1047109Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/topic/authorization-rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/topic/authorization-rule/README.md]
+2026-03-10T17:08:37.1047967Z    OK
+2026-03-10T17:08:37.1048199Z 
+2026-03-10T17:08:37.2538505Z => service-bus/namespace/topic/subscription/rule
+2026-03-10T17:08:37.2539495Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/topic/subscription/rule/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/topic/subscription/rule/README.md]
+2026-03-10T17:08:37.2540057Z    OK
+2026-03-10T17:08:37.2540238Z 
+2026-03-10T17:08:39.0951180Z => service-bus/namespace/topic/subscription
+2026-03-10T17:08:39.0952057Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/topic/subscription/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/topic/subscription/README.md]
+2026-03-10T17:08:39.0952676Z    OK
+2026-03-10T17:08:39.0952992Z 
+2026-03-10T17:09:05.0338472Z => service-bus/namespace/topic
+2026-03-10T17:09:05.0339801Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/topic/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/topic/README.md]
+2026-03-10T17:09:05.0340869Z    OK
+2026-03-10T17:09:05.0341617Z 
+2026-03-10T17:09:23.3101016Z => storage/storage-account/blob-service/container
+2026-03-10T17:09:23.3101845Z    Comparing [/agent/_work/1/s/bicep/res/storage/storage-account/blob-service/container/README.md] to [/agent/_work/_temp/repocode/bicep/res/storage/storage-account/blob-service/container/README.md]
+2026-03-10T17:09:23.3102312Z    OK
+2026-03-10T17:09:23.3102512Z 
+2026-03-10T17:09:23.3502906Z => sql/server/database
+2026-03-10T17:09:23.3505974Z    Comparing [/agent/_work/1/s/bicep/res/sql/server/database/README.md] to [/agent/_work/_temp/repocode/bicep/res/sql/server/database/README.md]
+2026-03-10T17:09:23.3508471Z    OK
+2026-03-10T17:09:23.3510404Z 
+2026-03-10T17:09:23.3891596Z => storage/storage-account/file-service/share
+2026-03-10T17:09:23.3894483Z    Comparing [/agent/_work/1/s/bicep/res/storage/storage-account/file-service/share/README.md] to [/agent/_work/_temp/repocode/bicep/res/storage/storage-account/file-service/share/README.md]
+2026-03-10T17:09:23.3898643Z    OK
+2026-03-10T17:09:23.3905385Z 
+2026-03-10T17:09:57.8246500Z => storage/storage-account/management-policy
+2026-03-10T17:09:57.8286530Z    Comparing [/agent/_work/1/s/bicep/res/storage/storage-account/management-policy/README.md] to [/agent/_work/_temp/repocode/bicep/res/storage/storage-account/management-policy/README.md]
+2026-03-10T17:09:57.8287460Z    OK
+2026-03-10T17:09:57.8287672Z 
+2026-03-10T17:10:55.9676181Z => storage/storage-account/queue-service/queue
+2026-03-10T17:10:55.9746066Z    Comparing [/agent/_work/1/s/bicep/res/storage/storage-account/queue-service/queue/README.md] to [/agent/_work/_temp/repocode/bicep/res/storage/storage-account/queue-service/queue/README.md]
+2026-03-10T17:10:55.9746482Z    OK
+2026-03-10T17:10:55.9746583Z 
+2026-03-10T17:10:56.2937916Z => storage/storage-account/table-service/table
+2026-03-10T17:10:56.2955871Z    Comparing [/agent/_work/1/s/bicep/res/storage/storage-account/table-service/table/README.md] to [/agent/_work/_temp/repocode/bicep/res/storage/storage-account/table-service/table/README.md]
+2026-03-10T17:10:56.3115949Z    OK
+2026-03-10T17:10:56.3116430Z 
+2026-03-10T17:11:06.5248453Z => service-bus/namespace
+2026-03-10T17:11:06.5249338Z    Comparing [/agent/_work/1/s/bicep/res/service-bus/namespace/README.md] to [/agent/_work/_temp/repocode/bicep/res/service-bus/namespace/README.md]
+2026-03-10T17:11:06.5256006Z    OK
+2026-03-10T17:11:06.5256472Z 
+2026-03-10T17:12:27.0398926Z => web/serverfarm
+2026-03-10T17:12:27.0415859Z    Comparing [/agent/_work/1/s/bicep/res/web/serverfarm/README.md] to [/agent/_work/_temp/repocode/bicep/res/web/serverfarm/README.md]
+2026-03-10T17:12:27.0416472Z    OK
+2026-03-10T17:12:27.0416773Z 
+2026-03-10T17:13:26.6697551Z => sql/server
+2026-03-10T17:13:26.6715979Z    Comparing [/agent/_work/1/s/bicep/res/sql/server/README.md] to [/agent/_work/_temp/repocode/bicep/res/sql/server/README.md]
+2026-03-10T17:13:26.6716612Z    OK
+2026-03-10T17:13:26.6717351Z 
+2026-03-10T17:13:57.5867037Z => web/static-site
+2026-03-10T17:13:57.5867934Z    Comparing [/agent/_work/1/s/bicep/res/web/static-site/README.md] to [/agent/_work/_temp/repocode/bicep/res/web/static-site/README.md]
+2026-03-10T17:13:57.5868742Z    OK
+2026-03-10T17:13:57.5869031Z 
+2026-03-10T17:14:46.2324685Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [blobServices.containers] as resource with identifier [*_blobServices.containers] was not found in the corresponding linked template.[0m
+2026-03-10T17:14:46.6493833Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [fileServices.shares] as resource with identifier [*_fileServices.shares] was not found in the corresponding linked template.[0m
+2026-03-10T17:14:47.4319879Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [queueServices.queues] as resource with identifier [*_queueServices.queues] was not found in the corresponding linked template.[0m
+2026-03-10T17:14:47.6633559Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [tableServices.tables] as resource with identifier [*_tableServices.tables] was not found in the corresponding linked template.[0m
+2026-03-10T17:14:59.6928075Z => storage/storage-account
+2026-03-10T17:14:59.6928988Z    Comparing [/agent/_work/1/s/bicep/res/storage/storage-account/README.md] to [/agent/_work/_temp/repocode/bicep/res/storage/storage-account/README.md]
+2026-03-10T17:14:59.6929591Z    OK
+2026-03-10T17:14:59.6929826Z 
+2026-03-10T17:15:37.6577108Z [33;1mWARNING: Failed to identify roles for parameter [roleAssignments] of type [slots.privateEndpoints] as resource with identifier [*_slots.privateEndpoints] was not found in the corresponding linked template.[0m
+2026-03-10T17:15:39.3446352Z => web/site
+2026-03-10T17:15:39.3447024Z    Comparing [/agent/_work/1/s/bicep/res/web/site/README.md] to [/agent/_work/_temp/repocode/bicep/res/web/site/README.md]
+2026-03-10T17:15:39.3447528Z    MISMATCH: [/agent/_work/_temp/repocode/bicep/res/web/site/README.md] does not match with auto-generated README
+2026-03-10T17:15:39.3450109Z   Line 33 GENERATED: - authSettingV2Configuration: uses federated identity credentials (FIC) by default — no client secrets
+2026-03-10T17:15:39.3451417Z   Line 33 REPO:      - authSettingV2Configuration: uses federated identity credentials (FIC) by default ù no client secrets
+2026-03-10T17:15:39.3452409Z 
+2026-03-10T17:15:39.3455446Z   Line 1957 GENERATED: | [`authSettingV2Configuration`](#parameter-authsettingv2configuration) | object | The auth settings V2 configuration.<p>When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.<p><p>The default uses federated identity credentials (FIC) — no client secret is stored. Instead, `clientSecretSettingName` points to the<p>app setting `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`, whose value must be the client ID of the app's managed identity. Easy Auth V2<p>reads this app setting and uses the managed identity to obtain tokens via federated credential assertion.<p><p>Prerequisites for FIC auth:<p>1. The app must have a managed identity (system-assigned or user-assigned)<p>2. The Entra ID app registration (identified by `authSettingApplicationId`) must have a federated identity credential trusting that managed identity<p>3. Set `appSettingsKeyValuePairs: { OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: '<managed-identity-client-id>' }`<p>   For system-assigned identities, use the app's own client ID. For user-assigned, use the user-assigned MI's client ID.<p><p>To use traditional client secret auth instead, override via `authSettingV2ConfigurationAdditional`:<p>  `{ identityProviders: { azureActiveDirectory: { registration: { clientSecretSettingName: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET' } } } }`<p><p>See: https://github.com/Azure-Samples/appservice-builtinauth-bicep for a complete example.<p>[Policy: drcp-aps-18] Leaving this parameter empty will make the resource non-compliant.<p> |
+2026-03-10T17:15:39.3460210Z   Line 1957 REPO:      | [`authSettingV2Configuration`](#parameter-authsettingv2configuration) | object | The auth settings V2 configuration.<p>When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.<p><p>The default uses federated identity credentials (FIC) ù no client secret is stored. Instead, `clientSecretSettingName` points to the<p>app setting `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`, whose value must be the client ID of the app's managed identity. Easy Auth V2<p>reads this app setting and uses the managed identity to obtain tokens via federated credential assertion.<p><p>Prerequisites for FIC auth:<p>1. The app must have a managed identity (system-assigned or user-assigned)<p>2. The Entra ID app registration (identified by `authSettingApplicationId`) must have a federated identity credential trusting that managed identity<p>3. Set `appSettingsKeyValuePairs: { OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: '<managed-identity-client-id>' }`<p>   For system-assigned identities, use the app's own client ID. For user-assigned, use the user-assigned MI's client ID.<p><p>To use traditional client secret auth instead, override via `authSettingV2ConfigurationAdditional`:<p>  `{ identityProviders: { azureActiveDirectory: { registration: { clientSecretSettingName: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET' } } } }`<p><p>See: https://github.com/Azure-Samples/appservice-builtinauth-bicep for a complete example.<p>[Policy: drcp-aps-18] Leaving this parameter empty will make the resource non-compliant.<p> |
+2026-03-10T17:15:39.3461524Z 
+2026-03-10T17:15:39.3464335Z   Line 2112 GENERATED: The auth settings V2 configuration.<p>When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.<p><p>The default uses federated identity credentials (FIC) — no client secret is stored. Instead, `clientSecretSettingName` points to the<p>app setting `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`, whose value must be the client ID of the app's managed identity. Easy Auth V2<p>reads this app setting and uses the managed identity to obtain tokens via federated credential assertion.<p><p>Prerequisites for FIC auth:<p>1. The app must have a managed identity (system-assigned or user-assigned)<p>2. The Entra ID app registration (identified by `authSettingApplicationId`) must have a federated identity credential trusting that managed identity<p>3. Set `appSettingsKeyValuePairs: { OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: '<managed-identity-client-id>' }`<p>   For system-assigned identities, use the app's own client ID. For user-assigned, use the user-assigned MI's client ID.<p><p>To use traditional client secret auth instead, override via `authSettingV2ConfigurationAdditional`:<p>  `{ identityProviders: { azureActiveDirectory: { registration: { clientSecretSettingName: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET' } } } }`<p><p>See: https://github.com/Azure-Samples/appservice-builtinauth-bicep for a complete example.<p>[Policy: drcp-aps-18] Leaving this parameter empty will make the resource non-compliant.<p>
+2026-03-10T17:15:39.3468540Z   Line 2112 REPO:      The auth settings V2 configuration.<p>When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.<p><p>The default uses federated identity credentials (FIC) ù no client secret is stored. Instead, `clientSecretSettingName` points to the<p>app setting `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`, whose value must be the client ID of the app's managed identity. Easy Auth V2<p>reads this app setting and uses the managed identity to obtain tokens via federated credential assertion.<p><p>Prerequisites for FIC auth:<p>1. The app must have a managed identity (system-assigned or user-assigned)<p>2. The Entra ID app registration (identified by `authSettingApplicationId`) must have a federated identity credential trusting that managed identity<p>3. Set `appSettingsKeyValuePairs: { OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: '<managed-identity-client-id>' }`<p>   For system-assigned identities, use the app's own client ID. For user-assigned, use the user-assigned MI's client ID.<p><p>To use traditional client secret auth instead, override via `authSettingV2ConfigurationAdditional`:<p>  `{ identityProviders: { azureActiveDirectory: { registration: { clientSecretSettingName: 'MICROSOFT_PROVIDER_AUTHENTICATION_SECRET' } } } }`<p><p>See: https://github.com/Azure-Samples/appservice-builtinauth-bicep for a complete example.<p>[Policy: drcp-aps-18] Leaving this parameter empty will make the resource non-compliant.<p>
+2026-03-10T17:15:39.3469984Z 
+2026-03-10T17:15:39.3470328Z    ERROR: File [/agent/_work/_temp/repocode/bicep/res/web/site/README.md] does not match with auto-generated README
+2026-03-10T17:15:39.3470492Z 
+2026-03-10T17:15:39.3496419Z Parallel README validation completed in 1428.8s
+2026-03-10T17:15:39.6092212Z The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: 1 errors found due to README.md files mismatch from repo and auto-generated files.
+2026-03-10T17:15:39.6096233Z At /agent/_work/_temp/a39812ed-95f0-42b6-ab39-503019334d0c.ps1:4 char:1
+2026-03-10T17:15:39.6096802Z + . '/agent/_work/1/s/utils/compareReadMe.ps1' -modulesRootPath "/agent …
+2026-03-10T17:15:39.6097278Z + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2026-03-10T17:15:39.6482502Z 
+2026-03-10T17:15:39.6577858Z ##[error]PowerShell exited with code '1'.
+2026-03-10T17:15:39.6594151Z [command]/usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command . '/agent/_work/_tasks/AzurePowerShell_72a1931b-effb-4d2e-8fd8-f8472a07cb62/5.269.2/RemoveAzContext.ps1'
+2026-03-10T17:15:40.7312843Z ##[command]Disconnect-AzAccount -Scope CurrentUser -ErrorAction Stop
+2026-03-10T17:15:40.8549076Z ##[command]Disconnect-AzAccount -Scope Process -ErrorAction Stop
+2026-03-10T17:15:40.8630326Z ##[command]Clear-AzContext -Scope Process -ErrorAction Stop
+2026-03-10T17:15:41.7103569Z 
+2026-03-10T17:15:41.7180509Z ##[section]Finishing: Compare README files
