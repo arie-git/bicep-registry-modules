@@ -1,6 +1,6 @@
 targetScope = 'subscription'
-metadata name = 'Using Azure CNI network plugin with Cilium'
-metadata description = 'This instance deploys the module with Azure CNI network plugin in overlay mode, and applies Cilium data plane and network policy.'
+metadata name = 'Max - comprehensive parameter coverage'
+metadata description = 'This instance deploys the module with the maximum set of parameters to validate comprehensive coverage including agent pools, security, networking, diagnostics, and add-ons.'
 
 // ========== //
 // Parameters //
@@ -14,7 +14,7 @@ param resourceGroupName string = 'dep-${namePrefix}-containerservice.managedclus
 param resourceLocation string = deployment().location
 
 @description('Optional. A short identifier for the kind of deployment. Should be kept short to not run into resource-name length-constraints.')
-param serviceShort string = 'azureaks001'
+param serviceShort string = 'maxaks001'
 
 @description('Generated. Used as a basis for unique resource names.')
 param baseTime string = utcNow('u')
@@ -42,7 +42,6 @@ module nestedDependencies 'dependencies.bicep' = {
     managedIdentityKubeletIdentityName: 'dep-${namePrefix}${serviceShort}uamiki'
     diskEncryptionSetName: 'dep-${namePrefix}${serviceShort}des'
     proximityPlacementGroupName: 'dep-${namePrefix}${serviceShort}ppg'
-    // Adding base time to make the name unique as purge protection must be enabled (but may not be longer than 24 characters total)
     keyVaultName: 'dep-${namePrefix}${serviceShort}kv-${substring(uniqueString(baseTime), 0, 3)}'
     dnsZoneName: 'dep-${namePrefix}${serviceShort}dns.com'
     logAnalyticsWorkspaceName: 'dep-${namePrefix}${serviceShort}log'
@@ -76,26 +75,59 @@ module testDeployment '../../../main.bicep' = [
     params: {
       location: resourceLocation
       name: '${namePrefix}${serviceShort}aks'
+
+      // --- Identity ---
       enableWorkloadIdentity: true
+      managedIdentities: {
+        userAssignedResourceIds: [
+          nestedDependencies.outputs.managedIdentityResourceId
+        ]
+      }
+      disableLocalAccounts: true
+      enableRBAC: true
+      aadProfile: {
+        enableAzureRBAC: true
+        managed: true
+        tenantID: subscription().tenantId
+      }
+
+      // --- Networking ---
       networkPlugin: 'azure'
       networkPluginMode: 'overlay'
       networkDataPlane: 'cilium'
       networkPolicy: 'cilium'
       networkPodCidr: null
+      networkOutboundType: 'userDefinedRouting'
+      publicNetworkAccess: 'Disabled'
+
+      // --- API Server ---
       apiServerAccessProfile: {
+        disableRunCommand: true
+        enablePrivateCluster: true
         privateDNSZone: nestedDependencies.outputs.dnsZoneResourceId
       }
-      logAnalyticsWorkspaceResourceId: nestedDependencies.outputs.logAnalyticsWorkspaceResourceId
+
+      // --- SKU ---
+      skuTier: 'Standard'
+
+      // --- Primary agent pool ---
       primaryAgentPoolProfile: [
         {
-          enableNodePublicIP: false
-          count: 2
-          enableAutoScaling: false
-          minCount: null
-          maxCount: null
+          availabilityZones: [
+            '1'
+            '2'
+            '3'
+          ]
+          count: 3
+          enableAutoScaling: true
+          minCount: 3
+          maxCount: 5
           maxPods: 110
           mode: 'System'
           name: 'agentpool'
+          nodeTaints: [
+            'CriticalAddonsOnly=true:NoSchedule'
+          ]
           osDiskSizeGB: 128
           osDiskType: 'Ephemeral'
           kubeletDiskType: 'OS'
@@ -104,31 +136,40 @@ module testDeployment '../../../main.bicep' = [
           type: 'VirtualMachineScaleSets'
           vmSize: 'Standard_D4ads_v5'
           vnetSubnetID: nestedDependencies.outputs.subnetResourceIds[0]
-          upgradeSettings:{
+          upgradeSettings: {
             maxSurge: '33%'
           }
         }
       ]
+
+      // --- Secondary agent pools (tests new synced params) ---
       agentPools: [
         {
           availabilityZones: [
+            '1'
+            '2'
             '3'
           ]
           count: 2
           enableAutoScaling: true
-          maxCount: 3
-          maxPods: 30
-          minCount: 1
+          maxCount: 4
+          maxPods: 50
+          minCount: 2
           mode: 'User'
           name: 'userpool1'
-          nodeLabels: {}
+          nodeLabels: {
+            environment: 'test'
+            workload: 'general'
+          }
           osDiskSizeGB: 128
+          osDiskType: 'Ephemeral'
           osSku: 'AzureLinux'
           osType: 'Linux'
+          scaleDownMode: 'Delete'
           scaleSetEvictionPolicy: 'Delete'
           scaleSetPriority: 'Regular'
           type: 'VirtualMachineScaleSets'
-          vmSize: 'Standard_DS2_v2'
+          vmSize: 'Standard_D4ads_v5'
           vnetSubnetId: nestedDependencies.outputs.subnetResourceIds[1]
           proximityPlacementGroupResourceId: nestedDependencies.outputs.proximityPlacementGroupResourceId
           upgradeSettings: {
@@ -137,36 +178,86 @@ module testDeployment '../../../main.bicep' = [
         }
         {
           availabilityZones: [
+            '1'
+            '2'
             '3'
           ]
           count: 2
           enableAutoScaling: true
-          maxCount: 3
-          maxPods: 30
-          minCount: 1
+          enableEncryptionAtHost: true
+          maxCount: 4
+          maxPods: 50
+          minCount: 2
           mode: 'User'
           name: 'userpool2'
-          nodeLabels: {}
+          nodeLabels: {
+            environment: 'test'
+            workload: 'compute'
+          }
+          nodeTaints: [
+            'workload=compute:NoSchedule'
+          ]
           osDiskSizeGB: 128
+          osDiskType: 'Ephemeral'
           osSku: 'AzureLinux'
           osType: 'Linux'
+          scaleDownMode: 'Delete'
           scaleSetEvictionPolicy: 'Delete'
           scaleSetPriority: 'Regular'
           type: 'VirtualMachineScaleSets'
-          vmSize: 'Standard_DS2_v2'
+          vmSize: 'Standard_D4ads_v5'
           vnetSubnetId: nestedDependencies.outputs.subnetResourceIds[2]
           upgradeSettings: {
             maxSurge: '33%'
           }
         }
       ]
+
+      // --- Storage profile ---
+      enableStorageProfileBlobCSIDriver: true
+      enableStorageProfileDiskCSIDriver: true
+      enableStorageProfileFileCSIDriver: true
+      enableStorageProfileSnapshotController: true
+
+      // --- Security ---
+      diskEncryptionSetResourceId: nestedDependencies.outputs.diskEncryptionSetResourceId
+      addonAzurePolicy: {
+        enabled: true
+        config: {
+          version: 'v2'
+        }
+      }
+      addonAzureKeyvaultSecretsProvider: {
+        enabled: true
+        config: {
+          enableSecretRotation: 'true'
+        }
+      }
+      imageCleaner: {
+        enabled: true
+        intervalHours: 168
+      }
+
+      // --- Logging/monitoring ---
+      logAnalyticsWorkspaceResourceId: nestedDependencies.outputs.logAnalyticsWorkspaceResourceId
+      addonOmsAgentEnabled: true
       diagnosticSettings: [
         {
-          name: 'customSetting'
+          name: 'maxDiagnosticSettings'
           metricCategories: [
             {
               category: 'AllMetrics'
             }
+          ]
+          logCategoriesAndGroups: [
+            { category: 'kube-apiserver', enabled: true }
+            { category: 'kube-audit', enabled: true }
+            { category: 'kube-audit-admin', enabled: true }
+            { category: 'kube-controller-manager', enabled: true }
+            { category: 'kube-scheduler', enabled: true }
+            { category: 'cluster-autoscaler', enabled: true }
+            { category: 'cloud-controller-manager', enabled: true }
+            { category: 'guard', enabled: true }
           ]
           eventHubName: diagnosticDependencies.outputs.eventHubNamespaceEventHubName
           eventHubAuthorizationRuleResourceId: diagnosticDependencies.outputs.eventHubAuthorizationRuleId
@@ -174,24 +265,65 @@ module testDeployment '../../../main.bicep' = [
           workspaceResourceId: diagnosticDependencies.outputs.logAnalyticsWorkspaceResourceId
         }
       ]
-      managedIdentities: {
-        userAssignedResourceIds: [
-          nestedDependencies.outputs.managedIdentityResourceId
-        ]
+
+      // --- Workload autoscaler (KEDA) ---
+      workloadAutoScalerProfile: {
+        keda: {
+          enabled: true
+        }
       }
+
+      // --- Auto-upgrade and maintenance ---
+      autoUpgradeProfile: {
+        upgradeChannel: 'stable'
+        nodeOSUpgradeChannel: 'NodeImage'
+      }
+      maintenanceConfigurations: [
+        {
+          name: 'aksManagedAutoUpgradeSchedule'
+          maintenanceConfiguration: {
+            maintenanceWindow: {
+              schedule: {
+                weekly: {
+                  intervalWeeks: 1
+                  dayOfWeek: 'Sunday'
+                }
+              }
+              durationHours: 4
+              utcOffset: '+01:00'
+              startTime: '01:00'
+            }
+          }
+        }
+        {
+          name: 'aksManagedNodeOSUpgradeSchedule'
+          maintenanceConfiguration: {
+            maintenanceWindow: {
+              durationHours: 4
+              schedule: {
+                daily: {
+                  intervalDays: 1
+                }
+              }
+              utcOffset: '+01:00'
+              startTime: '04:00'
+            }
+          }
+        }
+      ]
+
+      // --- RBAC ---
       lock: {
         kind: 'CanNotDelete'
         name: 'myCustomLockName'
       }
       roleAssignments: [
         {
-          // name: 'ac915208-669e-4665-9792-7e2dc861f569'
           roleDefinitionIdOrName: 'Owner'
           principalId: nestedDependencies.outputs.managedIdentityPrincipalId
           principalType: 'ServicePrincipal'
         }
         {
-          // name: guid('Custom seed ${namePrefix}${serviceShort}')
           roleDefinitionIdOrName: 'b24988ac-6180-42a0-ab88-20f7382dd24c'
           principalId: nestedDependencies.outputs.managedIdentityPrincipalId
           principalType: 'ServicePrincipal'

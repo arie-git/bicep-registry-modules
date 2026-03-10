@@ -440,6 +440,25 @@ Cleaned up all stale commented-out duplicates.
 - [ ] Update tests
 - [ ] Karen: validate
 
+### FEAT-6: container-service/managed-cluster — Flux Extension Removal & Agent Pool Upstream Sync
+
+**Flux extension** was dead code — `kubernetes-configuration/extension` module not in fork, not built in Azure DevOps, no policy requires it. Commented out entirely.
+
+**Agent pool upstream sync** — synced 15 missing params from upstream (`microsoft-avm/avm/res/container-service/managed-cluster/agent-pool/main.bicep`), adopting `resourceInput<>` types and the security-first model:
+
+- [x] Comment out flux extension param, module, type definition, and `enableReferencedModulesTelemetry` variable
+- [x] Add 15 new agent pool params: `capacityReservationGroupResourceId`, `gatewayProfile`, `gpuProfile`, `hostGroupResourceId`, `kubeletConfig`, `linuxOSConfig`, `localDNSProfile`, `messageOfTheDay`, `networkProfile`, `podIPAllocationMode`, `powerState`, `securityProfile`, `upgradeSettings` (full object replacing `maxSurge`), `virtualMachinesProfile`, `windowsProfile`
+- [x] Expand `osSku` @allowed: `AzureLinux3`, `Ubuntu2204`, `Ubuntu2404`, `Windows2025`
+- [x] Use `resourceInput<>` types where upstream does (12 params)
+- [x] Update `agentPoolType` exported type with all new properties
+- [x] Update parent module agent pool loop to pass all new params
+- [x] Fix array-of-arrays bug: `agentPoolType[]?` → `agentPoolType?` (type already includes `[]`)
+- [x] Uncomment agent pools in 3azure test (2 user pools, AzureLinux, upgradeSettings)
+- [x] Uncomment agent pools in 4waf-aligned test (2 user pools, 3 AZs, ephemeral OS, system pool taint)
+- [x] Create 6max test — comprehensive coverage: identity, cilium networking, private cluster, defender, KV secrets, policy, image cleaner, disk encryption, KEDA, diagnostics, maintenance windows, labeled/tainted agent pools, locks, role assignments
+- [x] All 6 tests + main module build with zero errors
+- [ ] Karen: validate
+
 ---
 
 ## BUILD-VALIDATE: Local Build Validation (dev-only PE/ACR ref switch)

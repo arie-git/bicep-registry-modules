@@ -102,9 +102,9 @@ module testDeployment '../../../main.bicep' = [
           maxPods: 110
           mode: 'System'
           name: 'agentpool'
-          // nodeTaints: [
-          //   'CriticalAddonsOnly=true:NoSchedule' // TODO: Uncomment when application agent pools are added
-          // ]
+          nodeTaints: [
+            'CriticalAddonsOnly=true:NoSchedule'
+          ]
           osDiskSizeGB: 0
           osType: 'Linux'
           type: 'VirtualMachineScaleSets'
@@ -115,51 +115,62 @@ module testDeployment '../../../main.bicep' = [
           }
         }
       ]
-      // agentPools: [
-      //   {
-      //     availabilityZones: [
-      //       '3'
-      //     ]
-      //     count: 3
-      //     enableAutoScaling: true
-      //     maxCount: 3
-      //     maxPods: 50
-      //     minCount: 3
-      //     minPods: 2
-      //     mode: 'User'
-      //     name: 'userpool1'
-      //     nodeLabels: {}
-      //     osDiskType: 'Ephemeral'
-      //     osDiskSizeGB: 60
-      //     osType: 'Linux'
-      //     scaleSetEvictionPolicy: 'Delete'
-      //     scaleSetPriority: 'Regular'
-      //     type: 'VirtualMachineScaleSets'
-      //     vmSize: 'Standard_DS2_v2'
-      //     vnetSubnetID: '${nestedDependencies.outputs.vNetResourceId}/subnets/defaultSubnet'
-      //   }
-      //   {
-      //     availabilityZones: [
-      //       '3'
-      //     ]
-      //     count: 3
-      //     enableAutoScaling: true
-      //     maxCount: 3
-      //     maxPods: 50
-      //     minCount: 3
-      //     minPods: 2
-      //     mode: 'User'
-      //     name: 'userpool2'
-      //     nodeLabels: {}
-      //     osDiskType: 'Ephemeral'
-      //     osDiskSizeGB: 60
-      //     osType: 'Linux'
-      //     scaleSetEvictionPolicy: 'Delete'
-      //     scaleSetPriority: 'Regular'
-      //     type: 'VirtualMachineScaleSets'
-      //     vmSize: 'Standard_DS2_v2'
-      //   }
-      // ]
+      agentPools: [
+        {
+          availabilityZones: [
+            '1'
+            '2'
+            '3'
+          ]
+          count: 3
+          enableAutoScaling: true
+          maxCount: 5
+          maxPods: 50
+          minCount: 3
+          mode: 'User'
+          name: 'userpool1'
+          nodeLabels: {}
+          osDiskType: 'Ephemeral'
+          osDiskSizeGB: 60
+          osSku: 'AzureLinux'
+          osType: 'Linux'
+          scaleSetEvictionPolicy: 'Delete'
+          scaleSetPriority: 'Regular'
+          type: 'VirtualMachineScaleSets'
+          vmSize: 'Standard_DS2_v2'
+          vnetSubnetId: '${nestedDependencies.outputs.vNetResourceId}/subnets/defaultSubnet'
+          upgradeSettings: {
+            maxSurge: '33%'
+          }
+        }
+        {
+          availabilityZones: [
+            '1'
+            '2'
+            '3'
+          ]
+          count: 3
+          enableAutoScaling: true
+          maxCount: 5
+          maxPods: 50
+          minCount: 3
+          mode: 'User'
+          name: 'userpool2'
+          nodeLabels: {}
+          osDiskType: 'Ephemeral'
+          osDiskSizeGB: 60
+          osSku: 'AzureLinux'
+          osType: 'Linux'
+          scaleSetEvictionPolicy: 'Delete'
+          scaleSetPriority: 'Regular'
+          type: 'VirtualMachineScaleSets'
+          vmSize: 'Standard_DS2_v2'
+          vnetSubnetId: '${nestedDependencies.outputs.vNetResourceId}/subnets/defaultSubnet'
+          upgradeSettings: {
+            maxSurge: '33%'
+          }
+        }
+      ]
       // omsAgentEnabled: true
       logAnalyticsWorkspaceResourceId: diagnosticDependencies.outputs.logAnalyticsWorkspaceResourceId
       diagnosticSettings: [

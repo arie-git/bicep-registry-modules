@@ -301,7 +301,7 @@ param primaryAgentPoolProfile array = [
 @description('''Optional. Define one or more secondary/additional agent pools.
 
 [Policy: drcp-aks-02] enableNodePublicIP must be false (or absent) on all agent pools.''')
-param agentPools agentPoolType[]?
+param agentPools agentPoolType?
 
 @description('Optional. Specifies the administrator username of Linux virtual machines.')
 param adminUsername string = 'azureuser'
@@ -502,8 +502,10 @@ param tags object?
 @description('Optional. The Resource ID of the disk encryption set to use for enabling encryption at rest. For security reasons, this value should be provided.')
 param diskEncryptionSetResourceId string?
 
-@description('Optional. Settings and configurations for the flux extension.')
-param fluxExtension extensionType?
+// @description('Optional. Settings and configurations for the flux extension.')
+// param fluxExtension extensionType?
+// NOTE: Flux extension is commented out — the kubernetes-configuration/extension module
+// is not in the fork and not built in Azure DevOps. Re-enable when flux is supported.
 
 @description('Optional. Configurations for provisioning the cluster with HTTP proxy servers.')
 param httpProxyConfig resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.httpProxyConfig?
@@ -555,7 +557,7 @@ param omsAgentUseAADAuth bool = true
 
 var enablePrivateCluster = apiServerAccessProfile.?enablePrivateCluster ?? true
 
-var enableReferencedModulesTelemetry = false
+// var enableReferencedModulesTelemetry = false // Only used by flux extension (commented out)
 
 import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'
 
@@ -882,6 +884,7 @@ module managedCluster_agentPools 'agent-pool/main.bicep' = [
       managedClusterName: managedCluster.?name
       name: agentPool.name
       availabilityZones: agentPool.?availabilityZones
+      capacityReservationGroupResourceId: agentPool.?capacityReservationGroupResourceId
       count: agentPool.?count
       sourceResourceId: agentPool.?sourceResourceId
       enableAutoScaling: agentPool.?enableAutoScaling
@@ -889,12 +892,20 @@ module managedCluster_agentPools 'agent-pool/main.bicep' = [
       enableFIPS: agentPool.?enableFIPS
       enableNodePublicIP: agentPool.?enableNodePublicIP
       enableUltraSSD: agentPool.?enableUltraSSD
+      gatewayProfile: agentPool.?gatewayProfile
       gpuInstanceProfile: agentPool.?gpuInstanceProfile
+      gpuProfile: agentPool.?gpuProfile
+      hostGroupResourceId: agentPool.?hostGroupResourceId
+      kubeletConfig: agentPool.?kubeletConfig
       kubeletDiskType: agentPool.?kubeletDiskType
+      linuxOSConfig: agentPool.?linuxOSConfig
+      localDNSProfile: agentPool.?localDNSProfile
       maxCount: agentPool.?maxCount
       maxPods: agentPool.?maxPods
+      messageOfTheDay: agentPool.?messageOfTheDay
       minCount: agentPool.?minCount
       mode: agentPool.?mode
+      networkProfile: agentPool.?networkProfile
       nodeLabels: agentPool.?nodeLabels
       nodePublicIpPrefixId: agentPool.?nodePublicIpPrefixId
       nodeTaints: agentPool.?nodeTaints
@@ -903,39 +914,44 @@ module managedCluster_agentPools 'agent-pool/main.bicep' = [
       osDiskType: agentPool.?osDiskType
       osSku: agentPool.?osSku
       osType: agentPool.?osType
+      podIPAllocationMode: agentPool.?podIPAllocationMode
       podSubnetId: agentPool.?podSubnetId
+      powerState: agentPool.?powerState
       proximityPlacementGroupResourceId: agentPool.?proximityPlacementGroupResourceId
       scaleDownMode: agentPool.?scaleDownMode
       scaleSetEvictionPolicy: agentPool.?scaleSetEvictionPolicy
       scaleSetPriority: agentPool.?scaleSetPriority
+      securityProfile: agentPool.?securityProfile
       spotMaxPrice: agentPool.?spotMaxPrice
       tags: agentPool.?tags ?? tags
       type: agentPool.?type
-      maxSurge: agentPool.?maxSurge
+      upgradeSettings: agentPool.?upgradeSettings
+      virtualMachinesProfile: agentPool.?virtualMachinesProfile
       vmSize: agentPool.?vmSize
       vnetSubnetId: agentPool.?vnetSubnetId
+      windowsProfile: agentPool.?windowsProfile
       workloadRuntime: agentPool.?workloadRuntime
     }
   }
 ]
 
-module managedCluster_extension 'br/amavm:avm/res/kubernetes-configuration/extension:0.3.8' = if (!empty(fluxExtension)) {
-  name: '${uniqueString(deployment().name, location)}-ManagedCluster-FluxExtension'
-  params: {
-    clusterName: managedCluster.name
-    configurationProtectedSettings: fluxExtension.?configurationProtectedSettings
-    configurationSettings: fluxExtension.?configurationSettings
-    enableTelemetry: enableReferencedModulesTelemetry
-    extensionType: 'microsoft.flux'
-    fluxConfigurations: fluxExtension.?fluxConfigurations
-    location: location
-    name: fluxExtension.?name ?? 'flux'
-    releaseNamespace: fluxExtension.?releaseNamespace ?? 'flux-system'
-    releaseTrain: fluxExtension.?releaseTrain ?? 'Stable'
-    version: fluxExtension.?version
-    targetNamespace: fluxExtension.?targetNamespace
-  }
-}
+// module managedCluster_extension 'br/amavm:avm/res/kubernetes-configuration/extension:0.3.8' = if (!empty(fluxExtension)) {
+//   name: '${uniqueString(deployment().name, location)}-ManagedCluster-FluxExtension'
+//   params: {
+//     clusterName: managedCluster.name
+//     configurationProtectedSettings: fluxExtension.?configurationProtectedSettings
+//     configurationSettings: fluxExtension.?configurationSettings
+//     enableTelemetry: enableReferencedModulesTelemetry
+//     extensionType: 'microsoft.flux'
+//     fluxConfigurations: fluxExtension.?fluxConfigurations
+//     location: location
+//     name: fluxExtension.?name ?? 'flux'
+//     releaseNamespace: fluxExtension.?releaseNamespace ?? 'flux-system'
+//     releaseTrain: fluxExtension.?releaseTrain ?? 'Stable'
+//     version: fluxExtension.?version
+//     targetNamespace: fluxExtension.?targetNamespace
+//   }
+// }
 
 resource managedCluster_lock 'Microsoft.Authorization/locks@2020-05-01' = if (!empty(lock ?? {}) && lock.?kind != 'None') {
   name: lock.?name ?? 'lock-${name}'
@@ -1120,31 +1136,24 @@ import {
 import { agentPoolType } from 'agent-pool/main.bicep'
 import { maintenanceConfigurationType } from 'maintenance-configurations/main.bicep'
 
-type extensionType = {
-  @description('Optional. The name of the extension.')
-  name: string?
-
-  @description('Optional. Namespace where the extension Release must be placed.')
-  releaseNamespace: string?
-
-  @description('Optional. Namespace where the extension will be created for an Namespace scoped extension.')
-  targetNamespace: string?
-
-  @description('Optional. The release train of the extension.')
-  releaseTrain: string?
-
-  @description('Optional. The configuration protected settings of the extension.')
-  configurationProtectedSettings: object?
-
-  @description('Optional. The configuration settings of the extension.')
-  configurationSettings: object?
-
-  @description('Optional. The version of the extension.')
-  version: string?
-
-  @description('Optional. The flux configurations of the extension.')
-  fluxConfigurations: array?
-}
+// type extensionType = {
+//   @description('Optional. The name of the extension.')
+//   name: string?
+//   @description('Optional. Namespace where the extension Release must be placed.')
+//   releaseNamespace: string?
+//   @description('Optional. Namespace where the extension will be created for an Namespace scoped extension.')
+//   targetNamespace: string?
+//   @description('Optional. The release train of the extension.')
+//   releaseTrain: string?
+//   @description('Optional. The configuration protected settings of the extension.')
+//   configurationProtectedSettings: object?
+//   @description('Optional. The configuration settings of the extension.')
+//   configurationSettings: object?
+//   @description('Optional. The version of the extension.')
+//   version: string?
+//   @description('Optional. The flux configurations of the extension.')
+//   fluxConfigurations: array?
+// }
 
 @description('Azure Key Vault secrets provider configuration.')
 type addonAzureKeyvaultSecretsProviderType = {

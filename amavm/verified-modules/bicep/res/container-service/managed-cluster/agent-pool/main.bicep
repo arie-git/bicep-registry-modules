@@ -13,6 +13,9 @@ param name string
 @description('Optional. The list of Availability zones to use for nodes. This can only be specified if the AgentPoolType property is "VirtualMachineScaleSets".')
 param availabilityZones array?
 
+@description('Optional. AKS will associate the specified agent pool with the Capacity Reservation Group.')
+param capacityReservationGroupResourceId string?
+
 @description('Optional. Desired Number of agents (VMs) specified to host docker containers. Allowed values must be in the range of 0 to 1000 (inclusive) for user pools and in the range of 1 to 1000 (inclusive) for system pools. The default value is 1.')
 @minValue(0)
 @maxValue(1000)
@@ -36,6 +39,9 @@ param enableNodePublicIP bool = false
 @description('Optional. Whether to enable UltraSSD.')
 param enableUltraSSD bool = false
 
+@description('Optional. Profile specific to a managed agent pool in Gateway mode. Ignored if agent pool mode is not Gateway.')
+param gatewayProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.gatewayProfile?
+
 @description('Optional. GPUInstanceProfile to be used to specify GPU MIG instance profile for supported GPU VM SKU.')
 @allowed([
   'MIG1g'
@@ -46,8 +52,23 @@ param enableUltraSSD bool = false
 ])
 param gpuInstanceProfile string?
 
+@description('Optional. GPU settings.')
+param gpuProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.gpuProfile?
+
+@description('Optional. This is of the form /subscriptions/{subscriptionId}/resourcegroups/{resourcegroupname}/providers/microsoft.compute/hostgroups/{hostgroupname}. For more information see Azure Dedicated Hosts.')
+param hostGroupResourceId string?
+
+@description('Optional. Kubelet configuration on agent pool nodes.')
+param kubeletConfig resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.kubeletConfig?
+
 @description('Optional. Determines the placement of emptyDir volumes, container runtime data root, and Kubelet ephemeral storage.')
 param kubeletDiskType string?
+
+@description('Optional. Linux OS configuration.')
+param linuxOSConfig resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.linuxOSConfig?
+
+@description('Optional. Local DNS configuration.')
+param localDNSProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.localDNSProfile?
 
 @description('Optional. The maximum number of nodes for auto-scaling.')
 param maxCount int?
@@ -55,11 +76,17 @@ param maxCount int?
 @description('Optional. The maximum number of pods that can run on a node.')
 param maxPods int?
 
+@description('Optional. A message of the day will be a multi-line message that is prepended to the command prompt and the SSH login message. You can use escape characters like \\n for new line.')
+param messageOfTheDay string?
+
 @description('Optional. The minimum number of nodes for auto-scaling.')
 param minCount int?
 
 @description('Optional. A cluster must have at least one "System" Agent Pool at all times. For additional information on agent pool restrictions and best practices, see: /azure/aks/use-system-pools.')
 param mode string?
+
+@description('Optional. Network profile to be used for agent pool nodes.')
+param networkProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.networkProfile?
 
 @description('Optional. The node labels to be persisted across all nodes in agent pool.')
 param nodeLabels object?
@@ -86,10 +113,14 @@ param osDiskType string?
 @description('Optional. Specifies the OS SKU used by the agent pool. The default is Ubuntu if OSType is Linux. The default is Windows2019 when Kubernetes <= 1.24 or Windows2022 when Kubernetes >= 1.25 if OSType is Windows.')
 @allowed([
   'AzureLinux'
+  'AzureLinux3'
   'CBLMariner'
   'Ubuntu'
+  'Ubuntu2204'
+  'Ubuntu2404'
   'Windows2019'
   'Windows2022'
+  'Windows2025'
 ])
 param osSku string?
 
@@ -100,8 +131,14 @@ param osSku string?
 ])
 param osType string = 'Linux'
 
+@description('Optional. Pod IP allocation mode.')
+param podIPAllocationMode resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.podIPAllocationMode?
+
 @description('Optional. Subnet ID for the pod IPs. If omitted, pod IPs are statically assigned on the node subnet (see vnetSubnetID for more details). This is of the form: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/subnets/{subnetName}.')
 param podSubnetId string?
+
+@description('Optional. Power State of the agent pool.')
+param powerState resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.powerState?
 
 @description('Optional. The ID for the Proximity Placement Group.')
 param proximityPlacementGroupResourceId string?
@@ -127,6 +164,9 @@ param scaleSetEvictionPolicy string = 'Delete'
 ])
 param scaleSetPriority string?
 
+@description('Optional. The security settings of an agent pool.')
+param securityProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.securityProfile?
+
 @description('Optional. Possible values are any decimal value greater than zero or -1 which indicates the willingness to pay any on-demand price. For more details on spot pricing, see spot VMs pricing (https://learn.microsoft.com/en-us/azure/virtual-machines/spot-vms#pricing).')
 param spotMaxPrice int?
 
@@ -136,14 +176,20 @@ param tags object?
 @description('Optional. The type of Agent Pool.')
 param type string?
 
-@description('Optional. This can either be set to an integer (e.g. "5") or a percentage (e.g. "50%"). If a percentage is specified, it is the percentage of the total agent pool size at the time of the upgrade. For percentages, fractional nodes are rounded up. If not specified, the default is 1. For more information, including best practices, see: /azure/aks/upgrade-cluster#customize-node-surge-upgrade.')
-param maxSurge string?
+@description('Optional. Upgrade settings for the agent pool.')
+param upgradeSettings resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.upgradeSettings?
 
 @description('Optional. VM size. VM size availability varies by region. If a node contains insufficient compute resources (memory, cpu, etc) pods might fail to run correctly. For more details on restricted VM sizes, see: /azure/aks/quotas-skus-regions.')
 param vmSize string = 'Standard_D2s_v3'
 
+@description('Optional. Virtual Machines resource status.')
+param virtualMachinesProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.virtualMachinesProfile?
+
 @description('Optional. Node Subnet ID. If this is not specified, a VNET and subnet will be generated and used. If no podSubnetID is specified, this applies to nodes and pods, otherwise it applies to just nodes. This is of the form: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworks/{virtualNetworkName}/subnets/{subnetName}.')
 param vnetSubnetId string?
+
+@description('Optional. Windows OS configuration.')
+param windowsProfile resourceInput<'Microsoft.ContainerService/managedClusters/agentPools@2025-09-01'>.properties.windowsProfile?
 
 @description('Optional. Determines the type of workload a node can run.')
 param workloadRuntime string?
@@ -157,6 +203,7 @@ resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2025-0
   parent: managedCluster
   properties: {
     availabilityZones: availabilityZones
+    capacityReservationGroupID: capacityReservationGroupResourceId
     count: count
     creationData: !empty(sourceResourceId)
       ? {
@@ -168,12 +215,20 @@ resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2025-0
     enableFIPS: enableFIPS
     enableNodePublicIP: enableNodePublicIP
     enableUltraSSD: enableUltraSSD
+    gatewayProfile: mode == 'Gateway' ? gatewayProfile : null
     gpuInstanceProfile: gpuInstanceProfile
+    gpuProfile: gpuProfile
+    hostGroupID: hostGroupResourceId
+    kubeletConfig: kubeletConfig
     kubeletDiskType: kubeletDiskType
+    linuxOSConfig: linuxOSConfig
+    localDNSProfile: localDNSProfile
     maxCount: maxCount
     maxPods: maxPods
+    messageOfTheDay: messageOfTheDay
     minCount: minCount
     mode: mode
+    networkProfile: networkProfile
     nodeLabels: nodeLabels
     nodePublicIPPrefixID: nodePublicIpPrefixId
     nodeTaints: nodeTaints
@@ -182,19 +237,22 @@ resource agentPool 'Microsoft.ContainerService/managedClusters/agentPools@2025-0
     osDiskType: osDiskType
     osSKU: osSku
     osType: osType
+    podIPAllocationMode: podIPAllocationMode
     podSubnetID: podSubnetId
+    powerState: powerState
     proximityPlacementGroupID: proximityPlacementGroupResourceId
     scaleDownMode: scaleDownMode
     scaleSetEvictionPolicy: scaleSetEvictionPolicy
     scaleSetPriority: scaleSetPriority
+    securityProfile: securityProfile
     spotMaxPrice: spotMaxPrice
     tags: tags
     type: type
-    upgradeSettings: {
-      maxSurge: maxSurge
-    }
+    upgradeSettings: upgradeSettings
+    virtualMachinesProfile: virtualMachinesProfile
     vmSize: vmSize
     vnetSubnetID: vnetSubnetId
+    windowsProfile: windowsProfile
     workloadRuntime: workloadRuntime
   }
 }
@@ -215,6 +273,9 @@ type agentPoolType = {
 
   @description('Optional. The availability zones of the agent pool.')
   availabilityZones: string[]?
+
+  @description('Optional. AKS will associate the specified agent pool with the Capacity Reservation Group.')
+  capacityReservationGroupResourceId: string?
 
   @description('Optional. The number of agents (VMs) to host docker containers. Allowed values must be in the range of 1 to 100 (inclusive).')
   count: int?
@@ -237,11 +298,29 @@ type agentPoolType = {
   @description('Optional. Whether to enable Ultra SSD for the agent pool.')
   enableUltraSSD: bool?
 
+  @description('Optional. Profile specific to a managed agent pool in Gateway mode.')
+  gatewayProfile: object?
+
   @description('Optional. The GPU instance profile of the agent pool.')
   gpuInstanceProfile: ('MIG1g' | 'MIG2g' | 'MIG3g' | 'MIG4g' | 'MIG7g')?
 
+  @description('Optional. GPU settings.')
+  gpuProfile: object?
+
+  @description('Optional. The resource ID of the host group.')
+  hostGroupResourceId: string?
+
+  @description('Optional. Kubelet configuration on agent pool nodes.')
+  kubeletConfig: object?
+
   @description('Optional. The kubelet disk type of the agent pool.')
   kubeletDiskType: string?
+
+  @description('Optional. Linux OS configuration.')
+  linuxOSConfig: object?
+
+  @description('Optional. Local DNS configuration.')
+  localDNSProfile: object?
 
   @description('Optional. The maximum number of agents (VMs) to host docker containers. Allowed values must be in the range of 1 to 100 (inclusive).')
   maxCount: int?
@@ -252,11 +331,14 @@ type agentPoolType = {
   @description('Optional. The maximum number of pods that can run on a node.')
   maxPods: int?
 
-  @description('Optional. The minimum number of pods that can run on a node.')
-  minPods: int?
+  @description('Optional. A message of the day for agent pool nodes.')
+  messageOfTheDay: string?
 
   @description('Optional. The mode of the agent pool.')
   mode: ('System' | 'User')?
+
+  @description('Optional. Network profile for the agent pool.')
+  networkProfile: object?
 
   @description('Optional. The node labels of the agent pool.')
   nodeLabels: object?
@@ -282,8 +364,14 @@ type agentPoolType = {
   @description('Optional. The OS type of the agent pool.')
   osType: ('Linux' | 'Windows')?
 
+  @description('Optional. Pod IP allocation mode.')
+  podIPAllocationMode: string?
+
   @description('Optional. The pod subnet ID of the agent pool.')
   podSubnetId: string?
+
+  @description('Optional. Power State of the agent pool.')
+  powerState: object?
 
   @description('Optional. The proximity placement group resource ID of the agent pool.')
   proximityPlacementGroupResourceId: string?
@@ -297,6 +385,9 @@ type agentPoolType = {
   @description('Optional. The scale set priority of the agent pool.')
   scaleSetPriority: ('Low' | 'Regular' | 'Spot')?
 
+  @description('Optional. The security settings of the agent pool.')
+  securityProfile: object?
+
   @description('Optional. The spot max price of the agent pool.')
   spotMaxPrice: int?
 
@@ -306,20 +397,23 @@ type agentPoolType = {
   @description('Optional. The type of the agent pool.')
   type: ('AvailabilitySet' | 'VirtualMachineScaleSets')?
 
-  @description('Optional. The maximum number of nodes that can be created during an upgrade.')
-  maxSurge: string?
+  @description('Optional. Upgrade settings for the agent pool.')
+  upgradeSettings: object?
 
   @description('Optional. The VM size of the agent pool.')
   vmSize: string?
 
+  @description('Optional. Virtual Machines resource status.')
+  virtualMachinesProfile: object?
+
   @description('Optional. The VNet subnet ID of the agent pool.')
-  vnetSubnetID: string?
+  vnetSubnetId: string?
+
+  @description('Optional. Windows OS configuration.')
+  windowsProfile: object?
 
   @description('Optional. The workload runtime of the agent pool.')
   workloadRuntime: string?
-
-  @description('Optional. The enable default telemetry of the agent pool.')
-  enableDefaultTelemetry: bool?
 }[]
 
 output evidenceOfNonCompliance bool = false
