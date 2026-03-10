@@ -500,6 +500,16 @@ Critical bugs found by comparing fork's split config modules against upstream's 
 - [x] All 11 web/site e2e tests build clean (only expected BCP192/BCP104)
 - [ ] Karen: validate
 
+### BF-8: setModuleReadMe.ps1 — null-valued expression on outputs without description
+
+**Root cause**: `output evidenceOfNonCompliance bool = false` has no `@description()` decorator, so the compiled ARM JSON has no `metadata.description` for that output. Line 665 of `setModuleReadMe.ps1` calls `.Replace()` on `$output.metadata.description` without null guard, crashing with "You cannot call a method on a null-valued expression".
+
+The script enters the "outputs with descriptions" branch (line 657) because **some** outputs have metadata, then assumes **all** do.
+
+- [x] Fixed line 665: added null guard for output descriptions
+- [x] Fixed line 736: same pattern for function descriptions
+- [x] Verified: key-value and replica modules generate README without error
+
 ---
 
 ## BUILD-VALIDATE: Local Build Validation (dev-only PE/ACR ref switch)

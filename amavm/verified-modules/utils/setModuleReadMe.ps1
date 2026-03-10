@@ -662,7 +662,7 @@ function Set-OutputsSection {
         )
         foreach ($outputName in ($templateFileContent.outputs.Keys | Sort-Object -Culture 'en-US')) {
             $output = $TemplateFileContent.outputs[$outputName]
-            $description = $output.metadata.description.Replace("`r`n", '<p>').Replace("`n", '<p>')
+            $description = if ($output.metadata.description) { $output.metadata.description.Replace("`r`n", '<p>').Replace("`n", '<p>') } else { '' }
             $SectionContent += ("| ``{0}`` | {1} | {2} |" -f $outputName, $output.type, $description)
         }
     } else {
@@ -733,7 +733,7 @@ function Set-FunctionsSection {
         )
         foreach ($functionName in ($templateFileContent.functions.members.Keys | Sort-Object -Culture 'en-US')) {
             $function = $TemplateFileContent.functions.members[$functionName]
-            $description = $function.metadata.description.Replace("`r`n", '<p>').Replace("`n", '<p>')
+            $description = if ($function.metadata.description) { $function.metadata.description.Replace("`r`n", '<p>').Replace("`n", '<p>') } else { '' }
             $SectionContent += ("| ``{0}`` | {1} |" -f $functionName, $description)
         }
     } else {
