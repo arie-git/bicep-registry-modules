@@ -17,7 +17,7 @@ param webTestName string
 param tags object?
 
 @sys.description('Required. The collection of request properties.')
-param request object
+param request resourceInput<'Microsoft.Insights/webtests@2022-06-15'>.properties.Request
 
 @sys.description('Optional. Location for all Resources.')
 param location string = resourceGroup().location
@@ -29,15 +29,10 @@ param description string = ''
 param syntheticMonitorId string = name
 
 @sys.description('Optional. The kind of WebTest that this web test watches.')
-@allowed([
-  'multistep'
-  'ping'
-  'standard'
-])
-param kind string = 'standard'
+param kind resourceInput<'Microsoft.Insights/webtests@2022-06-15'>.properties.Kind = 'standard'
 
 @sys.description('Optional. List of where to physically run the tests from to give global coverage for accessibility of your application.')
-param locations array = [
+param locations resourceInput<'Microsoft.Insights/webtests@2022-06-15'>.properties.Locations = [
   {
     Id: 'us-il-ch1-azr'
   }
@@ -68,10 +63,10 @@ param timeout int = 30
 param retryEnabled bool = true
 
 @sys.description('Optional. The collection of validation rule properties.')
-param validationRules object = {}
+param validationRules resourceInput<'Microsoft.Insights/webtests@2022-06-15'>.properties.ValidationRules?
 
 @sys.description('Optional. An XML configuration specification for a WebTest.')
-param configuration object?
+param configuration resourceInput<'Microsoft.Insights/webtests@2022-06-15'>.properties.Configuration?
 
 @sys.description('Optional. The lock settings of the service.')
 param lock lockType?

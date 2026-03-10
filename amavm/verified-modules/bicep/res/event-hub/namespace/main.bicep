@@ -59,22 +59,11 @@ param disableLocalAuth bool = true
 @description('Optional. Value that indicates whether Kafka is enabled for Event Hubs Namespace.')
 param kafkaEnabled bool = false
 
-@allowed([
-  '1.0'
-  '1.1'
-  '1.2'
-])
 @description('Optional. The minimum TLS version for the cluster to support. [Policy: drcp-evh-07]')
-param minimumTlsVersion string = '1.2'
+param minimumTlsVersion resourceInput<'Microsoft.EventHub/namespaces@2024-01-01'>.properties.minimumTlsVersion = '1.2'
 
 @description('Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set. [Policy: drcp-evh-01]')
-@allowed([
-  ''
-  'Disabled'
-  'Enabled'
-  'SecuredByPerimeter'
-])
-param publicNetworkAccess string = ''
+param publicNetworkAccess resourceInput<'Microsoft.EventHub/namespaces@2024-01-01'>.properties.publicNetworkAccess?
 
 @description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType

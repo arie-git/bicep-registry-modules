@@ -36,14 +36,7 @@ param skuCapacity int = 3
 param location string = resourceGroup().location
 
 @description('Optional. Kind of hosting.')
-@allowed([
-  'App'
-  'Elastic'
-  'FunctionApp'
-  'Windows'
-  'Linux'
-])
-param kind string = 'App'
+param kind resourceInput<'Microsoft.Web/serverfarms@2025-03-01'>.kind = 'App'
 
 @description('Conditional. Defaults to false when creating Windows/app App Service Plan. Required if creating a Linux App Service Plan and must be set to true.')
 param reserved bool = (kind == 'Linux')

@@ -813,9 +813,15 @@ Full comparison completed 2026-03-10. Compared all 35 whitelisted modules agains
 | db-for-postgre-sql/flexible-server | Version default `'17'` vs upstream `'18'` — may need updating | Low |
 
 - [x] Comparison completed for all 35 modules
-- [ ] Address `resourceInput<>` adoption gap (web/serverfarm, insights/webtest, network/private-endpoint)
+- [x] Address `resourceInput<>` adoption gap:
+  - [x] web/serverfarm — `kind` → `resourceInput<'Microsoft.Web/serverfarms@2025-03-01'>.kind`
+  - [x] insights/webtest — `request`, `locations`, `validationRules`, `configuration`, `kind` → `resourceInput<'Microsoft.Insights/webtests@2022-06-15'>`
+  - [x] network/private-endpoint — `ipConfigurations`, `manualPrivateLinkServiceConnections`, `privateLinkServiceConnections`, `ipVersionType` → `resourceInput<'Microsoft.Network/privateEndpoints@2025-05-01'>`, removed 3 custom type definitions
+  - [x] cache/redis — `redisConfiguration`, `minimumTlsVersion`, `publicNetworkAccess`, `redisVersion`, `zonalAllocationPolicy` → `resourceInput<'Microsoft.Cache/redis@2024-11-01'>`
+  - [x] event-hub/namespace — `minimumTlsVersion`, `publicNetworkAccess` → `resourceInput<'Microsoft.EventHub/namespaces@2024-01-01'>`
 - [ ] Add `secretsExportConfiguration` to cache/redis, cognitive-services, event-hub
-- [ ] Verify search/search-service `hostingMode` case sensitivity
+- [x] Fix search/search-service `hostingMode` case: `'default'`→`'Default'`, `'highDensity'`→`'HighDensity'` (main + 2 test files)
+- [x] Restrict db-for-postgre-sql/flexible-server `version` @allowed to `['16','17','18']` (min 16 per policy drcp-psql-06)
 - API version drift on resources and `reference()` calls
 - Missing upstream params/child modules since last sync
 - Build errors (test cases especially)

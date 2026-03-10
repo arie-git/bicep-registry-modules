@@ -80,7 +80,7 @@ module testDeployment '../../../main.bicep' = [
           aadAuthFailureMode: 'http401WithBearerChallenge'
         }
       }
-      hostingMode: 'highDensity'
+      hostingMode: 'HighDensity'
       partitionCount: 2
       replicaCount: 3
       managedIdentities: {

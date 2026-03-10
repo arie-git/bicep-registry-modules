@@ -75,7 +75,7 @@ module testDeployment '../../../main.bicep' = [
         }
       ]
       dataExfiltrationProtections: ['All']
-      hostingMode: 'highDensity'
+      hostingMode: 'HighDensity'
       partitionCount: 2
       replicaCount: 3
       semanticSearch: 'standard'

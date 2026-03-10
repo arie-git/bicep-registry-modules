@@ -44,36 +44,23 @@ Setting this parameter to true will make the resource non-compliant (drcp-redis-
 ''')
 param enableNonSslPort bool = false
 
-@allowed([
-  '1.0'
-  '1.1'
-  '1.2'
-])
 @description('''Optional. Requires clients to use a specified TLS version (or higher) to connect.
 
 Setting this parameter to less than 1.2 will make the resource non-compliant (drcp-redis-08). [Policy: drcp-redis-08]
 ''')
-param minimumTlsVersion string = '1.2'
+param minimumTlsVersion resourceInput<'Microsoft.Cache/redis@2024-11-01'>.properties.minimumTlsVersion = '1.2'
 
 @description('''Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set.
 
 Setting this parameter to Enabled will make the resource non-compliant (drcp-redis-02). [Policy: drcp-redis-02]
 ''')
-@allowed([
-  'Enabled'
-  'Disabled'
-])
-param publicNetworkAccess string = 'Disabled'
+param publicNetworkAccess resourceInput<'Microsoft.Cache/redis@2024-11-01'>.properties.publicNetworkAccess = 'Disabled'
 
 @description('Optional. All Redis Settings. Few possible keys: rdb-backup-enabled,rdb-storage-connection-string,rdb-backup-frequency,maxmemory-delta,maxmemory-policy,notify-keyspace-events,maxmemory-samples,slowlog-log-slower-than,slowlog-max-len,list-max-ziplist-entries,list-max-ziplist-value,hash-max-ziplist-entries,hash-max-ziplist-value,set-max-intset-entries,zset-max-ziplist-entries,zset-max-ziplist-value etc.')
-param redisConfiguration object?
+param redisConfiguration resourceInput<'Microsoft.Cache/redis@2024-11-01'>.properties.redisConfiguration?
 
-@allowed([
-  '4'
-  '6'
-])
 @description('Optional. Redis version. Only major version will be used in PUT/PATCH request with current valid values: (4, 6).')
-param redisVersion string = '6'
+param redisVersion resourceInput<'Microsoft.Cache/redis@2024-11-01'>.properties.redisVersion = '6'
 
 @minValue(1)
 @description('Optional. The number of replicas to be created per primary.')
@@ -127,12 +114,7 @@ param zoneRedundant bool = true
 param availabilityZones int[] = [1, 2, 3]
 
 @description('Optional. Specifies how availability zones are allocated to the Redis cache. "Automatic" enables zone redundancy and Azure will automatically select zones. "UserDefined" will select availability zones passed in by you using the "availabilityZones" parameter. "NoZones" will produce a non-zonal cache. Only applicable when zoneRedundant is true.')
-@allowed([
-  'Automatic'
-  'NoZones'
-  'UserDefined'
-])
-param zonalAllocationPolicy string?
+param zonalAllocationPolicy resourceInput<'Microsoft.Cache/redis@2024-11-01'>.properties.zonalAllocationPolicy?
 
 @description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-redis-04] [Policy: drcp-sub-07]')
 param privateEndpoints privateEndpointType

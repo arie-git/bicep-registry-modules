@@ -111,16 +111,11 @@ param storageSizeGB int = 32
 param autoGrow string?
 
 @allowed([
-  '11'
-  '12'
-  '13'
-  '14'
-  '15'
   '16'
   '17'
   '18'
 ])
-@description('Optional. [Policy: drcp-psql-06] PostgreSQL Server version. Version lower than 16 will result in non-compliancy.')
+@description('Optional. [Policy: drcp-psql-06] PostgreSQL Server version. Minimum version 16 is enforced by policy.')
 param version string = '17'
 
 @allowed([

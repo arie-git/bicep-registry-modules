@@ -17,11 +17,10 @@ param applicationSecurityGroupResourceIds array?
 param customNetworkInterfaceName string?
 
 @description('Optional. A list of IP configurations of the private endpoint. This will be used to map to the First Party Service endpoints.')
-param ipConfigurations ipConfigurationsType
+param ipConfigurations resourceInput<'Microsoft.Network/privateEndpoints@2025-05-01'>.properties.ipConfigurations?
 
 @description('Optional. Specifies the IP version type for the private IPs of the private endpoint. If not defined, this defaults to IPv4.')
-@allowed(['IPv4'])
-param ipVersionType string = 'IPv4'
+param ipVersionType resourceInput<'Microsoft.Network/privateEndpoints@2025-05-01'>.properties.ipVersionType = 'IPv4'
 
 @description('Optional. The private DNS zone group to configure for the private endpoint.')
 param privateDnsZoneGroup privateDnsZoneGroupType?
@@ -42,10 +41,10 @@ param tags object?
 param customDnsConfigs customDnsConfigType
 
 @description('Optional. A grouping of information about the connection to the remote resource. Used when the network admin does not have access to approve connections to the remote resource.')
-param manualPrivateLinkServiceConnections manualPrivateLinkServiceConnectionsType
+param manualPrivateLinkServiceConnections resourceInput<'Microsoft.Network/privateEndpoints@2025-05-01'>.properties.manualPrivateLinkServiceConnections?
 
 @description('Optional. A grouping of information about the connection to the remote resource.')
-param privateLinkServiceConnections privateLinkServiceConnectionsType
+param privateLinkServiceConnections resourceInput<'Microsoft.Network/privateEndpoints@2025-05-01'>.properties.privateLinkServiceConnections?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
@@ -196,57 +195,6 @@ type privateDnsZoneGroupType = {
   @description('Required. The private DNS zone groups to associate the private endpoint. A DNS zone group can support up to 5 DNS zones.')
   privateDnsZoneGroupConfigs: privateDnsZoneGroupConfigType[]
 }
-
-type ipConfigurationsType = {
-  @description('Required. The name of the resource that is unique within a resource group.')
-  name: string
-
-  @description('Required. Properties of private endpoint IP configurations.')
-  properties: {
-    @description('Required. The ID of a group obtained from the remote resource that this private endpoint should connect to.')
-    groupId: string
-
-    @description('Required. The member name of a group obtained from the remote resource that this private endpoint should connect to.')
-    memberName: string
-
-    @description('Required. A private IP address obtained from the private endpoint\'s subnet.')
-    privateIPAddress: string
-  }
-}[]?
-
-type manualPrivateLinkServiceConnectionsType = {
-  @description('Required. The name of the private link service connection.')
-  name: string
-
-  @description('Required. Properties of private link service connection.')
-  properties: {
-    @description('Required. The ID of a group obtained from the remote resource that this private endpoint should connect to.')
-    groupIds: array
-
-    @description('Required. The resource id of private link service.')
-    privateLinkServiceId: string
-
-    @description('Optional. A message passed to the owner of the remote resource with this connection request. Restricted to 140 chars.')
-    requestMessage: string
-  }
-}[]?
-
-type privateLinkServiceConnectionsType = {
-  @description('Required. The name of the private link service connection.')
-  name: string
-
-  @description('Required. Properties of private link service connection.')
-  properties: {
-    @description('Required. The ID of a group obtained from the remote resource that this private endpoint should connect to.')
-    groupIds: array
-
-    @description('Required. The resource id of private link service.')
-    privateLinkServiceId: string
-
-    @description('Optional. A message passed to the owner of the remote resource with this connection request. Restricted to 140 chars.')
-    requestMessage: string?
-  }
-}[]?
 
 type customDnsConfigType = {
   @description('Required. Fqdn that resolves to private endpoint IP address.')
