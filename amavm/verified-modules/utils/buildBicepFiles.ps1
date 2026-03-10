@@ -143,6 +143,15 @@ if ($Sequential -or $parentModules.Count -le 1) {
     Write-Host "Running parallel build with ThrottleLimit=$ThrottleLimit for $($parentModules.Count) parent modules"
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
+    # Pre-populate Bicep module cache serially to avoid cache contention (BCP233).
+    # Multiple parallel restores of the same ACR module (e.g. private-endpoint) race on
+    # the shared ~/.bicep/br/ cache — one deletes while another reads, causing failures.
+    Write-Host "Pre-restoring module dependencies (serial)..."
+    foreach ($filename in $parentModules) {
+        az bicep restore --file $filename --force 2>&1 | Out-Null
+    }
+    Write-Host "Pre-restore complete."
+
     # Thread-safe error collection
     $build_errors = [System.Collections.Concurrent.ConcurrentBag[string]]::new()
 
@@ -170,10 +179,6 @@ if ($Sequential -or $parentModules.Count -le 1) {
                 if ($LASTEXITCODE -gt 0) {
                     throw "Code:$LASTEXITCODE"
                 }
-            }
-            az bicep restore --file $filename --force 2>&1 | ForEach-Object { [void]$output.AppendLine("   $_") }
-            if ($LASTEXITCODE -gt 0) {
-                throw "Code:$LASTEXITCODE (restore)"
             }
             az bicep build --file $filename --stdout 2>&1 > $null
             if ($LASTEXITCODE -gt 0) {
