@@ -759,6 +759,15 @@ Every main.bicep (parent AND child) must have: `metadata owner`, `metadata compl
 Full build run on machine with ACR access (bicep v0.41.2). PE module published as v0.2.0 before build.
 Log file: `/workspaces/bicep-registry-modules/machine-build-results-2026-03-10.txt`
 
+### BF-8: web/static-site — remove private DNS zone self-deployment
+
+- **Issue**: Module deployed its own `br/amavm:res/network/private-dns-zone:0.2.0` via `staticSite_privateDnsZone`. On the hardened platform, private DNS zones are created by remediation policy, not by individual modules.
+- **Fix**: Removed `staticSite_privateDnsZone` module, `createPrivateDnsZone` param, `virtualNetworkResourceId` param, and the `privateDnsZoneGroup` fallback referencing the removed zone. PE now just passes through `privateEndpoint.?privateDnsZoneGroup`.
+- **Checked other new modules**: redis, event-hub, document-db — none deploy their own private DNS zones (correct).
+- [x] Remove DNS zone deployment from `web/static-site/main.bicep`
+- [x] Verify build passes (local PE path, warnings only)
+- [x] Checked `cache/redis`, `event-hub/namespace`, `document-db/database-account` — no DNS zone self-deployment found
+
 ### Pattern: WAF-aligned dependencies for defaults test cases
 
 When Azure policy denies public network access, the "defaults" test case must deploy with private endpoints. Use the waf-aligned dependencies for the defaults test (reuse `../waf-aligned/dependencies.bicep`). See `cognitive-services/account/tests/e2e/defaults/main.test.bicep` for the reference pattern:
