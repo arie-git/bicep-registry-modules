@@ -1,71 +1,20 @@
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
+File saved!
+Import-Module -Name /usr/share/az_14.6.0/Az.Accounts/5.3.2/Az.Accounts.psd1 -Global
+Clear-AzContext -Scope Process
+Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue
+Connect-AzAccount -ServicePrincipal -Tenant c1f94f0d-9a3d-4854-9288-bb90dcf2a90d -Credential System.Management.Automation.PSCredential -Environment AzureCloud @processScope
+ Set-AzContext -SubscriptionId 1be224b4-ef10-453a-aa1e-9dd04e31bd06 -TenantId c1f94f0d-9a3d-4854-9288-bb90dcf2a90d
+Fetching ReadMe under /agent/_work/1/s/bicep/res/
+Running parallel README validation with ThrottleLimit=6 for 69 modules
+The running command stopped because the preference variable "ErrorActionPreference" or common parameter is set to Stop: WARNING: /agent/_work/1/s/bicep/res/container-registry/registry/cache-rule/main.bicep(25,30) : Warning no-unused-imports: Import "minimalBuiltInRoleNames" is declared but never used. [https://aka.ms/bicep/linter-diagnostics#no-unused-imports]
+At /agent/_work/1/s/utils/setModuleReadMe.ps1:2175 char:36
++ … ileContent = az bicep build --file $TemplateFilePath --stdout | Conve …
++                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-=> res/insights/data-collection-endpoint
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
+##[error]PowerShell exited with code '1'.
+/usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command . '/agent/_work/_tasks/AzurePowerShell_72a1931b-effb-4d2e-8fd8-f8472a07cb62/5.269.2/RemoveAzContext.ps1'
+Disconnect-AzAccount -Scope CurrentUser -ErrorAction Stop
+Disconnect-AzAccount -Scope Process -ErrorAction Stop
+Clear-AzContext -Scope Process -ErrorAction Stop
 
-=> res/insights/activity-log-alert
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/insights/component
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/insights/diagnostic-setting
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/insights/action-group
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/insights/data-collection-rule
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/insights/metric-alert
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/insights/private-link-scope
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/search/search-service
-   ERROR: /agent/_work/1/s/bicep/res/search/search-service/main.bicep(320,39) : Error BCP233: Unable to delete the module with reference "br:s2amavmdevsecacr.azurecr.io/res/network/private-endpoint:0.2.0" from cache: Unable to delete the local artifact directory "/home/AzDevOps/.bicep/br/s2amavmdevsecacr.azurecr.io/res$network$private-endpoint/0.2.0$/". Could not find a part of the path '/home/AzDevOps/.bicep/br/s2amavmdevsecacr.azurecr.io/res$network$private-endpoint/0.2.0$/'. [https://aka.ms/bicep/core-diagnostics#BCP233]
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   ERROR: Code:1 (restore)
-
-=> res/service-bus/namespace/topic
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/service-bus/namespace/topic/subscription
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/service-bus/namespace/queue
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/databricks/workspace
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/service-bus/namespace
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/databricks/access-connector
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/storage/storage-account/queue-service/queue
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
-
-=> res/storage/storage-account/blob-service/container
-   Bicep CLI is already installed at '/home/AzDevOps/.azure/bin/bicep'. Skipping installation as no specific version was requested.
-   OK
+Finishing: Compare README files
