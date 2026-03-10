@@ -69,6 +69,15 @@ No upstream AVM module exists. Only 2 policies (drcp-ntf-01 default access polic
 - [x] Research: no upstream module, minimal policy coverage
 - [x] Decision: DEFER
 
+### GAP-5: Public IP Address (network/public-ip-address)
+
+Needed by DRCP test cases (scenarios 5, 8) for Application Gateway public IP. Simple resource, low complexity. No upstream AVM module exists but straightforward to create.
+
+- [ ] Check if upstream AVM has a public-ip-address module
+- [ ] Create AMAVM module `network/public-ip-address` with DRCP-compliant defaults
+- [ ] Apply Module Customization Checklist
+- [ ] `bicep build` passes
+
 ---
 
 ## TECH-DEBT: Per-Module Fixes
@@ -692,6 +701,40 @@ Comparison of `amavm/verified-modules/utils/` against `microsoft-avm/avm/` upstr
   - `.Trim()` on orphaned content lines (bug fix)
   - Test folder reference path in usage examples
   - Note: AMAVM-specific customizations preserved (private ACR, compliance section, telemetry text, specificBuiltInRoleNames)
+
+### FEAT-9: Pipeline Performance — Parallel Bicep Build & README Validation
+
+Current pipeline takes ~30 min for a feature branch (RES only):
+- Bicep build: ~8 min (sequential, ~35 parent modules)
+- README validation: ~25 min (sequential, 66 README files × `az bicep build --stdout` via `Set-ModuleReadMe`)
+
+**Root cause**: Both `buildBicepFiles.ps1` and `compareReadMe.ps1` process modules serially. Each `Set-ModuleReadMe` call invokes `az bicep build --stdout` to compile the template before generating the README — 66 sequential compiler invocations.
+
+**Plan**: Parallelize using PowerShell 7 `ForEach-Object -Parallel`:
+
+| Script | Change | Expected impact |
+|---|---|---|
+| `buildBicepFiles.ps1` | Parallel build loop (`-ThrottleLimit 4-8`) | ~8 min → ~2-3 min |
+| `compareReadMe.ps1` | Parallel README generation + compare | ~25 min → ~5-7 min |
+
+**Implementation notes:**
+- `ForEach-Object -Parallel` runs in isolated runspaces — must re-import `setModuleReadMe.ps1` per runspace
+- Use thread-safe `[System.Collections.Concurrent.ConcurrentBag[string]]` for error collection
+- `az bicep restore` is idempotent — concurrent restores of same ACR artifact are safe
+- Collect per-module output and print after completion to avoid log interleaving
+- `Set-ModuleReadMe` has a `PreLoadedContent` param — future optimization: build once, pass compiled JSON to README generation (eliminates double compilation entirely)
+- Both scripts support `-Sequential` switch for fallback/debugging and `-ThrottleLimit` (default: 6)
+- **Deviation from upstream**: `setModuleReadMe.ps1` is NOT modified — parallelization wraps around it only
+- Helper script `swapPeReferences.ps1` created for local testing (swaps ACR PE refs to local paths and back)
+
+- [x] Parallelize `buildBicepFiles.ps1` main build loop
+- [x] Parallelize `buildBicepFiles.ps1` child module README loop
+- [x] Parallelize `compareReadMe.ps1` module loop
+- [x] Handle `Set-ModuleReadMe` import in parallel runspaces
+- [x] Local test: 52 parent modules built in ~80s parallel (ThrottleLimit=6)
+- [ ] Test on pipeline (feature branch) with full RES build + README validation
+- [ ] Measure pipeline before/after timing
+- [ ] Evaluate `PreLoadedContent` optimization (phase 2 — eliminate double compilation)
 
 ### FEAT-7: Missing Features vs Upstream
 

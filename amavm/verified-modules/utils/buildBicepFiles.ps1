@@ -3,7 +3,7 @@
 Build the module(s).
 
 .DESCRIPTION
-Build the bicep modules.
+Build the bicep modules. Supports parallel processing via ForEach-Object -Parallel (PowerShell 7+).
 
 .PARAMETER modulesRootPath
 Optional. The path of modules' root
@@ -11,12 +11,19 @@ Optional. The path of modules' root
 Optional. The path of sub module, if not provided then all the modules will be built.
 .PARAMETER moduleName
 Optional. The name of individual module
+.PARAMETER buildReadme
+Optional. If 'True', also generates README.md files.
+.PARAMETER Sequential
+Optional. Switch to disable parallel processing and run serially (for debugging).
+.PARAMETER ThrottleLimit
+Optional. Maximum number of parallel runspaces. Default: 6.
 
 .EXAMPLE
 ./buildBicepFiles.ps1
 ./buildBicepFiles.ps1 -modulesSubpath 'res/sql'
 ./buildBicepFiles.ps1 -modulesSubpath 'res/sql' -moduleName 'database'
 ./buildBicepFiles.ps1 -modulesSubpath 'res' -buildReadme 'True'
+./buildBicepFiles.ps1 -modulesSubpath 'res' -buildReadme 'True' -Sequential
 
 Output will be the result of bicep build process either for all or individual modules.
 #>
@@ -29,7 +36,11 @@ param(
     [Parameter(Mandatory=$false)]
     [string]$moduleName= "",
     [Parameter(Mandatory=$false)]
-    [string]$buildReadme="False"
+    [string]$buildReadme="False",
+    [Parameter(Mandatory = $false)]
+    [switch]$Sequential,
+    [Parameter(Mandatory = $false)]
+    [int]$ThrottleLimit = 6
 )
 
 # Import required modules
@@ -40,74 +51,52 @@ $resolvedRootPath = (Resolve-Path $modulesRootPath).Path
 $resolvedPath = (Resolve-Path (Join-Path $modulesRootPath $modulesSubpath)).Path
 Write-Host "Building modules under $resolvedPath"
 
-# Capture errors while building
-$build_errors = New-Object System.Collections.ArrayList
 # Each folder 3 levels and below the root can contain modules (<res|ptn|utl>/<provider>/<resource>/[<subresource>]/[<subresource>]/[...] etc )
 # Using -Filter instead of -Include for better performance (single-pass filesystem filtering)
-$modules = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'main.bicep'
-foreach ($filename in $modules) {
-    # Module name is a directory path between the bicep repository root and the main.bicep of the module
+$allBicepFiles = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'main.bicep'
+
+# Filter to only modules with version.json (parent modules)
+$parentModules = @()
+foreach ($filename in $allBicepFiles) {
     $currentModuleName = (Split-Path $filename -Parent).Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
     if ($currentModuleName -eq "") {
         $currentModuleName = (Get-Item $filename).Directory.Name
     }
-    # If the module name is provided check only that one
     if (($moduleName.Length -gt 0) -and ($currentModuleName -ne $moduleName.Replace("\","/"))) {
         continue
     }
-    # Check if there is a version.json file, otherwise it is not a module and can be skipped
     $versionFileName = Join-Path (Split-Path $filename -Parent) "version.json"
     if(!(Test-Path $versionFileName -PathType Leaf)) {
         continue
     }
-    # Now the real work begings
-    Write-Host "=> $currentModuleName"
-    try {
-        if ($buildReadme -eq "True") {
-            Set-ModuleReadMe -TemplateFilePath $filename
+    $parentModules += $filename
+}
+
+# Resolve the path to setModuleReadMe.ps1 for re-import in parallel runspaces
+$setModuleReadMePath = (Resolve-Path ".\utils\setModuleReadMe.ps1").Path
+
+if ($Sequential -or $parentModules.Count -le 1) {
+    # ── Serial execution (original behavior) ──
+    $build_errors = New-Object System.Collections.ArrayList
+
+    foreach ($filename in $parentModules) {
+        $currentModuleName = (Split-Path $filename -Parent).Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
+        if ($currentModuleName -eq "") {
+            $currentModuleName = (Get-Item $filename).Directory.Name
+        }
+        Write-Host "=> $currentModuleName"
+        try {
+            if ($buildReadme -eq "True") {
+                Set-ModuleReadMe -TemplateFilePath $filename
+                if ($LASTEXITCODE -gt 0) {
+                    throw "Code:$LASTEXITCODE"
+                }
+            }
+            az bicep restore --file $filename --force
             if ($LASTEXITCODE -gt 0) {
                 throw "Code:$LASTEXITCODE"
             }
-        }
-        az bicep restore --file $filename --force
-        if ($LASTEXITCODE -gt 0) {
-            throw "Code:$LASTEXITCODE"
-        }
-        az bicep build --file $filename --stdout > $null
-        if ($LASTEXITCODE -gt 0) {
-            throw "Code:$LASTEXITCODE"
-        }
-    }
-    catch {
-        $build_errors.Add($_) > $null
-    }
-}
-
-# When building READMEs, also generate for child modules that have a README.md but no version.json
-# This matches the discovery logic of compareReadMe.ps1 which finds modules by scanning for *.md files
-if ($buildReadme -eq "True") {
-    $readmeFiles = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'README.md'
-    foreach ($readMeFile in $readmeFiles) {
-        $moduleDir = Split-Path $readMeFile -Parent
-        $versionFileName = Join-Path $moduleDir "version.json"
-        # Skip modules that already have version.json (already processed in the main loop above)
-        if (Test-Path $versionFileName -PathType Leaf) {
-            continue
-        }
-        $bicepFileName = Join-Path $moduleDir "main.bicep"
-        if (!(Test-Path $bicepFileName -PathType Leaf)) {
-            continue
-        }
-        $currentModuleName = $moduleDir.Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
-        if ($currentModuleName -eq "") {
-            $currentModuleName = (Get-Item $moduleDir).Name
-        }
-        if (($moduleName.Length -gt 0) -and ($currentModuleName -ne $moduleName.Replace("\","/"))) {
-            continue
-        }
-        Write-Host "=> $currentModuleName (README only)"
-        try {
-            Set-ModuleReadMe -TemplateFilePath $bicepFileName
+            az bicep build --file $filename --stdout > $null
             if ($LASTEXITCODE -gt 0) {
                 throw "Code:$LASTEXITCODE"
             }
@@ -116,6 +105,146 @@ if ($buildReadme -eq "True") {
             $build_errors.Add($_) > $null
         }
     }
+
+    # When building READMEs, also generate for child modules that have a README.md but no version.json
+    if ($buildReadme -eq "True") {
+        $readmeFiles = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'README.md'
+        foreach ($readMeFile in $readmeFiles) {
+            $moduleDir = Split-Path $readMeFile -Parent
+            $versionFileName = Join-Path $moduleDir "version.json"
+            if (Test-Path $versionFileName -PathType Leaf) {
+                continue
+            }
+            $bicepFileName = Join-Path $moduleDir "main.bicep"
+            if (!(Test-Path $bicepFileName -PathType Leaf)) {
+                continue
+            }
+            $currentModuleName = $moduleDir.Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
+            if ($currentModuleName -eq "") {
+                $currentModuleName = (Get-Item $moduleDir).Name
+            }
+            if (($moduleName.Length -gt 0) -and ($currentModuleName -ne $moduleName.Replace("\","/"))) {
+                continue
+            }
+            Write-Host "=> $currentModuleName (README only)"
+            try {
+                Set-ModuleReadMe -TemplateFilePath $bicepFileName
+                if ($LASTEXITCODE -gt 0) {
+                    throw "Code:$LASTEXITCODE"
+                }
+            }
+            catch {
+                $build_errors.Add($_) > $null
+            }
+        }
+    }
+} else {
+    # ── Parallel execution (PowerShell 7+) ──
+    Write-Host "Running parallel build with ThrottleLimit=$ThrottleLimit for $($parentModules.Count) parent modules"
+    $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+
+    # Thread-safe error collection
+    $build_errors = [System.Collections.Concurrent.ConcurrentBag[string]]::new()
+
+    $parentModules | ForEach-Object -Parallel {
+        $filename = $_
+        $resolvedRootPath = $using:resolvedRootPath
+        $buildReadme = $using:buildReadme
+        $setModuleReadMePath = $using:setModuleReadMePath
+        $errorBag = $using:build_errors
+
+        $currentModuleName = (Split-Path $filename -Parent).Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
+        if ($currentModuleName -eq "") {
+            $currentModuleName = (Get-Item $filename).Directory.Name
+        }
+
+        # Collect output per module to avoid log interleaving
+        $output = [System.Text.StringBuilder]::new()
+        [void]$output.AppendLine("=> $currentModuleName")
+
+        try {
+            if ($buildReadme -eq "True") {
+                # Re-import setModuleReadMe in this runspace
+                Import-Module $setModuleReadMePath -Force
+                Set-ModuleReadMe -TemplateFilePath $filename
+                if ($LASTEXITCODE -gt 0) {
+                    throw "Code:$LASTEXITCODE"
+                }
+            }
+            az bicep restore --file $filename --force 2>&1 | ForEach-Object { [void]$output.AppendLine("   $_") }
+            if ($LASTEXITCODE -gt 0) {
+                throw "Code:$LASTEXITCODE (restore)"
+            }
+            az bicep build --file $filename --stdout 2>&1 > $null
+            if ($LASTEXITCODE -gt 0) {
+                throw "Code:$LASTEXITCODE (build)"
+            }
+            [void]$output.AppendLine("   OK")
+        }
+        catch {
+            $errorBag.Add("$currentModuleName : $_")
+            [void]$output.AppendLine("   ERROR: $_")
+        }
+
+        Write-Host $output.ToString()
+    } -ThrottleLimit $ThrottleLimit
+
+    # When building READMEs, also generate for child modules (README-only pass)
+    if ($buildReadme -eq "True") {
+        $readmeFiles = Get-ChildItem -Path $resolvedPath -Recurse -Filter 'README.md'
+        # Filter to child modules (no version.json, has main.bicep)
+        $childModules = @()
+        foreach ($readMeFile in $readmeFiles) {
+            $moduleDir = Split-Path $readMeFile -Parent
+            $versionFileName = Join-Path $moduleDir "version.json"
+            if (Test-Path $versionFileName -PathType Leaf) {
+                continue
+            }
+            $bicepFileName = Join-Path $moduleDir "main.bicep"
+            if (!(Test-Path $bicepFileName -PathType Leaf)) {
+                continue
+            }
+            $currentModuleName = $moduleDir.Replace($resolvedRootPath,"").Replace("\","/").TrimStart("/")
+            if ($currentModuleName -eq "") {
+                $currentModuleName = (Get-Item $moduleDir).Name
+            }
+            if (($moduleName.Length -gt 0) -and ($currentModuleName -ne $moduleName.Replace("\","/"))) {
+                continue
+            }
+            $childModules += @{ Name = $currentModuleName; BicepFile = $bicepFileName }
+        }
+
+        if ($childModules.Count -gt 0) {
+            Write-Host "Running parallel README generation for $($childModules.Count) child modules"
+            $childModules | ForEach-Object -Parallel {
+                $module = $_
+                $setModuleReadMePath = $using:setModuleReadMePath
+                $errorBag = $using:build_errors
+
+                Import-Module $setModuleReadMePath -Force
+
+                $output = [System.Text.StringBuilder]::new()
+                [void]$output.AppendLine("=> $($module.Name) (README only)")
+
+                try {
+                    Set-ModuleReadMe -TemplateFilePath $module.BicepFile
+                    if ($LASTEXITCODE -gt 0) {
+                        throw "Code:$LASTEXITCODE"
+                    }
+                    [void]$output.AppendLine("   OK")
+                }
+                catch {
+                    $errorBag.Add("$($module.Name) : $_")
+                    [void]$output.AppendLine("   ERROR: $_")
+                }
+
+                Write-Host $output.ToString()
+            } -ThrottleLimit $ThrottleLimit
+        }
+    }
+
+    $stopwatch.Stop()
+    Write-Host "Parallel build completed in $([math]::Round($stopwatch.Elapsed.TotalSeconds, 1))s"
 }
 
 # Print found errors
