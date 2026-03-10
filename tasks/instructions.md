@@ -1,5 +1,7 @@
 # Multi-Agent Instructions
 
+**RULE: Always use installed Azure skills (`/azure:*`) when performing Azure-related work.** See the Mandatory Skill Usage Policy in the Azure Skills section below. Do not perform Azure tasks manually when a skill covers it — skills provide up-to-date best practices, correct API patterns, and validated configurations that manual work may miss.
+
 ## Scope
 
 Only the **22 whitelisted Azure components** (defined in `policy/knowledge_base/Azure-Components/`) are in scope. All other upstream AVM modules are ignored.
@@ -86,6 +88,8 @@ pwsh -Command "./utils/compareReadMe.ps1"
 2. `bicep lint` — review warnings, flag anything critical
 3. `pwsh buildBicepFiles.ps1` — full build check
 4. `pwsh setModuleReadMe.ps1` + `compareReadMe.ps1` — README drift check
+5. `/azure:azure-validate` — pre-deployment readiness check (if `az login` available)
+6. `/azure:azure-compliance` — spot-check module against subscription policies (if `az login` available)
 
 ### Azure Skills (Slash Commands)
 
@@ -141,13 +145,34 @@ The following Azure skills are installed and available via `/skill-name` syntax.
 |---|---|---|
 | `/azure:azure-cloud-migrate` | Cross-cloud migration (AWS/GCP to Azure) | Assessment reports, code conversion to Azure services |
 
-#### Usage Notes
+#### Mandatory Skill Usage Policy
 
-- Skills are invoked as `/azure:<skill-name>` in conversation.
-- **`azure-prepare` vs `azure-deploy`:** Use `prepare` to scaffold infra and config, then `deploy` to execute. Don't use `deploy` for creating new apps.
-- **`azure-validate`** should run between `prepare` and `deploy` as a pre-flight check.
-- Skills that query live Azure resources (resource-lookup, diagnostics, cost-optimization) require an authenticated Azure CLI session (`az login`).
-- The **compliance** and **rbac** skills are relevant to this project's policy-enforcement workflow — use them to cross-check amavm module RBAC patterns and compliance posture.
+**These skills MUST be used whenever their trigger conditions are met.** Do not perform Azure work manually when a skill covers it.
+
+| When you are... | You MUST use |
+|---|---|
+| Creating or modifying RBAC / role assignments in Bicep | `/azure:azure-rbac` to identify the correct least-privilege role |
+| Auditing a module for policy compliance | `/azure:azure-compliance` alongside the local `policy/Generic/` check |
+| Validating Bicep before marking a task done | `/azure:azure-validate` after `bicep build` passes |
+| Debugging a deployment failure or reading logs | `/azure:azure-diagnostics` |
+| Working with `diagnosticSettings`, log categories, or KQL | `/azure:azure-kusto` for query help |
+| Adding or modifying Application Insights telemetry | `/azure:appinsights-instrumentation` |
+| Working with storage (blob, queue, table, lifecycle) params | `/azure:azure-storage` for API patterns |
+| Working with Event Hub or Service Bus SDK/config issues | `/azure:azure-messaging` |
+| Generating Bicep/Terraform for a new module or feature | `/azure:azure-prepare` for scaffolding best practices |
+| Looking up deployed resources or checking subscription state | `/azure:azure-resource-lookup` |
+| Creating architecture diagrams for READMEs or docs | `/azure:azure-resource-visualizer` |
+| Setting up Entra ID auth, app registrations, or MSAL | `/azure:entra-app-registration` |
+| Evaluating cost impact of a module's SKU/tier defaults | `/azure:azure-cost-optimization` |
+
+**Invocation:** Skills are invoked as `/azure:<skill-name>` in conversation.
+
+**Prerequisites:** Skills that query live Azure resources (resource-lookup, diagnostics, cost-optimization, compliance) require an authenticated Azure CLI session (`az login`). If not authenticated, note the finding and flag it for later verification.
+
+**Sequencing:**
+- `azure-prepare` → `azure-validate` → `azure-deploy` (never skip validate)
+- `azure-compliance` + `azure-rbac` should run during policy audit phases
+- `azure-validate` should run as part of Karen's validation sequence (after `bicep build`)
 
 ---
 
@@ -321,6 +346,8 @@ When forking an upstream module into amavm, or auditing an existing module, ever
 
 **Trigger:** For each module in TD-2 (policy compliance audit) and all GAP modules.
 
+**Required skills:** `/azure:azure-compliance` (for live subscription policy checks), `/azure:azure-rbac` (for role assignment validation).
+
 **Inputs:**
 - amavm module path: `amavm/verified-modules/bicep/res/<category>/<module>/main.bicep`
 - Relevant policies: `policy/Generic/*.json` (filtered by service name)
@@ -332,7 +359,9 @@ When forking an upstream module into amavm, or auditing an existing module, ever
 3. Find all matching policy JSON files in `policy/Generic/`
 4. Read the component's `Security-Baseline.rst`
 5. For each policy: verify the module enforces it (via defaults, allowed values, or hardcoded config)
-6. Flag any policy that the module does NOT enforce or allows to be bypassed
+6. Run `/azure:azure-compliance` to cross-check findings against live subscription policies (if authenticated)
+7. Run `/azure:azure-rbac` to validate any `roleAssignments` use least-privilege roles
+8. Flag any policy that the module does NOT enforce or allows to be bypassed
 
 **Output:** Per-module policy compliance report listing enforced vs. unenforced policies.
 
@@ -341,6 +370,8 @@ When forking an upstream module into amavm, or auditing an existing module, ever
 **Purpose:** Strict acceptance gate. Verifies that completed work actually meets all acceptance criteria before a task can be marked done.
 
 **Trigger:** After any GAP or TD task claims to be complete.
+
+**Required skills:** `/azure:azure-validate` (pre-deployment readiness), `/azure:azure-compliance` (policy spot-check).
 
 **Process:**
 1. Re-read the task's acceptance criteria from `tasks/todo.md`
@@ -351,8 +382,10 @@ When forking an upstream module into amavm, or auditing an existing module, ever
    - **README exists:** Verify `README.md` is present
    - **Tests exist:** Verify `tests/e2e/defaults/`, `tests/e2e/max/`, `tests/e2e/waf-aligned/` exist
    - **Version files:** Verify `version.json` and `upstream.json` exist and are well-formed
-3. If ANY criterion fails: reject with specific failure reason. Do not approve partial work.
-4. If ALL criteria pass: approve and the task can be marked `[x]` in `tasks/todo.md`.
+3. Run `/azure:azure-validate` on the module's Bicep to check deployment readiness (if `az login` available)
+4. Run `/azure:azure-compliance` to spot-check the module against subscription policies (if `az login` available)
+5. If ANY criterion fails: reject with specific failure reason. Do not approve partial work.
+6. If ALL criteria pass: approve and the task can be marked `[x]` in `tasks/todo.md`.
 
 **Output:** PASS or FAIL with itemized results. Karen does not negotiate.
 
@@ -371,16 +404,43 @@ Follow `claude.md` at repo root.
 ### Workflow for GAP Modules
 
 1. **Plan agent** — design module implementation strategy
-2. **Azure Policy Expert** — identify all policies the module must satisfy
-3. **General-purpose agent (worktree)** — implement the module
-4. **Bicep Tech Debt Analyst** — verify checklist compliance
-5. **Karen (Validator)** — final acceptance gate
+2. `/azure:azure-rbac` — identify least-privilege roles for the resource type's `roleAssignments`
+3. **Azure Policy Expert** + `/azure:azure-compliance` — identify all policies the module must satisfy
+4. **General-purpose agent (worktree)** — implement the module
+5. **Bicep Tech Debt Analyst** — verify checklist compliance
+6. `/azure:azure-validate` — pre-deployment readiness check on completed module
+7. **Karen (Validator)** — final acceptance gate (includes skill-based checks)
 
 ### Workflow for Tech Debt
 
 1. **Bicep Tech Debt Analyst** — audit module, produce itemized findings
 2. **General-purpose agent (worktree)** — fix each finding
-3. **Karen (Validator)** — verify fixes, run `bicep build`
+3. `/azure:azure-validate` — verify the fixed module is deployment-ready
+4. **Karen (Validator)** — verify fixes, run `bicep build`
+
+### Workflow for DRCP Test Scenarios
+
+1. **Plan agent** — design migration/integration strategy
+2. `/azure:azure-rbac` — verify role assignments in scenario are least-privilege
+3. **General-purpose agent (worktree)** — implement changes
+4. `bicep build` — must pass (use `swapPeReferences.ps1` for local PE path swap if no ACR access)
+5. `/azure:azure-validate` — pre-deployment readiness check
+6. `/azure:azure-resource-visualizer` — generate architecture diagram for README (requires deployed resources)
+7. `/azure:azure-diagnostics` — troubleshoot any deployment failures
+
+### Workflow for Policy Audits
+
+1. **Azure Policy Expert** — static analysis against `policy/Generic/` and knowledge base
+2. `/azure:azure-compliance` — live compliance scan against subscription policies
+3. `/azure:azure-rbac` — validate role definitions are least-privilege
+4. Update `evidenceOfNonCompliance` output and `[Policy: drcp-xxx-nn]` tags in parameter descriptions
+
+### Workflow for Upstream Sync
+
+1. Diff upstream vs fork params, types, resources, API versions
+2. `/azure:azure-validate` — check new API versions and params are valid
+3. Update `upstream.json`, verify `evidenceOfNonCompliance`, run `bicep build`
+4. **Karen (Validator)** — final acceptance gate
 
 ### Self-Improvement
 
@@ -393,3 +453,4 @@ Follow `claude.md` at repo root.
 2. **No Laziness** — find root causes, no temporary fixes.
 3. **Minimal Impact** — only touch what's necessary.
 4. **Demand Elegance** — for non-trivial changes, pause and ask "is there a more elegant way?"
+5. **Use Skills** — always use Azure skills when their trigger conditions are met. Never do manually what a skill can do.

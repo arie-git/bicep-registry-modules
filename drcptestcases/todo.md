@@ -6,250 +6,237 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 
 ---
 
-## Legend
+## Scenario Status Overview
 
-- **Fully AMAVM**: All resource modules use `br/amavm:` registry references (only `naming.bicep` is local)
-- **Partial**: Mix of AMAVM and local `../../modules/infra/` references
-- **Local count**: Number of `../../modules/infra/` references that have an AMAVM equivalent
+| Scenario | Architecture | AMAVM Status | Local refs remaining |
+|---|---|---|---|
+| 1 | Function App + KV + SQL | **Fully AMAVM** | `naming.bicep` only |
+| 2 | Function App + KV + Cosmos DB | **Fully AMAVM** | `naming.bicep` only (migrated) |
+| 3 | Function App + Logic App + Storage | **Fully AMAVM** | `naming.bicep` + scenario helper |
+| 4 | Function App + Event Hub | **Fully AMAVM** | `naming.bicep` + `roleAssignment.bicep` (circular dep helper) |
+| 5 | App Gateway + Web Apps + Function App | **Nearly AMAVM** | 1 local (Public IP) |
+| 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 2 local (ACR task + RBAC) |
+| 8 | Function Apps + Cosmos DB + APIM | **Partial** | 9 local (worst offender) |
+| 9 | AKS + ACR + Storage | **Fully AMAVM** | `naming.bicep` only |
+| 10 | Data Factory + Databricks | **Partial** | 4 local (ADF + PE + RBAC) |
+| 11 | Web Apps + SQL | **Fully AMAVM** | `naming.bicep` only |
+| 12 | N-Tier SQL (pattern module) | **Fully AMAVM** | `naming.bicep` only |
+
+**Note:** Scenario 6 does not exist (removed or never created).
 
 ---
 
-## P0 — Module Migration (replace local modules with AMAVM)
+## P0 — AMAVM Module Migration (HIGH PRIORITY)
 
-Replace local `../../modules/infra/` references with AMAVM registry modules where equivalents exist. This is the core tech debt — maintaining two implementations of the same resource.
+Replace local `../../modules/infra/` references with AMAVM registry modules. This eliminates maintaining duplicate implementations and validates AMAVM modules in real integration scenarios.
 
-### Scenario 2 — Cosmos DB migration (5 local refs)
+### Parameter Change Awareness
 
-| Local module | AMAVM replacement |
-|---|---|
-| `modules/infra/storage/cosmos-db/main.bicep` | `br/amavm:res/document-db/database-account` |
-| `modules/infra/storage/cosmos-db/secureKeys.bicep` | Absorbed into database-account module |
-| `modules/infra/storage/cosmos-db/apis/sql/sqldatabase.bicep` | `document-db/database-account/sql-database` child |
-| `modules/infra/storage/cosmos-db/apis/sql/container.bicep` | `document-db/database-account/sql-database/container` child |
-| `modules/infra/network/private-endpoint/main.bicep` | `br/amavm:res/network/private-endpoint` |
+AMAVM modules have been through significant upstream syncs. Key differences from local modules:
 
-- [ ] Migrate Cosmos DB to AMAVM `document-db/database-account`
-- [ ] Replace local PE with AMAVM PE module
-- [ ] Validate deployment + teardown
+| Pattern | Local module | AMAVM module |
+|---|---|---|
+| Private Endpoint | Separate PE module call with `privateLinkResource`, `subnet`, `targetSubResource` | Inline `privateEndpoints` array param on parent module |
+| Role Assignments | Separate `role-assignment.bicep` module call | Inline `roleAssignments` array param on parent module |
+| Cosmos DB secrets | `secureKeys.bicep` → stores keys in KV | Not needed — `disableLocalAuth: true` means no keys (use RBAC) |
+| Diagnostics | Inline `diagnosticSettings` resource | Inline `diagnosticSettings` param on parent module |
+| Cosmos DB databases | Separate `sqldatabase.bicep` + `container.bicep` calls | Inline `sqlDatabases` param with nested `containers` |
 
-### Scenario 4 — Event Hub migration (6 local refs)
+### Scenario 2 — Cosmos DB migration (5 local refs → 0)
 
-| Local module | AMAVM replacement |
-|---|---|
-| `modules/infra/integration/event-hub/namespace.bicep` | `br/amavm:res/event-hub/namespace` |
-| `modules/infra/integration/event-hub/main.bicep` | `event-hub/namespace/eventhub` child |
-| `modules/infra/integration/event-hub/consumer-group.bicep` | `event-hub/namespace/eventhub/consumergroup` child |
-| `modules/infra/network/private-endpoint/main.bicep` | `br/amavm:res/network/private-endpoint` |
-| `modules/infra/integration/event-hub/modules/role-assignment.bicep` | Use AMAVM `roleAssignments` param |
-| `modules/infra/storage/storage-account/modules/role-assignment.bicep` | Use AMAVM `roleAssignments` param |
+**Migration plan:**
+1. Replace `cosmos-db/main.bicep` → `br/amavm:res/document-db/database-account` with `sqlDatabases` param (inline DB + containers)
+2. Remove `secureKeys.bicep` call — AMAVM Cosmos uses `disableLocalAuth: true`, no keys to store
+3. Remove separate `sqldatabase.bicep` and `container.bicep` calls — folded into `sqlDatabases` param
+4. Remove `private-endpoint/main.bicep` call — use AMAVM module's `privateEndpoints` param
+5. Add `diagnosticSettings` param to Cosmos module (replaces inline diagnostic resource)
 
-- [ ] Migrate Event Hub to AMAVM `event-hub/namespace` (pass eventhubs + consumergroups as params)
-- [ ] Replace local PE with AMAVM PE module
-- [ ] Replace local role-assignment helpers with AMAVM `roleAssignments` param
-- [ ] Validate deployment + teardown
+| Local module | AMAVM replacement | Approach |
+|---|---|---|
+| `storage/cosmos-db/main.bicep` | `br/amavm:res/document-db/database-account` | Replace with inline params |
+| `storage/cosmos-db/secureKeys.bicep` | **Remove** | No keys with `disableLocalAuth: true` |
+| `storage/cosmos-db/apis/sql/sqldatabase.bicep` | `sqlDatabases` param on database-account | Inline as param |
+| `storage/cosmos-db/apis/sql/container.bicep` | `containers` in `sqlDatabases` param | Inline as param |
+| `network/private-endpoint/main.bicep` | `privateEndpoints` param on database-account | Inline as param |
 
-### Scenario 8 — Cosmos DB + helpers (9 local refs, worst offender)
+- [x] Migrate Cosmos DB to AMAVM `document-db/database-account`
+- [ ] Validate `bicep build` passes (requires ACR access or local PE path swap via `swapPeReferences.ps1`)
+- [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
+- [x] Update README
 
-| Local module | AMAVM replacement |
-|---|---|
-| `modules/infra/storage/cosmos-db/main.bicep` | `br/amavm:res/document-db/database-account` |
-| `modules/infra/storage/cosmos-db/apis/sql/sqldatabase.bicep` | `document-db/database-account/sql-database` child |
-| `modules/infra/storage/cosmos-db/apis/sql/container.bicep` (x2) | `document-db/database-account/sql-database/container` child |
-| `modules/infra/network/private-endpoint/main.bicep` | `br/amavm:res/network/private-endpoint` |
-| `modules/infra/storage/cosmos-db/modules/role-assignment.bicep` (x2) | Use AMAVM `roleAssignments` param |
-| `modules/infra/storage/storage-account/modules/role-assignment.bicep` | Use AMAVM `roleAssignments` param |
-| `modules/infra/compute/function-app/function.bicep` | Evaluate: may be app-code deploy helper, not infra |
-| `modules/infra/integration/api-management/main.bicep` | **No AMAVM equivalent** — see P1 |
-| `modules/infra/network/public-ip-address/main.bicep` | **No AMAVM equivalent** — see P1 |
+### Scenario 4 — Event Hub migration (6 local refs → 0)
 
-- [ ] Migrate Cosmos DB to AMAVM (same pattern as scenario 2)
-- [ ] Replace local PE and role-assignment helpers
-- [ ] Evaluate `function.bicep` — if it's app deployment logic, keep local; if infra, migrate
-- [ ] API Management and Public IP blocked on P1
-- [ ] Validate deployment + teardown
+**Migration plan:**
+1. Replace `event-hub/namespace.bicep` → `br/amavm:res/event-hub/namespace` with `eventhubs` param (inline hubs + consumer groups)
+2. Remove separate `event-hub/main.bicep` and `consumer-group.bicep` calls — folded into `eventhubs` param
+3. Remove `private-endpoint/main.bicep` — use AMAVM module's `privateEndpoints` param
+4. Remove `role-assignment.bicep` calls — use AMAVM module's `roleAssignments` param
 
-### Scenario 10 — Data Factory migration (4 local refs)
+| Local module | AMAVM replacement | Approach |
+|---|---|---|
+| `integration/event-hub/namespace.bicep` | `br/amavm:res/event-hub/namespace` | Replace |
+| `integration/event-hub/main.bicep` | `eventhubs` param on namespace | Inline |
+| `integration/event-hub/consumer-group.bicep` | `consumerGroups` in eventhubs | Inline |
+| `network/private-endpoint/main.bicep` | `privateEndpoints` param | Inline |
+| `integration/event-hub/modules/role-assignment.bicep` | `roleAssignments` param | Inline |
+| `storage/storage-account/modules/role-assignment.bicep` | `roleAssignments` param on storage-account | Inline |
 
-| Local module | AMAVM replacement |
-|---|---|
-| `modules/infra/integration/data-factory/main.bicep` | `br/amavm:res/data-factory/factory` |
-| `modules/infra/integration/data-factory/modules/role-assignment.bicep` | Use AMAVM `roleAssignments` param |
-| `modules/infra/integration/data-factory/integrationRuntime.bicep` | `data-factory/factory/managed-virtual-network` child or inline |
-| `modules/infra/network/private-endpoint/main.bicep` | `br/amavm:res/network/private-endpoint` |
+- [x] Migrate Event Hub to AMAVM `event-hub/namespace`
+- [x] Replace role-assignment helpers with inline `roleAssignments` (Event Hub + Storage; 1 kept as helper for circular dep)
+- [ ] Validate `bicep build` passes (requires ACR access or local PE path swap via `swapPeReferences.ps1`)
+- [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
+- [x] Update README
+
+### Scenario 10 — Data Factory migration (4 local refs → 0)
+
+**Migration plan:**
+1. Replace `data-factory/main.bicep` → `br/amavm:res/data-factory/factory`
+2. Pass `integrationRuntimes` and `linkedServices` as params (AMAVM has child modules)
+3. Remove `private-endpoint/main.bicep` — use `privateEndpoints` param
+4. Remove `role-assignment.bicep` — use `roleAssignments` param
+
+| Local module | AMAVM replacement | Approach |
+|---|---|---|
+| `integration/data-factory/main.bicep` | `br/amavm:res/data-factory/factory` | Replace |
+| `integration/data-factory/integrationRuntime.bicep` | `integrationRuntimes` param | Inline |
+| `integration/data-factory/modules/role-assignment.bicep` | `roleAssignments` param | Inline |
+| `network/private-endpoint/main.bicep` | `privateEndpoints` param | Inline |
 
 - [ ] Migrate Data Factory to AMAVM `data-factory/factory`
-- [ ] Verify integration runtime support in AMAVM module (managed VNet IR)
-- [ ] Replace local PE with AMAVM PE module
-- [ ] Validate deployment + teardown
+- [ ] Validate `bicep build` passes (requires ACR access or local PE path swap via `swapPeReferences.ps1`)
+- [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
+- [ ] Update README
 
-### Scenario 7 — ACR helpers (2 local refs)
+### Scenario 8 — Cosmos DB + helpers (9 local refs → 2 blocked)
 
-| Local module | AMAVM replacement |
-|---|---|
-| `modules/infra/compute/container-registry/modules/role-assignment.bicep` | Use AMAVM `roleAssignments` param on `container-registry/registry` |
-| `modules/infra/compute/container-registry/task.bicep` | Evaluate: ACR Tasks may need to stay local (not in AMAVM) |
+Same Cosmos DB pattern as scenario 2, plus role-assignments and function.bicep. APIM and Public IP remain local (no AMAVM equivalent).
 
-- [ ] Replace ACR role-assignment with AMAVM `roleAssignments` param
-- [ ] Evaluate ACR task.bicep — keep local if AMAVM doesn't cover tasks
-- [ ] Validate deployment + teardown
+- [ ] Migrate Cosmos DB to AMAVM (same pattern as scenario 2)
+- [ ] Replace PE and role-assignment helpers with inline params — use `/azure:azure-rbac` to verify role definitions
+- [ ] Evaluate `function.bicep` — app-code deploy helper, keep local
+- [ ] APIM stays local (not a DRCP-whitelisted component)
+- [ ] Public IP stays local (no AMAVM equivalent yet — blocked on GAP-5 in tasks/todo.md)
+- [ ] Validate `bicep build` passes
+- [ ] Use `/azure:azure-validate` for pre-deployment readiness check
+- [ ] Update README
 
-### Scenario 5 — Public IP (1 local ref)
+### Scenario 7 — ACR helpers (2 local refs → 1)
 
-| Local module | AMAVM replacement |
-|---|---|
-| `modules/infra/network/public-ip-address/main.bicep` | **No AMAVM equivalent** — see P1 |
+- [ ] Replace ACR `role-assignment.bicep` with AMAVM `roleAssignments` param
+- [ ] Keep `task.bicep` local (ACR Tasks not in AMAVM)
+- [ ] Validate `bicep build` passes
 
-- [ ] Blocked on P1 (Public IP module)
+### Scenario 5 — Public IP (1 local ref — blocked)
 
----
-
-## P1 — New AMAVM Modules Needed
-
-### API Management — NOT APPLICABLE
-
-API Management is **not a whitelisted DRCP component**. Scenario 8's APIM usage (conditional deployment) should be removed or flagged as non-DRCP. No AMAVM module needed.
-
-- [ ] Remove or disable APIM deployment from scenario 8
-- [ ] Update scenario 8 README to reflect APIM is out of scope
-
-### Public IP Address
-
-- Used by: Scenarios 5, 8 (Application Gateway requires public IP)
-- Complexity: Low — simple resource, few properties
-- Tracked in main task tracker (`tasks/todo.md`) as a new AMAVM module candidate
-- [ ] Create AMAVM module `network/public-ip-address`
+- [ ] Blocked until AMAVM `network/public-ip-address` module is created (GAP-5 in tasks/todo.md)
 
 ---
 
-## P2 — AMAVM Module Coverage by Test Cases
+## P1 — README Standardization
 
-Audit which AMAVM modules are exercised by at least one test case scenario. Gaps represent modules that only have per-module e2e tests but no integration-level validation on the DRCP platform.
+All scenario READMEs need a consistent format. Current state is inconsistent — some have wrong titles (scenario 4 says "Scenario 1", scenario 11 says "Scenario 1"), scenario 3 is empty, some lack component lists.
 
-### Currently covered by test cases
+### Standard README Template
 
-| AMAVM Module | Scenarios |
+```markdown
+# Scenario N — <Short Title>
+
+<1-2 sentence description of the architecture pattern being validated.>
+
+## Components
+
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| ... | `br/amavm:res/...` | ... |
+
+## Architecture
+
+<Brief description of how components connect: data flow, network topology, identity chain.>
+
+## Deployment
+
+### Prerequisites
+- Azure subscription with DRCP guardrails
+- VNet with available address space (`/27` minimum)
+- ServiceNow environment ID
+
+### Deploy
+```
+az deployment sub create --location swedencentral \
+  -f scenarioN/infra/main.bicep \
+  --name=<deployment-name> \
+  --parameters environmentId=<ENV_ID>
+```
+
+### Remove
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter <deployment-name>
+```
+```
+
+### README Status
+
+| Scenario | Current | Issues | Action |
+|---|---|---|---|
+| 1 | 30 lines | OK structure | Minor: add components table |
+| 2 | Updated | Rewritten with Cosmos migration | Done |
+| 3 | Updated | Was empty, now written | Done |
+| 4 | Updated | Title fixed, components added | Done |
+| 5 | 54 lines | Good quality | Minor formatting |
+| 7 | 63 lines | Good quality | Minor: add components table |
+| 8 | 61 lines | Good quality | Update after APIM removal |
+| 9 | 78 lines | Good quality | Minor formatting |
+| 10 | 83 lines | Good quality, typos | Fix typos |
+| 11 | Updated | Title fixed | Done |
+| 12 | 21 lines | Minimal | Expand with pattern explanation |
+
+- [x] Fix wrong titles (scenarios 4, 11)
+- [x] Write scenario 3 README
+- [ ] Standardize all READMEs to template format (after P0 migrations)
+- [ ] Update top-level README with scenario inventory
+- [ ] Use `/azure:azure-resource-visualizer` to generate architecture diagrams for each scenario README (requires deployed resource group)
+
+---
+
+## P2 — AMAVM Module Coverage
+
+After P0 migrations complete, these modules gain integration test coverage:
+
+| Module | Covered by |
 |---|---|
-| `operational-insights/workspace` | 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 |
-| `insights/component` | 1, 2, 3, 4, 5, 7, 8, 9, 11 |
-| `network/network-security-group` | 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 |
-| `network/route-table` | 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 |
-| `network/virtual-network` (subnet) | 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 |
-| `key-vault/vault` | 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 |
-| `storage/storage-account` | 1, 2, 3, 4, 5, 7, 8, 9, 10, 11 |
-| `web/serverfarm` | 1, 2, 3, 4, 5, 7, 8, 11 |
-| `web/site` | 1, 2, 3, 4, 5, 7, 8, 11 |
-| `managed-identity/user-assigned-identity` | 1, 3, 7, 8, 11 |
-| `sql/server` | 1, 11 |
-| `container-registry/registry` | 7, 9 |
-| `container-service/managed-cluster` | 9 |
-| `network/application-gateway` | 5, 9 |
-| `databricks/workspace` | 10 |
-| `databricks/access-connector` | 10 |
+| `document-db/database-account` | Scenarios 2, 8 |
+| `event-hub/namespace` | Scenario 4 |
+| `data-factory/factory` | Scenario 10 |
+| `network/private-endpoint` | Scenarios 2, 4, 8, 10 |
 
-### NOT covered — no test case exercises these AMAVM modules
+Still uncovered (no test case): `cache/redis`, `search/search-service`, `cognitive-services/account`, `app-configuration/configuration-store`, `service-bus/namespace`, `db-for-postgre-sql/flexible-server`
 
-| AMAVM Module | Notes |
-|---|---|
-| `document-db/database-account` | Scenarios 2, 8 USE Cosmos DB but via local modules — migration (P0) would fix |
-| `event-hub/namespace` | Scenario 4 USES Event Hub but via local modules — migration (P0) would fix |
-| `data-factory/factory` | Scenario 10 USES ADF but via local modules — migration (P0) would fix |
-| `cache/redis` | **No scenario covers Redis** |
-| `search/search-service` | **No scenario covers AI Search** |
-| `cognitive-services/account` | **No scenario covers AI Services / OpenAI** |
-| `app-configuration/configuration-store` | **No scenario covers App Configuration** |
-| `service-bus/namespace` | **No scenario covers Service Bus** |
-| `db-for-postgre-sql/flexible-server` | **No scenario covers PostgreSQL** |
-| `network/private-endpoint` | Scenarios use PE but via local modules — migration (P0) would fix |
-| `insights/webtest` | **No scenario covers Web Tests** |
-| `insights/action-group` | **No scenario covers Action Groups** |
-| `insights/activity-log-alert` | **No scenario covers Activity Log Alerts** |
-| `insights/data-collection-rule` | **No scenario covers Data Collection Rules** |
-| `insights/data-collection-endpoint` | **No scenario covers Data Collection Endpoints** |
-| `insights/metric-alert` | **No scenario covers Metric Alerts** |
-| `insights/private-link-scope` | **No scenario covers Private Link Scopes** |
-| `insights/scheduled-query-rule` | **No scenario covers Scheduled Query Rules** |
-| `insights/diagnostic-setting` | **No scenario covers Diagnostic Settings (subscription-level)** |
-| `web/static-site` | **No scenario covers Static Web Apps** |
-| `network/virtual-network` (full module) | Scenarios only use subnet child module |
-
-- [ ] After P0 migrations, re-assess coverage — Cosmos DB, Event Hub, Data Factory, PE will be covered
-- [ ] Evaluate new scenarios for uncovered high-value modules (Redis, AI Search, PostgreSQL, Service Bus)
-- [ ] Low-priority utility modules (action-group, metric-alert, etc.) may not need dedicated scenarios
+**Interim validation for uncovered modules:**
+- Use `/azure:azure-validate` to run pre-deployment checks on module Bicep without a full test scenario
+- Use `/azure:azure-compliance` to audit deployed instances against DRCP policies
+- Use `/azure:azure-diagnostics` to troubleshoot deployment failures when creating new test scenarios
 
 ---
 
 ## P3 — Version Bumps
 
-All scenarios currently reference old AMAVM module versions (0.1.0–0.3.0). The registry has been updated significantly. After P0 migrations are done, bump all module references to latest versions.
+All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump to latest published versions.
 
-| Module | Current version in test cases | Latest in registry |
-|---|---|---|
-| All modules | 0.1.0 – 0.3.0 | TBD — check registry |
-
-- [ ] Inventory current vs latest versions for all referenced modules
-- [ ] Bump all scenarios to latest versions
-- [ ] Validate all scenarios still build
-- [ ] Validate deployment + teardown after version bumps
+- [ ] Inventory current vs latest versions
+- [ ] Bump all scenarios
+- [ ] Validate builds — use `bicep build` then `/azure:azure-validate` for deployment readiness
 
 ---
 
-## P4 — Documentation & Consistency
+## P4 — Cleanup
 
-### README gaps
+After P0 migrations complete:
 
-| Scenario | Status | Action |
-|---|---|---|
-| 3 | **Empty** (0 lines) | Write README: Function App + Event Hub + Logic App + Storage |
-| 2 | Minimal (22 lines) | Expand with architecture description |
-| 12 | Minimal (21 lines) | Expand with pattern module explanation |
-| Top-level `doc/` | Stale (lists only 4 components) | Update to reflect all 11 scenarios |
-
-- [ ] Write scenario 3 README
-- [ ] Review and update all scenario READMEs to consistent format
-- [ ] Update top-level README with current scenario inventory
-- [ ] Update `doc/README.md` or remove if redundant
-
-### Scenario relevance review
-
-| Scenario | Architecture | Still relevant? |
-|---|---|---|
-| 1 | Function App + KV + SQL | Yes — basic pattern, validates core modules |
-| 2 | Function App + KV + Cosmos DB | Yes — validates NoSQL pattern |
-| 3 | Function App + Event Hub + Logic App + Storage | Yes — validates event-driven pattern |
-| 4 | Dual Function Apps + Event Hub broker | Review — overlaps with scenario 3 |
-| 5 | Application Gateway + Web Apps + Function App | Yes — validates WAF/ingress pattern |
-| 6 | **Missing** | Determine: was it removed intentionally or lost? |
-| 7 | Docker App Service + ACR + Logic App | Yes — validates container pattern |
-| 8 | Dual Function Apps + Cosmos DB + APIM | Review — overlaps with scenario 2; APIM adds value |
-| 9 | AKS + ACR + App Gateway + Cosmos DB | Yes — validates Kubernetes pattern |
-| 10 | Data Factory + Data Lake + Databricks | Yes — validates data platform pattern |
-| 11 | Web App (UI) + Web App (API) + SQL | Review — similar to scenario 1 but multi-tier |
-| 12 | N-Tier SQL pattern module | Yes — validates pattern-level abstraction |
-
-- [ ] Decide on scenario 4 vs 3 overlap (keep both or merge?)
-- [ ] Decide on scenario 8 vs 2 overlap (APIM justifies keeping?)
-- [ ] Decide on scenario 11 vs 1 overlap (multi-tier justifies keeping?)
-- [ ] Investigate missing scenario 6
-
----
-
-## P5 — Pipeline & Operational
-
-### Pipeline consistency
-
-- [ ] Verify all scenarios have both DEV and TST pipeline variants
-- [ ] Verify scheduled triggers are still correct (1st/15th of month)
-- [ ] Verify environment Snow IDs are current
-- [ ] Verify CIDR allocations don't conflict
-
-### Local modules cleanup
-
-After P0 migrations, the `modules/infra/` folder will have unused modules. Clean up:
-
-- [ ] Remove `modules/infra/storage/cosmos-db/` after scenarios 2, 8 migrated
-- [ ] Remove `modules/infra/integration/event-hub/` after scenario 4 migrated
-- [ ] Remove `modules/infra/integration/data-factory/` after scenario 10 migrated
-- [ ] Remove `modules/infra/network/private-endpoint/` after all PE refs migrated
-- [ ] Keep `modules/infra/naming.bicep` (naming convention, no AMAVM equivalent)
-- [ ] Keep scenario-specific helpers (e.g., `copyStorageKeysToKeyvault.bicep`)
-- [ ] Audit remaining `modules/infra/` for anything else that can be removed
+- [ ] Remove `modules/infra/storage/cosmos-db/` (after scenarios 2, 8 migrated)
+- [ ] Remove `modules/infra/integration/event-hub/` (after scenario 4 migrated)
+- [ ] Remove `modules/infra/integration/data-factory/` (after scenario 10 migrated)
+- [ ] Remove `modules/infra/network/private-endpoint/` (after all PE refs migrated)
+- [ ] Audit remaining `modules/infra/` for other removable modules
+- [ ] Keep: `naming.bicep`, scenario-specific helpers, deployment scripts, `public-ip-address`, `api-management`

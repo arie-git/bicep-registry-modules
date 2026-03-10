@@ -25,7 +25,7 @@
 - [x] Create `tests/e2e/defaults/`
 - [x] `bicep build` passes (only BCP192/BCP062 expected, BCP036 cosmetic warning on cors)
 - [x] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
-- [ ] Create `README.md`
+- [x] Create `README.md` (generated, 100KB+, includes compliance section v20250308)
 - [x] Karen: 18/18 PASS
 
 ### GAP-2: Event-Hubs (event-hub/namespace)
@@ -42,7 +42,7 @@
 - [x] Create `upstream.json` (v0.14, ORPHANED), `version.json` (v0.1), test
 - [x] `bicep build` passes (only BCP192/BCP062 expected)
 - [x] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
-- [ ] Create `README.md`
+- [ ] Create `README.md` — use `pwsh buildBicepFiles.ps1 -moduleName 'res/event-hub/namespace' -buildReadme 'True'`
 - [x] Karen: 18/18 PASS
 
 ### GAP-3: Redis (cache/redis)
@@ -59,7 +59,7 @@
 - [x] Create `upstream.json` (v0.16), `version.json` (v0.1), test
 - [x] `bicep build` passes (clean — no errors)
 - [x] Create `tests/e2e/max/`, `tests/e2e/waf-aligned/`
-- [ ] Create `README.md`
+- [x] Create `README.md` (generated, 68KB+, includes compliance section v20250308)
 - [x] Karen: 18/18 PASS
 
 ### GAP-4: Notification-Hubs — DEFERRED
@@ -74,6 +74,8 @@ No upstream AVM module exists. Only 2 policies (drcp-ntf-01 default access polic
 Needed by DRCP test cases (scenarios 5, 8) for Application Gateway public IP. Simple resource, low complexity. No upstream AVM module exists but straightforward to create.
 
 - [ ] Check if upstream AVM has a public-ip-address module
+- [ ] Use `/azure:azure-rbac` to identify least-privilege roles for Public IP management
+- [ ] Use `/azure:azure-compliance` to check for any Public IP-specific policies in the subscription
 - [ ] Create AMAVM module `network/public-ip-address` with DRCP-compliant defaults
 - [ ] Apply Module Customization Checklist
 - [ ] `bicep build` passes
@@ -787,10 +789,14 @@ Set-ModuleReadMe -TemplateFilePath $bicepFilePath -PreLoadedContent @{
 | 4 | PR label automation | `.github/workflows/platform.set-avm-github-pr-labels.yml` | LOW |
 | 5 | Workflow toggle automation | `.github/workflows/platform.toggle-avm-workflows.yml` | LOW |
 
-- [ ] Evaluate PSRule integration for Azure DevOps pipelines
+- [ ] Evaluate PSRule integration for Azure DevOps pipelines — `/azure:azure-validate` covers similar pre-deployment checks; assess overlap
 - [ ] Implement deployment history cleanup utility
 - [ ] Implement module index publishing for internal registry
 - [ ] Evaluate PR/pipeline label automation needs
+
+**Skill-based alternatives for missing features:**
+- `/azure:azure-validate` can serve as an interactive pre-deployment gate (complementing or replacing PSRule for dev workflows)
+- `/azure:azure-compliance` can run ad-hoc compliance scans against deployed resources, supplementing static Bicep analysis
 
 ### FEAT-8: HTML-from-MD Pipeline Improvements
 
