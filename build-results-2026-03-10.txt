@@ -1,43 +1,116 @@
-File saved!
-Import-Module -Name /usr/share/az_12.5.0/Az.Accounts/5.3.1/Az.Accounts.psd1 -Global
-Clear-AzContext -Scope Process
-Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue
-Connect-AzAccount -ServicePrincipal -Tenant c1f94f0d-9a3d-4854-9288-bb90dcf2a90d -Credential System.Management.Automation.PSCredential -Environment AzureCloud @processScope
- Set-AzContext -SubscriptionId 1be224b4-ef10-453a-aa1e-9dd04e31bd06 -TenantId c1f94f0d-9a3d-4854-9288-bb90dcf2a90d
-Fetching ReadMe under /agent/_work/1/s/bicep/res/
-=> app-configuration/configuration-store/key-value
-VERBOSE: File [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/key-value/README.md] updated
-VERBOSE: Comparing [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/key-value/README.md] to [/agent/_work/_temp/repocode/bicep/res/app-configuration/configuration-store/key-value/README.md]
-=> app-configuration/configuration-store/replica
-VERBOSE: File [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/replica/README.md] updated
-VERBOSE: Comparing [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/replica/README.md] to [/agent/_work/_temp/repocode/bicep/res/app-configuration/configuration-store/replica/README.md]
-=> app-configuration/configuration-store
-WARNING: /agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(195,39) : Warning BCP318: The value of type "Microsoft.KeyVault/vaults/keys | null" may be null at the start of the deployment, which would cause this access expression (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
-/agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(197,40) : Warning BCP318: The value of type "Microsoft.KeyVault/vaults/keys | null" may be null at the start of the deployment, which would cause this access expression (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
-/agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(198,40) : Warning BCP318: The value of type "Microsoft.KeyVault/vaults/keys | null" may be null at the start of the deployment, which would cause this access expression (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
-/agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(200,40) : Warning BCP318: The value of type "Microsoft.ManagedIdentity/userAssignedIdentities | null" may be null at the start of the deployment, which would cause this access expression (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+
+PowerShell 7.5.4
+PS C:\Users\aa06161\ADO\verified-modules> Import-Module .\utils\setModuleReadMe.ps1 -Force
+PS C:\Users\aa06161\ADO\verified-modules> .\utils\buildBicepFiles.ps1 -modulesSubpath 'res/web/site' -buildReadme 'True'
+Building modules under C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site
+=> res/web/site
+WARNING: C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\main.bicep(584,56) : Warning use-recent-api-versions: Use more re
+for 'Microsoft.Resources/deployments'. '2024-03-01' is 739 days old, should be no more than 730 days old, or the most recent. Accep
+025-04-01, 2025-03-01, 2024-11-01, 2024-07-01 [https://aka.ms/bicep/linter-diagnostics#use-recent-api-versions]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\main.bicep(960,14) : Warning use-safe-access: Use the safe access (.?) ope
+ka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\main.bicep(961,23) : Warning use-safe-access: Use the safe access (.?) ope
+ka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\main.bicep(485,14) : Warning use-safe-access: Use the safe access (.?
+s://aka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\main.bicep(486,23) : Warning use-safe-access: Use the safe access (.?
+s://aka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(42,123) : Warning BCP422: A resource of typ
+age/storageAccounts | null" may or may not exist when this function is called, which could cause the deployment to fail. [https://a
+diagnostics#BCP422]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(47,62) : Warning BCP318: The value of type 
+e/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overall dep
+to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(48,63) : Warning BCP318: The value of type 
+e/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overall dep
+to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(49,63) : Warning BCP318: The value of type 
+e/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overall dep
+to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(60,56) : Warning BCP318: The value of type 
+ts/components | null" may be null at the start of the deployment, which would cause this access expression (and the overall deploym
+ail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(45,123) : Warning BCP422: A resource o
+.Storage/storageAccounts | null" may or may not exist when this function is called, which could cause the deployment to fail. [http
+core-diagnostics#BCP422]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(50,62) : Warning BCP318: The value of 
+torage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overal
+ it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(51,63) : Warning BCP318: The value of 
+torage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overal
+ it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(52,63) : Warning BCP318: The value of 
+torage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overal
+ it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(71,56) : Warning BCP318: The value of 
+nsights/components | null" may be null at the start of the deployment, which would cause this access expression (and the overall de
+ to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+
+WARNING: Failed to identify roles for parameter [roleAssignments] of type [slots.privateEndpoints] as resource with identifier [*_s
+ints] was not found in the corresponding linked template.
+VERBOSE: File [C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\README.md] updated
+Bicep CLI is already installed at 'C:\Users\aa06161\.azure\bin\bicep.exe'. Skipping installation as no specific version was request
+WARNING: C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\main.bicep(584,56) : Warning use-recent-api-versions: Use more re
+for 'Microsoft.Resources/deployments'. '2024-03-01' is 739 days old, should be no more than 730 days old, or the most recent. Accep
+025-04-01, 2025-03-01, 2024-11-01, 2024-07-01 [https://aka.ms/bicep/linter-diagnostics#use-recent-api-versions]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\main.bicep(960,14) : Warning use-safe-access: Use the safe access (.?) ope
+ka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\main.bicep(961,23) : Warning use-safe-access: Use the safe access (.?) ope
+ka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\main.bicep(485,14) : Warning use-safe-access: Use the safe access (.?
+s://aka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\main.bicep(486,23) : Warning use-safe-access: Use the safe access (.?
+s://aka.ms/bicep/linter-diagnostics#use-safe-access]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(42,123) : Warning BCP422: A resource of typ
+age/storageAccounts | null" may or may not exist when this function is called, which could cause the deployment to fail. [https://a
+diagnostics#BCP422]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(47,62) : Warning BCP318: The value of type 
+e/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overall dep
+to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(48,63) : Warning BCP318: The value of type 
+e/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overall dep
+to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(49,63) : Warning BCP318: The value of type "Microsoft
+.Storage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expression (and the overall deploy
+ment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings\main.bicep(60,56) : Warning BCP318: The value of type "Microsoft
+.Insights/components | null" may be null at the start of the deployment, which would cause this access expression (and the overall deployment
+ with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(45,123) : Warning BCP422: A resource of type "Mi
+crosoft.Storage/storageAccounts | null" may or may not exist when this function is called, which could cause the deployment to fail. [https:/
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings
+\main.bicep(49,63) : Warning BCP318: The value of type "Microsoft.Storage/st
+orageAccounts | null" may be null at the start of the deployment, which woul
+d cause this access expression (and the overall deployment with it) to fail.
+ [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\config--appsettings
+\main.bicep(60,56) : Warning BCP318: The value of type "Microsoft.Insights/c
+omponents | null" may be null at the start of the deployment, which would ca
+use this access expression (and the overall deployment with it) to fail. [ht
+tps://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appset
+tings\main.bicep(45,123) : Warning BCP422: A resource of type "Microsoft.Sto
+rage/storageAccounts | null" may or may not exist when this function is call
+ed, which could cause the deployment to fail. [https://aka.ms/bicep/core-diagnostics#BCP422]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(50,62) : Warning BCP318: The value of
+type "Microsoft.Storage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expressio
+n (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(51,63) : Warning BCP318: The value of
+type "Microsoft.Storage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expressio
+n (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(52,63) : Warning BCP318: The value of
+type "Microsoft.Storage/storageAccounts | null" may be null at the start of the deployment, which would cause this access expressio
+n (and the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+C:\Users\aa06161\ADO\verified-modules\bicep\res\web\site\slot\config--appsettings\main.bicep(71,56) : Warning BCP318: The value of
+type "Microsoft.Insights/components | null" may be null at the start of the deployment, which would cause this access expression (a
+nd the overall deployment with it) to fail. [https://aka.ms/bicep/core-diagnostics#BCP318]
+
+PS C:\Users\aa06161\ADO\verified-modules>
 
 
 
-Formatted command: . '/agent/_work/1/s/utils/compareReadMe.ps1' -modulesRootPath "/agent/_work/1/s/bicep/res/" -destinationPathPrefix "/agent/_work/_temp/repocode/bicep/res/"
-/usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command . '/agent/_work/_tasks/AzurePowerShell_72a1931b-effb-4d2e-8fd8-f8472a07cb62/5.269.2/ImportVstsTaskSdk.ps1'; . '/agent/_work/_temp/2f7dd7ff-62b1-4e7c-95c9-01626fbdb033.ps1'
-File saved!
-Import-Module -Name /usr/share/az_14.6.0/Az.Accounts/5.3.2/Az.Accounts.psd1 -Global
-Clear-AzContext -Scope Process
-Clear-AzContext -Scope CurrentUser -Force -ErrorAction SilentlyContinue
-Connect-AzAccount -ServicePrincipal -Tenant c1f94f0d-9a3d-4854-9288-bb90dcf2a90d -Credential System.Management.Automation.PSCredential -Environment AzureCloud @processScope
- Set-AzContext -SubscriptionId 1be224b4-ef10-453a-aa1e-9dd04e31bd06 -TenantId c1f94f0d-9a3d-4854-9288-bb90dcf2a90d
-Fetching ReadMe under /agent/_work/1/s/bicep/res/
-=> app-configuration/configuration-store/key-value
-You cannot call a method on a null-valued expression.
-=> app-configuration/configuration-store/replica
-You cannot call a method on a null-valued expression.
-=> app-configuration/configuration-store
-WARNING: /agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(173,49) : Warning use-recent-api-versions: Use more recent API version for 'Microsoft.KeyVault/vaults'. '2024-12-01-preview' is a preview version and there is a more recent non-preview version available. Acceptable versions: 2025-05-01, 2024-11-01 [https://aka.ms/bicep/linter-diagnostics#use-recent-api-versions]
-/agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(260,18) : Info BCP187: The property "notes" does not exist in the resource or type definition, although it might still be valid. If this is a resource type definition inaccuracy, report it using https://aka.ms/bicep-type-issues. [https://aka.ms/bicep/core-diagnostics#BCP187]
-/agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(394,23) : Warning BCP321: Expected a value of type "{ fqdn: null | string, ipAddresses: string[] }[]" but the provided value is of type "null | { fqdn: string, ipAddresses: string[] }[]". [https://aka.ms/bicep/core-diagnostics#BCP321]
-/agent/_work/1/s/bicep/res/app-configuration/configuration-store/main.bicep(394,23) : Warning use-safe-access: Use the safe access (.?) operator. [https://aka.ms/bicep/linter-diagnostics#use-safe-access]
 
-VERBOSE: File [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/README.md] updated
-VERBOSE: Comparing [/agent/_work/1/s/bicep/res/app-configuration/configuration-store/README.md] to [/agent/_work/_temp/repocode/bicep/res/app-configuration/configuration-store/README.md]
-=> cache/redis
+
+
+
+
