@@ -1,0 +1,117 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(environmentSnowId)_$(environmentType)$(location)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+- name: 'environmentType'
+  type: string
+  default: 'dev'
+  values:
+  - 'dev'
+  - 'tst'
+  - 'acc'
+  - 'prd'
+- name: 'location'
+  type: string
+  default: 'swedencentral'
+  values:
+  - 'swedencentral'
+- name: 'environmentSnowId'
+  displayName: 'ServiceNow environment Id'
+  type: string
+  default: 'ENV24083'
+- name: 'isDeployment'
+  displayName: 'Run deployment stage?'
+  type: boolean
+  default: false
+- name: skipWhatif
+  type: boolean
+  default: false
+
+variables:
+- name: applicationSnowId
+  value: 'AM-CCC'
+- name: environmentSnowId
+  value: ${{parameters.environmentSnowId}}
+- name: serviceConnectionName
+  value: 'SC-${{variables.applicationSnowId}}-${{variables.environmentSnowId}}'
+- name: environmentType
+  value: ${{parameters.environmentType}}
+- name: bicepFilePath
+  value: 'infra'
+- name: location
+  value: '${{parameters.location}}'
+- name: locationShort
+  ${{ if eq(parameters.location,'westeurope') }}:
+    value: 'we'
+  ${{ if eq(parameters.location,'northeurope') }}:
+    value: 'ne'
+  ${{ if eq(parameters.location,'swedencentral') }}:
+    value: 'sec'
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DRCP-Templates/templates
+      ref: 'refs/heads/main'
+
+pool: CPP-Ubuntu2204-Latest-B
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+      - ${{ if parameters.isDeployment }}:
+        - stage: deployInfra
+          displayName: 'Deploying infrastructure'
+          jobs:
+            - ${{ if not(parameters.skipWhatif) }}:
+              - job: deployWhatif
+                displayName: 'Validate the deployment code'
+                steps:
+                - checkout: self
+                  clean: true
+                - template: /pipelines/tpl/tpl_bicep_sub_deploy_task.yaml@self
+                  parameters:
+                    taskName: 'main.bicep'
+                    bicepFilePath: '${{variables.bicepFilePath}}'
+                    bicepFileName: 'main.bicep'
+                    bicepCustomParametersPath: '${{variables.bicepFilePath}}/main_${{variables.environmentType}}.bicepparam'
+                    location:  '${{parameters.location}}'
+                    environmentType: '${{variables.environmentType}}'
+                    serviceConnectionName: '${{variables.serviceConnectionName}}'
+                    bicepParameters:
+                      applicationId: '${{variables.applicationSnowId}}'
+                      environmentId: '${{variables.environmentSnowId}}'
+                      environmentType: '${{variables.environmentType}}'
+
+            - deployment: deployRun
+              displayName: 'Run the deployment'
+              ${{ if not(parameters.skipWhatif) }}:
+                dependsOn: deployWhatif
+              timeoutInMinutes: 120
+              environment:
+                name: ${{parameters.environmentSnowId}}
+              strategy:
+                runOnce:
+                  deploy:
+                    steps:
+                    - checkout: self
+                      clean: true
+                    - template: /pipelines/tpl/tpl_bicep_sub_deploy_task.yaml@self
+                      parameters:
+                        whatIf: ''
+                        taskName: 'main.bicep'
+                        bicepFilePath: '${{variables.bicepFilePath}}'
+                        bicepFileName: 'main.bicep'
+                        bicepCustomParametersPath: '${{variables.bicepFilePath}}/main_${{variables.environmentType}}.bicepparam'
+                        location:  '${{parameters.location}}'
+                        environmentType: '${{variables.environmentType}}'
+                        serviceConnectionName: '${{variables.serviceConnectionName}}'
+                        bicepParameters:
+                          applicationId: '${{variables.applicationSnowId}}'
+                          environmentId: '${{variables.environmentSnowId}}'
+                          environmentType: '${{variables.environmentType}}'

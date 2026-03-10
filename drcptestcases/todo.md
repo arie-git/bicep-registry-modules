@@ -388,17 +388,19 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - `modules/rbac.bicep` — multi-principal storage role assignments; could be replaced with inline `roleAssignments` on storage module
 
 **Migration from chatbot-poc to drcptestcases/scenario16:**
-1. Copy `chatbot-poc/infra/main.bicep` → `drcptestcases/scenario16/infra/main.bicep`
-2. Copy `chatbot-poc/infra/modules/` → `drcptestcases/scenario16/infra/modules/`
-3. Replace `br/amavm:utl/amavm/naming:0.1.0` → `../../modules/infra/naming.bicep` (match scenario convention)
+1. ~~Copy `chatbot-poc/infra/main.bicep` → `drcptestcases/scenario16/infra/main.bicep`~~ DONE
+2. ~~Copy `chatbot-poc/infra/modules/` → `drcptestcases/scenario16/infra/modules/`~~ DONE
+3. Keep `br/amavm:utl/amavm/naming:0.1.0` — this is the AMAVM naming module (already correct, unlike older scenarios that use local `../../modules/infra/naming.bicep`)
 4. Replace `modules/rbac.bicep` calls → inline `roleAssignments` on storage module where possible
 5. Fix deprecated params: `vnetRouteAllEnabled`, `vnetContentShareEnabled`, `vnetImagePullEnabled` → `outboundVnetRouting` (per TD-15/FEAT-1)
 6. Remove hardcoded subscription IDs, object IDs, and resource names from readme
-7. Add `bicepconfig.json`, pipelines, README
+7. ~~Add `bicepconfig.json`, pipelines~~ DONE — add README
+
+**Note on naming module:** Scenario 16 uses `br/amavm:utl/amavm/naming:0.1.0` (the AMAVM registry naming utility). This is the preferred approach — older scenarios (1-12) use the local `../../modules/infra/naming.bicep` and should be migrated to AMAVM naming in a future pass.
 
 **Tasks:**
-- [ ] Copy chatbot-poc infra to `drcptestcases/scenario16/infra/`
-- [ ] Replace naming module reference with local `../../modules/infra/naming.bicep`
+- [x] Copy chatbot-poc infra to `drcptestcases/scenario16/infra/`
+- [x] Copy pipelines, bicepconfig.json, src/ (backend + frontend)
 - [ ] Replace `rbac.bicep` with inline `roleAssignments` where possible — use `/azure:azure-rbac` to verify roles
 - [ ] Fix deprecated VNet routing params → `outboundVnetRouting`
 - [ ] Parameterize hardcoded values (engineer object IDs, subscription IDs)
@@ -457,4 +459,5 @@ After P0 migrations complete:
 - [ ] Remove `modules/infra/integration/data-factory/` (after scenario 10 migrated)
 - [ ] Remove `modules/infra/network/private-endpoint/` (after all PE refs migrated)
 - [ ] Audit remaining `modules/infra/` for other removable modules
-- [ ] Keep: `naming.bicep`, scenario-specific helpers, deployment scripts, `public-ip-address`, `api-management`
+- [ ] Migrate `naming.bicep` references → `br/amavm:utl/amavm/naming:0.1.0` in all scenarios (scenario 16 already uses AMAVM naming; scenarios 1-12 still use local `../../modules/infra/naming.bicep`)
+- [ ] Keep: scenario-specific helpers, deployment scripts, `public-ip-address`, `api-management`

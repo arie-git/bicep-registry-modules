@@ -1,0 +1,12 @@
+python-dotenv
+gunicorn
+flask
+azure-identity
+cryptography==43.0.3
+azure-mgmt-policyinsights
+azure-mgmt-resource
+azure-mgmt-resourcegraph
+azure-search-documents
+openai
+azure-core
+msgraph-core

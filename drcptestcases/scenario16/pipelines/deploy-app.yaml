@@ -1,0 +1,234 @@
+
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(environmentSnowId)_$(environmentType)$(location)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+- name: environmentType
+  type: string
+  default: dev
+  values: [dev, tst, acc, prd]
+
+- name: location
+  type: string
+  default: swedencentral
+  values: [swedencentral]
+
+- name: environmentSnowId
+  displayName: ServiceNow environment Id
+  type: string
+  default: ENV24083
+
+- name: isDeployment
+  displayName: Run deployment stage?
+  type: boolean
+  default: true
+
+# Choose which subfolder to build/package
+- name: projectPath
+  displayName: Relative path to the Python project
+  type: string
+  default: src/backend
+  values:
+    - src/backend
+    - src/frontend
+
+# Target Azure Web App
+- name: webAppName
+  displayName: Target Azure Web App name
+  type: string
+  default: my-python-webapp-sec-dev
+
+variables:
+# --- Simple variables ---
+- name: applicationSnowId
+  value: AM-CCC
+
+- name: environmentSnowId
+  value: ${{ parameters.environmentSnowId }}
+
+- name: serviceConnectionName
+  # Example: SC-AM-CCC-ENV24083
+  value: SC-${{ variables.applicationSnowId }}-${{ variables.environmentSnowId }}
+
+- name: environmentType
+  value: ${{ parameters.environmentType }}
+
+- name: location
+  value: ${{ parameters.location }}
+
+- name: resourceGroupName
+  value: drcpchat01-${{ parameters.environmentType }}-swedencentral-rg
+
+# --- Conditional insertion of variables (parse-safe pattern) ---
+- ${{ if eq(parameters.location, 'westeurope') }}:
+  - name: locationShort
+    value: we
+- ${{ if eq(parameters.location, 'northeurope') }}:
+  - name: locationShort
+    value: ne
+- ${{ if eq(parameters.location, 'swedencentral') }}:
+  - name: locationShort
+    value: sec
+
+# Artifact naming/paths
+- name: artifactName
+  value: drop
+
+- name: artifactFileName
+  # Use Azure DevOps function-form replace()
+  value: pythonapp_${{ replace(parameters.projectPath, '/', '_') }}_$(Build.BuildId).zip
+
+- name: artifactZipPath
+  value: $(Build.ArtifactStagingDirectory)/$(artifactFileName)
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DRCP-Templates/templates
+      ref: refs/heads/main
+
+pool: CPP-Ubuntu2204-Latest-B
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+
+      # =========================
+      # Stage: Build (Python)
+      # =========================
+      - stage: buildPython
+        displayName: Build Python app
+        jobs:
+          - job: build
+            displayName: Install Python 3.12, vendor deps, set version, zip, publish artifact
+            steps:
+              - checkout: self
+                clean: true
+
+              - task: UsePythonVersion@0
+                displayName: Use Python 3.12
+                inputs:
+                  versionSpec: '3.12'
+                  addToPath: true
+
+              # Vendor dependencies into the repo (portable)
+              - bash: |
+                  set -euo pipefail
+
+                  PROJECT_DIR="$(Build.SourcesDirectory)/${{ parameters.projectPath }}"
+                  echo "Using project directory: ${PROJECT_DIR}"
+
+                  if [ ! -d "${PROJECT_DIR}" ]; then
+                    echo "ERROR: Project path does not exist: ${PROJECT_DIR}"
+                    exit 1
+                  fi
+
+                  echo "Upgrading pip..."
+                  python -m pip install --upgrade pip
+                  pip --version
+
+                  if [ -f "${PROJECT_DIR}/requirements.txt" ]; then
+                    echo "Vendoring dependencies to .python_packages/lib/site-packages..."
+                    python -m pip install -r "${PROJECT_DIR}/requirements.txt" \
+                      --target "${PROJECT_DIR}/.python_packages/lib/site-packages"
+                  else
+                    echo "WARNING: requirements.txt not found in ${PROJECT_DIR}"
+                  fi
+
+                  # Optional: create a freeze file in the project (helps traceability)
+                  pip freeze > "${PROJECT_DIR}/requirements.lock"
+
+                  # Clean up common heavy/ephemeral folders
+                  rm -rf "${PROJECT_DIR}/.venv" "${PROJECT_DIR}/venv" "${PROJECT_DIR}/__pycache__"
+                displayName: Vendor Python dependencies locally
+                workingDirectory: $(Build.SourcesDirectory)
+
+              # Archive the project including vendored packages
+              - task: ArchiveFiles@2
+                displayName: Archive app to $(artifactFileName)
+                inputs:
+                  rootFolderOrFile: $(Build.SourcesDirectory)/${{ parameters.projectPath }}
+                  includeRootFolder: false
+                  archiveType: zip
+                  archiveFile: $(artifactZipPath)
+                  replaceExistingArchive: true
+                  # Optional exclusions (uncomment if desired)
+                  # excludeFiles: |
+                  #   **/.git/**
+                  #   **/.venv/**
+                  #   **/tests/**
+                  #   **/__pycache__/**
+
+              - task: PublishBuildArtifacts@1
+                displayName: Publish artifact $(artifactName)
+                inputs:
+                  PathtoPublish: $(Build.ArtifactStagingDirectory)
+                  ArtifactName: $(artifactName)
+                  publishLocation: Container
+
+      # =========================
+      # Stage: Deploy (Web App)
+      # =========================
+      - ${{ if eq(parameters.isDeployment, true) }}:
+        - stage: deployWebApp
+          displayName: Deploy to Azure Web App
+          dependsOn: buildPython
+          jobs:
+            - job: deploy
+              displayName: Deploy zipped artifact to ${{ parameters.webAppName }}
+              steps:
+                - checkout: none
+
+                - task: DownloadBuildArtifacts@0
+                  displayName: Download build artifact
+                  inputs:
+                    buildType: current
+                    downloadType: single
+                    artifactName: $(artifactName)
+                    downloadPath: $(Pipeline.Workspace)
+
+                # Optional: echo variables for sanity
+                - bash: |
+                    echo "Resolved variables:"
+                    echo "  serviceConnectionName=$(serviceConnectionName)"
+                    echo "  webAppName=${{ parameters.webAppName }}"
+                    echo "  artifactName=$(artifactName)"
+                    echo "  artifactFileName=$(artifactFileName)"
+                    echo "  location=$(location)"
+                    echo "  locationShort=$(locationShort)"
+                  displayName: Echo deployment variables
+
+                # Deploy ZIP to Azure Web App
+                # For Linux Web App use appType: webAppLinux and keep runtimeStack
+                # For Windows Web App use appType: webApp and remove runtimeStack
+                - task: AzureWebApp@1
+                  displayName: Deploy to ${{ parameters.webAppName }}
+                  inputs:
+                    azureSubscription: $(serviceConnectionName)
+                    appType: webAppLinux
+                    appName: ${{ parameters.webAppName }}
+                    package: $(Pipeline.Workspace)/$(artifactName)/$(artifactFileName)
+                    runtimeStack: 'PYTHON|3.12'
+
+                - ${{ if eq(parameters.projectPath, 'src/frontend') }} :
+                  - task: AzureCLI@2
+                    displayName: Configure Streamlit Startup Command
+                    inputs:
+                      azureSubscription: $(serviceConnectionName)
+                      scriptType: bash
+                      scriptLocation: inlineScript
+                      inlineScript: |
+                        az webapp config set \
+                          --name "${{ parameters.webAppName }}" \
+                          --resource-group "$(resourceGroupName)" \
+                          --startup-file "python3 -m streamlit run /home/site/wwwroot/app.py --server.port 8000 --server.address 0.0.0.0"
+
+                # Optional: post-deploy hook
+                - bash: |
+                    echo "Deployment step completed for ${{ parameters.webAppName }}"
+                  displayName: Post-deploy notice

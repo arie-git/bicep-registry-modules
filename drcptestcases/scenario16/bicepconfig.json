@@ -1,0 +1,48 @@
+{
+    // See https://aka.ms/bicep/config for more information on Bicep configuration options
+    // Press CTRL+SPACE/CMD+SPACE at any location to see Intellisense suggestions
+    "analyzers": {
+        "core": {
+            "rules": {
+                "adminusername-should-not-be-literal": {
+                    "level": "warning"
+                },
+                "no-unused-existing-resources": {
+                    "level": "error"
+                },
+                "no-unused-vars": {
+                    "level": "warning"
+                },
+                "no-unused-params": {
+                    "level": "warning"
+                },
+                "no-hardcoded-location": {
+                    "level": "error"
+                },
+                "no-unnecessary-dependson": {
+                    "level": "warning"
+                },
+                "outputs-should-not-contain-secrets": {
+                    "level": "error"
+                },
+                "use-parent-property": {
+                    "level": "warning"
+                },
+                "use-secure-value-for-secure-inputs": {
+                    "level": "error"
+                }
+            }
+        }
+    },
+    "moduleAliases": {
+        "br": {
+            "amavm": {
+                "registry": "s2amavmprdsecacr.azurecr.io"
+            }
+        }
+    },
+    // specify an alias for the version of the v1.0 dynamic types package you want to use
+    "extensions": {
+      "microsoftGraphV1": "br:mcr.microsoft.com/bicep/extensions/microsoftgraph/v1.0:1.0.0"
+    }
+}
