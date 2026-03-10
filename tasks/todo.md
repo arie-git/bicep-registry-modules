@@ -777,48 +777,45 @@ For each module: diff upstream vs fork params, add new params/types/resources, r
 
 ### SYNC-TD: Technical Debt Comparison vs Upstream (Whitelisted Modules Only)
 
-For each whitelisted module, compare fork against current upstream and identify remaining tech debt: missing params, type mismatches (e.g. `[]?` array-of-arrays), API version drift, missing child modules, stale code, and build errors. Only modules deployed to production (whitelisted) are in scope.
+Full comparison completed 2026-03-10. Compared all 35 whitelisted modules against current upstream.
 
-**Whitelisted modules:**
-- [ ] app-configuration/configuration-store
-- [ ] cache/redis
-- [ ] cognitive-services/account
-- [ ] container-registry/registry
-- [ ] container-service/managed-cluster
-- [ ] data-factory/factory
-- [ ] databricks/workspace (+ access-connector)
-- [ ] db-for-postgre-sql/flexible-server
-- [ ] document-db/database-account
-- [ ] event-hub/namespace
-- [ ] insights/action-group
-- [ ] insights/activity-log-alert
-- [ ] insights/component
-- [ ] insights/data-collection-endpoint
-- [ ] insights/data-collection-rule
-- [ ] insights/diagnostic-setting
-- [ ] insights/metric-alert
-- [ ] insights/private-link-scope
-- [ ] insights/scheduled-query-rule
-- [ ] insights/webtest
-- [ ] key-vault/vault
-- [ ] managed-identity/user-assigned-identity
-- [ ] network/application-gateway (+ WAF policy)
-- [ ] network/network-security-group
-- [ ] network/private-endpoint
-- [ ] network/route-table
-- [ ] network/virtual-network
-- [ ] operational-insights/workspace
-- [ ] search/search-service
-- [ ] service-bus/namespace
-- [ ] sql/server
-- [ ] storage/storage-account
-- [ ] web/serverfarm
-- [ ] web/site
-- [ ] web/static-site
+**Convention differences (NOT bugs — intentional fork patterns):**
+- `roleAssignmentType` / `lockType` / `diagnosticSettingType` / `privateEndpointType` — AMAVM types in `bicep-shared/types.bicep` already include `[]?`/`?`, so `param x roleAssignmentType` is correct (upstream uses `roleAssignmentType[]?` with their non-array types)
+- `managedIdentitiesType = { systemAssigned: true }` — intentional secure default (upstream uses `managedIdentityAllType?`)
+- Policy-enforced defaults (`publicNetworkAccess='Disabled'`, `allowSharedKeyAccess=false`, etc.) — intentional
+- Import source (`bicep-shared/` vs `br/public`) — intentional fork pattern
+- Explicit log categories instead of `{ categoryGroup: 'allLogs' }` — intentional
 
-**Known patterns to check:**
-- `[]?` array-of-arrays on shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType` already include `[]?`/`[]`)
-- `resourceInput<>` type usage where upstream has adopted it
+**Real findings — `resourceInput<>` adoption gap (upstream migrated, fork still uses `object?`/`string`):**
+
+| Module | Params needing `resourceInput<>` | Priority |
+|---|---|---|
+| web/serverfarm | `kind`, `workerTierName`, `perSiteScaling`, `elasticScaleEnabled`, `maximumElasticWorkerCount`, `targetWorkerCount`, `zoneRedundant`, `isCustomMode` | Medium |
+| insights/webtest | `request`, `locations`, `validationRules`, `configuration` | Medium |
+| network/private-endpoint | `ipConfigurations`, `customDnsConfigs`, `manualPrivateLinkServiceConnections`, `privateLinkServiceConnections` | Medium |
+| network/application-gateway | Many params (upstream did massive `resourceInput<>` migration); also missing `loadDistributionPolicies` | Low (complex) |
+| cache/redis | `redisConfiguration`, `tenantSettings` | Low |
+| event-hub/namespace | `maximumThroughputUnits` | Low |
+
+**Real findings — missing upstream features:**
+
+| Module | Missing Feature | Priority |
+|---|---|---|
+| cache/redis | `secretsExportConfiguration` param | Low |
+| cognitive-services/account | `secretsExportConfiguration` param | Low |
+| event-hub/namespace | `secretsExportConfiguration` param | Low |
+
+**Real findings — other:**
+
+| Module | Issue | Priority |
+|---|---|---|
+| search/search-service | `hostingMode` case: fork `'default'` vs upstream `'Default'` | Low |
+| db-for-postgre-sql/flexible-server | Version default `'17'` vs upstream `'18'` — may need updating | Low |
+
+- [x] Comparison completed for all 35 modules
+- [ ] Address `resourceInput<>` adoption gap (web/serverfarm, insights/webtest, network/private-endpoint)
+- [ ] Add `secretsExportConfiguration` to cache/redis, cognitive-services, event-hub
+- [ ] Verify search/search-service `hostingMode` case sensitivity
 - API version drift on resources and `reference()` calls
 - Missing upstream params/child modules since last sync
 - Build errors (test cases especially)
