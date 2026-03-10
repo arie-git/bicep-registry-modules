@@ -459,6 +459,47 @@ Cleaned up all stale commented-out duplicates.
 - [x] All 6 tests + main module build with zero errors
 - [ ] Karen: validate
 
+### BF-7: web/site config--appsettings — upstream sync (identity auth, AppInsights, hybridConnection)
+
+Critical bugs found by comparing fork's split config modules against upstream's unified `config/main.bicep`. These are "small things that cause big problems" — silent deployment failures.
+
+**Issues found and fixed:**
+
+1. **Missing AzureWebJobs queue/table URIs** (site + slot `config--appsettings`)
+   - Fork only set `__accountName` and `__blobServiceUri` for identity-based storage auth
+   - Missing `__queueServiceUri` and `__tableServiceUri`
+   - **Impact**: Function apps with identity-based storage auth silently fail on queue/table triggers and bindings
+   - [x] Added `AzureWebJobsStorage__queueServiceUri` and `AzureWebJobsStorage__tableServiceUri`
+
+2. **Hardcoded ApplicationInsightsAgent_EXTENSION_VERSION** (site + slot `config--appsettings`)
+   - Site: hardcoded `'~2'` for all app kinds
+   - Slot: completely missing — no extension version set at all
+   - Upstream dynamically selects `'~3'` for Linux/container apps, `'~2'` for Windows
+   - **Impact**: Linux function apps and container apps get wrong/missing agent version, causing monitoring failures
+   - [x] Added dynamic version selection based on `app.kind` (site) / `app::slot.kind` (slot)
+
+3. **Site `storageAccountUseIdentityAuthentication` wrong default** (site `config--appsettings`)
+   - Fork site-level defaulted to `true`, slot-level to `false`, upstream to `false`
+   - Combined with #1 (missing queue/table URIs), this meant site-level function apps would silently break
+   - [x] Changed site-level default to `false` (matches upstream and slot)
+
+4. **Storage API version outdated** (site + slot `config--appsettings`)
+   - Fork: `@2023-05-01` (2 years old)
+   - Upstream: `@2025-01-01` / `@2025-06-01`
+   - [x] Updated to `@2025-01-01`
+
+5. **hybridConnectionRelay wrong property name** (site `main.bicep` + slot `main.bicep`)
+   - Fork: `hybridConnectionRelay.resourceId`
+   - Upstream: `hybridConnectionRelay.hybridConnectionResourceId`
+   - **Impact**: Runtime error when deploying hybrid connection relays
+   - [x] Fixed in both parent and slot modules
+
+6. **Slot config--appsettings wrong metadata owner** (`Azure/module-maintainers` → `AMCCC`)
+   - [x] Fixed
+
+- [x] All 11 web/site e2e tests build clean (only expected BCP192/BCP104)
+- [ ] Karen: validate
+
 ---
 
 ## BUILD-VALIDATE: Local Build Validation (dev-only PE/ACR ref switch)

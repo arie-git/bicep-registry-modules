@@ -26,7 +26,7 @@ param kind string
 param storageAccountResourceId string?
 
 @description('Optional. If the provided storage account requires Identity based authentication (\'allowSharedKeyAccess\' is set to false). When set to true, the minimum role assignment required for the App Service Managed Identity to the storage account is \'Storage Blob Data Owner\'.')
-param storageAccountUseIdentityAuthentication bool = true
+param storageAccountUseIdentityAuthentication bool = false
 
 @description('Optional. Resource ID of the app insight to leverage for this resource.')
 param appInsightResourceId string?
@@ -37,15 +37,17 @@ param appSettingsKeyValuePairs object?
 @description('Optional. The current app settings.')
 param currentAppSettings object = {}
 
-var azureWebJobsValues = !empty(storageAccountResourceId) && !(storageAccountUseIdentityAuthentication)
+var azureWebJobsValues = !empty(storageAccountResourceId) && !storageAccountUseIdentityAuthentication
   ? {
       AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     }
   : !empty(storageAccountResourceId) && storageAccountUseIdentityAuthentication
-      ? union(
-          { AzureWebJobsStorage__accountName: storageAccount.name },
-          { AzureWebJobsStorage__blobServiceUri: storageAccount.properties.primaryEndpoints.blob }
-        )
+      ? {
+          AzureWebJobsStorage__accountName: storageAccount.name
+          AzureWebJobsStorage__blobServiceUri: storageAccount.properties.primaryEndpoints.blob
+          AzureWebJobsStorage__queueServiceUri: storageAccount.properties.primaryEndpoints.queue
+          AzureWebJobsStorage__tableServiceUri: storageAccount.properties.primaryEndpoints.table
+        }
       : {}
 
 resource appInsight 'Microsoft.Insights/components@2020-02-02' existing = if (!empty(appInsightResourceId)) {
@@ -56,7 +58,20 @@ resource appInsight 'Microsoft.Insights/components@2020-02-02' existing = if (!e
 var appInsightsValues = !empty(appInsightResourceId)
   ? {
       APPLICATIONINSIGHTS_CONNECTION_STRING: appInsight.properties.ConnectionString
-      ApplicationInsightsAgent_EXTENSION_VERSION: '~2'
+      ApplicationInsightsAgent_EXTENSION_VERSION: contains(
+          [
+            'functionapp,linux'
+            'functionapp,workflowapp,linux'
+            'functionapp,linux,container'
+            'functionapp,linux,container,azurecontainerapps'
+            'app,linux'
+            'linux,api'
+            'app,linux,container'
+          ],
+          app.kind
+        )
+        ? '~3'
+        : '~2'
     }
   : {}
 
@@ -67,7 +82,7 @@ var expandedAppSettings = union(
   appInsightsValues
 )
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = if (!empty(storageAccountResourceId)) {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = if (!empty(storageAccountResourceId)) {
   name: last(split(storageAccountResourceId ?? 'dummyName', '/'))
   scope: resourceGroup(
     split(storageAccountResourceId ?? '//', '/')[2],

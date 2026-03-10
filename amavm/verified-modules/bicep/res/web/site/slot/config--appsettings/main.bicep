@@ -1,6 +1,6 @@
 metadata name = 'Site Slot App Settings'
 metadata description = 'This module deploys a Site Slot App Setting.'
-metadata owner = 'Azure/module-maintainers'
+metadata owner = 'AMCCC'
 
 @description('Required. Slot name to be configured.')
 param slotName string
@@ -40,29 +40,18 @@ param appSettingsKeyValuePairs object?
 @description('Optional. The current app settings.')
 param currentAppSettings object = {}
 
-var azureWebJobsValues = !empty(storageAccountResourceId) && !(storageAccountUseIdentityAuthentication)
+var azureWebJobsValues = !empty(storageAccountResourceId) && !storageAccountUseIdentityAuthentication
   ? {
       AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
     }
   : !empty(storageAccountResourceId) && storageAccountUseIdentityAuthentication
-      ? union(
-          { AzureWebJobsStorage__accountName: storageAccount.name },
-          { AzureWebJobsStorage__blobServiceUri: storageAccount.properties.primaryEndpoints.blob }
-        )
+      ? {
+          AzureWebJobsStorage__accountName: storageAccount.name
+          AzureWebJobsStorage__blobServiceUri: storageAccount.properties.primaryEndpoints.blob
+          AzureWebJobsStorage__queueServiceUri: storageAccount.properties.primaryEndpoints.queue
+          AzureWebJobsStorage__tableServiceUri: storageAccount.properties.primaryEndpoints.table
+        }
       : {}
-
-var appInsightsValues = !empty(appInsightResourceId)
-  ? {
-      APPLICATIONINSIGHTS_CONNECTION_STRING: appInsight.properties.ConnectionString
-    }
-  : {}
-
-var expandedAppSettings = union(
-  currentAppSettings ?? {},
-  appSettingsKeyValuePairs ?? {},
-  azureWebJobsValues,
-  appInsightsValues
-)
 
 resource app 'Microsoft.Web/sites@2025-03-01' existing = {
   name: appName
@@ -77,13 +66,40 @@ resource appInsight 'Microsoft.Insights/components@2020-02-02' existing = if (!e
   scope: resourceGroup(split(appInsightResourceId ?? '//', '/')[2], split(appInsightResourceId ?? '////', '/')[4])
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = if (!empty(storageAccountResourceId)) {
+var appInsightsValues = !empty(appInsightResourceId)
+  ? {
+      APPLICATIONINSIGHTS_CONNECTION_STRING: appInsight.properties.ConnectionString
+      ApplicationInsightsAgent_EXTENSION_VERSION: contains(
+          [
+            'functionapp,linux'
+            'functionapp,workflowapp,linux'
+            'functionapp,linux,container'
+            'functionapp,linux,container,azurecontainerapps'
+            'app,linux'
+            'linux,api'
+            'app,linux,container'
+          ],
+          app::slot.kind
+        )
+        ? '~3'
+        : '~2'
+    }
+  : {}
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = if (!empty(storageAccountResourceId)) {
   name: last(split(storageAccountResourceId ?? 'dummyName', '/'))!
   scope: resourceGroup(
     split(storageAccountResourceId ?? '//', '/')[2],
     split(storageAccountResourceId ?? '////', '/')[4]
   )
 }
+
+var expandedAppSettings = union(
+  currentAppSettings ?? {},
+  appSettingsKeyValuePairs ?? {},
+  azureWebJobsValues,
+  appInsightsValues
+)
 
 resource slotSettings 'Microsoft.Web/sites/slots/config@2025-03-01' = {
   name: 'appsettings'

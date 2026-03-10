@@ -787,7 +787,7 @@ module app_hybridConnectionRelays 'hybrid-connection-namespace/relay/main.bicep'
   for (hybridConnectionRelay, index) in (hybridConnectionRelays ?? []): {
     name: '${uniqueString(deployment().name, location)}-hybridconnectionrelay-${index}'
     params: {
-      hybridConnectionResourceId: hybridConnectionRelay.resourceId
+      hybridConnectionResourceId: hybridConnectionRelay.hybridConnectionResourceId
       appName: app.name
       sendKeyName: hybridConnectionRelay.?sendKeyName
     }
