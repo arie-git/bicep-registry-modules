@@ -156,10 +156,6 @@ if ($Sequential -or $parentModules.Count -le 1) {
     $build_errors = [System.Collections.Concurrent.ConcurrentBag[string]]::new()
 
     $parentModules | ForEach-Object -Parallel {
-        # Prevent Azure DevOps' process-level ErrorActionPreference=Stop from
-        # turning bicep WARNING stderr output into pipeline-terminating errors.
-        $ErrorActionPreference = 'Continue'
-
         $filename = $_
         $resolvedRootPath = $using:resolvedRootPath
         $buildReadme = $using:buildReadme
@@ -226,10 +222,6 @@ if ($Sequential -or $parentModules.Count -le 1) {
         if ($childModules.Count -gt 0) {
             Write-Host "Running parallel README generation for $($childModules.Count) child modules"
             $childModules | ForEach-Object -Parallel {
-                # Prevent Azure DevOps' process-level ErrorActionPreference=Stop from
-                # turning bicep WARNING stderr output into pipeline-terminating errors.
-                $ErrorActionPreference = 'Continue'
-
                 $module = $_
                 $setModuleReadMePath = $using:setModuleReadMePath
                 $errorBag = $using:build_errors

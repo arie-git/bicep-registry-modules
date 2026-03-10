@@ -2172,7 +2172,7 @@ function Set-ModuleReadMe {
     # Build template, if required
     if ($PreLoadedContent.Keys -notcontains 'TemplateFileContent') {
         if ((Split-Path -Path $TemplateFilePath -Extension) -eq '.bicep') {
-            $templateFileContent = az bicep build --file $TemplateFilePath --stdout | ConvertFrom-Json -AsHashtable
+            $templateFileContent = az bicep build --file $TemplateFilePath --stdout 2>$null | ConvertFrom-Json -AsHashtable
         } else {
             $templateFileContent = ConvertFrom-Json (Get-Content $TemplateFilePath -Encoding 'utf8' -Raw) -ErrorAction 'Stop' -AsHashtable
         }

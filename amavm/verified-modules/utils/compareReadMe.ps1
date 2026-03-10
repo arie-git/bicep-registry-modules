@@ -130,10 +130,6 @@ if ($Sequential -or $modules.Count -le 1) {
     $build_errors = [System.Collections.Concurrent.ConcurrentBag[string]]::new()
 
     $modules | ForEach-Object -Parallel {
-        # Prevent Azure DevOps' process-level ErrorActionPreference=Stop from
-        # turning bicep WARNING stderr output into pipeline-terminating errors.
-        $ErrorActionPreference = 'Continue'
-
         $readMeFile = $_
         $resolvedRootPath = $using:resolvedRootPath
         $destinationPathPrefix = $using:destinationPathPrefix
