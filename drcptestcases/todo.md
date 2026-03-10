@@ -24,8 +24,9 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | **13** | **Redis Cache + Web App** | **Planned** | — | — |
 | **14** | **Event Hub Producer/Consumer** | **Planned** | — | — |
 | **15** | **Cosmos DB NoSQL CRUD API** | **Planned** | — | — |
+| **16** | **AI Chatbot: OpenAI + AI Search** | **Planned** (from chatbot-poc) | — | — |
 
-**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-15 are new dedicated test cases for GAP modules.
+**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-16 are new test cases for GAP/uncovered modules.
 
 ---
 
@@ -341,6 +342,74 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [ ] Validate `bicep build` passes
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
+### Scenario 16 — AI Chatbot: OpenAI + AI Search + Web Apps (cognitive-services/account + search/search-service)
+
+**Source:** `chatbot-poc/` — existing POC that is already partially AMAVM-migrated. This scenario exercises the two whitelisted modules with **zero integration test coverage**: `cognitive-services/account` (AI Services/OpenAI) and `search/search-service` (AI Search). Migrating the POC into a proper DRCP test case validates these modules in a realistic RAG (Retrieval-Augmented Generation) architecture.
+
+**Architecture:** A Streamlit frontend Web App authenticates users via Entra ID (Easy Auth + FIC), queries Azure Resource Graph for DRCP policy violations, searches an AI Search knowledge base for remediation guidance, and uses Azure OpenAI (GPT-4o) to generate context-aware remediation advice. A Flask backend API handles OBO (On-Behalf-Of) token exchange for cross-service calls. Both apps run on Linux App Service Plans with private endpoints and UAMI-based auth.
+
+**Reference:** `chatbot-poc/infra/main.bicep` (existing, already uses AMAVM module references).
+
+**Components:**
+
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| Azure OpenAI | `br/amavm:res/cognitive-services/account` | GPT-4o deployment, kind: OpenAI, S0 SKU |
+| AI Search | `br/amavm:res/search/search-service` | Knowledge base index, shared private links to storage + OpenAI |
+| Web App (frontend) | `br/amavm:res/web/site` | Streamlit UI, Entra ID Easy Auth, UAMI |
+| Web App (backend) | `br/amavm:res/web/site` | Flask API, OBO token exchange, UAMI |
+| App Service Plan (x2) | `br/amavm:res/web/serverfarm` | Linux, P1V3 (separate for front/back) |
+| Storage Account | `br/amavm:res/storage/storage-account` | Blob + Table, AI Search data source |
+| Managed Identity (x2) | `br/amavm:res/managed-identity/user-assigned-identity` | Front UAMI + Back UAMI |
+| VNet + Subnets (x3) | `br/amavm:res/network/virtual-network/subnet` | PE subnet + 2 app egress subnets |
+| NSG + Route Table | `br/amavm:res/network/network-security-group` + `route-table` | Network controls |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Central logging |
+| App Insights | `br/amavm:res/insights/component` | APM telemetry |
+| App Registration (x2) | `modules/appregistration.bicep` (local, uses `microsoftGraphV1` extension) | Entra ID app registrations + FIC |
+| Storage RBAC | `modules/rbac.bicep` (local) | Cross-service role assignments on storage |
+
+**Key architectural patterns validated:**
+- **RAG pattern:** AI Search → Storage (blob/table) → OpenAI (chat completions with context)
+- **Entra ID Easy Auth + FIC:** Frontend uses federated identity credentials (`OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`) — same pattern as FEAT-1b's auth settings
+- **On-Behalf-Of flow:** Backend exchanges user token for ARM/service tokens via OBO credential
+- **Shared Private Links:** AI Search connects to Storage and OpenAI via shared private links (requires manual approval in DRCP portal)
+- **Microsoft Graph Bicep:** App registrations use `extension microsoftGraphV1` for declarative Entra ID app + service principal + FIC creation
+- **Multi-UAMI:** Separate managed identities for frontend and backend with different role assignments
+
+**DRCP-specific config (from chatbot-poc/infra/main.bicep):**
+- OpenAI: `kind: 'OpenAI'`, `sku: 'S0'`, private endpoint, `Cognitive Services OpenAI User` role for UAMI
+- AI Search: `dataExfiltrationProtections: ['BlockAll']`, private endpoint, shared private links for blob/table/openai
+- Storage: `skuName: 'Standard_LRS'`, blob + table PEs, `Storage Blob Data Owner` + `Storage Table Data Contributor` roles
+- Web Apps: Linux Python 3.12, VNet integration, private endpoints, Easy Auth with Entra ID, `vnetRouteAllEnabled: true`
+- All resources: diagnostic settings → Log Analytics
+
+**Local modules that remain (cannot migrate to AMAVM):**
+- `modules/appregistration.bicep` — uses `microsoftGraphV1` Bicep extension for Entra ID app registrations; no AMAVM equivalent
+- `modules/rbac.bicep` — multi-principal storage role assignments; could be replaced with inline `roleAssignments` on storage module
+
+**Migration from chatbot-poc to drcptestcases/scenario16:**
+1. Copy `chatbot-poc/infra/main.bicep` → `drcptestcases/scenario16/infra/main.bicep`
+2. Copy `chatbot-poc/infra/modules/` → `drcptestcases/scenario16/infra/modules/`
+3. Replace `br/amavm:utl/amavm/naming:0.1.0` → `../../modules/infra/naming.bicep` (match scenario convention)
+4. Replace `modules/rbac.bicep` calls → inline `roleAssignments` on storage module where possible
+5. Fix deprecated params: `vnetRouteAllEnabled`, `vnetContentShareEnabled`, `vnetImagePullEnabled` → `outboundVnetRouting` (per TD-15/FEAT-1)
+6. Remove hardcoded subscription IDs, object IDs, and resource names from readme
+7. Add `bicepconfig.json`, pipelines, README
+
+**Tasks:**
+- [ ] Copy chatbot-poc infra to `drcptestcases/scenario16/infra/`
+- [ ] Replace naming module reference with local `../../modules/infra/naming.bicep`
+- [ ] Replace `rbac.bicep` with inline `roleAssignments` where possible — use `/azure:azure-rbac` to verify roles
+- [ ] Fix deprecated VNet routing params → `outboundVnetRouting`
+- [ ] Parameterize hardcoded values (engineer object IDs, subscription IDs)
+- [ ] Use `/azure:entra-app-registration` to validate the app registration pattern
+- [ ] Create `drcptestcases/scenario16/pipelines/` with deploy + teardown
+- [ ] Create `drcptestcases/scenario16/README.md` using standard template
+- [ ] Validate `bicep build` passes (note: `microsoftGraphV1` extension may require special bicepconfig)
+- [ ] Use `/azure:azure-validate` for pre-deployment readiness check
+- [ ] Use `/azure:azure-ai` for AI Search and OpenAI configuration best practices
+- [ ] Document shared private link approval process in README (DRCP portal + manual curl approval)
+
 ---
 
 ## P2 — AMAVM Module Coverage
@@ -349,16 +418,18 @@ After P0 migrations and P1.5 new scenarios, these modules have integration test 
 
 | Module | Covered by |
 |---|---|
+| `cognitive-services/account` | **Scenario 16** |
+| `search/search-service` | **Scenario 16** |
 | `document-db/database-account` | Scenarios 2, 8, **15** |
 | `event-hub/namespace` | Scenarios 4, **14** |
 | `cache/redis` | **Scenario 13** |
 | `data-factory/factory` | Scenario 10 |
-| `network/private-endpoint` | Scenarios 2, 4, 8, 10, **13, 14, 15** |
-| `web/site` | Scenarios 1, 2, 3, 4, 5, 8, 11, **13, 14, 15** |
+| `network/private-endpoint` | Scenarios 2, 4, 8, 10, **13, 14, 15, 16** |
+| `web/site` | Scenarios 1, 2, 3, 4, 5, 8, 11, **13, 14, 15, 16** |
 | `key-vault/vault` | Scenarios 1, 2, 3, 4, 5, 8, 11, **13, 14, 15** |
-| `storage/storage-account` | Scenarios 1, 2, 3, 4, 9, **13, 14, 15** |
+| `storage/storage-account` | Scenarios 1, 2, 3, 4, 9, **13, 14, 15, 16** |
 
-Still uncovered (no test case): `search/search-service`, `cognitive-services/account`, `app-configuration/configuration-store`, `service-bus/namespace`, `db-for-postgre-sql/flexible-server`
+Still uncovered (no test case): `app-configuration/configuration-store`, `service-bus/namespace`, `db-for-postgre-sql/flexible-server`
 
 **Interim validation for uncovered modules:**
 - Use `/azure:azure-validate` to run pre-deployment checks on module Bicep without a full test scenario
