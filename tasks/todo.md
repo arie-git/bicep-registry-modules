@@ -732,6 +732,7 @@ Current pipeline takes ~30 min for a feature branch (RES only):
 - [x] Parallelize `compareReadMe.ps1` module loop
 - [x] Handle `Set-ModuleReadMe` import in parallel runspaces
 - [x] Local test: 52 parent modules built in ~80s parallel (ThrottleLimit=6)
+- [x] Local test (MacBook M4 Pro): 55 parent + 17 child modules built with README in ~330s parallel (ThrottleLimit=6), ~8 min total including Claude prompt/startup. Used `localBuildHelper.ps1` to swap ACR refs to local paths.
 - [x] Fix: `az bicep build` stderr warnings (e.g. `no-unused-imports`) caused `ErrorActionPreference=Stop` termination in Azure DevOps pipeline. `$ErrorActionPreference='Continue'` in parallel scriptblocks was ineffective due to PowerShell module scope isolation — `Set-ModuleReadMe` runs in its own module scope inheriting process-level `Stop`. Fixed at the source: `2>$null` on `az bicep build --stdout` in `setModuleReadMe.ps1:2175`. Real failures still caught via `$templateFileContent` null-check.
 - [x] Test on pipeline (feature branch) with full RES build + README validation
 - [x] Measure pipeline before/after timing
