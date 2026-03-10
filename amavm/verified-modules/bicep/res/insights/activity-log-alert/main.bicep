@@ -25,16 +25,16 @@ param scopes string[] = [
 param actions array = []
 
 @description('Required. An Array of objects containing conditions that will cause this alert to activate. Conditions can also be combined with logical operators `allOf` and `anyOf`. Each condition can specify only one field between `equals` and `containsAny`. An alert rule condition must have exactly one category (Administrative, ServiceHealth, ResourceHealth, Alert, Autoscale, Recommendation, Security, or Policy).')
-param conditions resourceInput<'Microsoft.Insights/activityLogAlerts@2020-10-01'>.properties.condition.allOf
+param conditions resourceInput<'Microsoft.Insights/activityLogAlerts@2026-01-01'>.properties.condition.allOf
 
 @description('Optional. The lock settings of the service.')
 param lock lockType?
 
 @description('Optional. Array of role assignments to create.')
-param roleAssignments roleAssignmentType[]?
+param roleAssignments roleAssignmentType
 
 @description('Optional. Tags of the resource.')
-param tags resourceInput<'Microsoft.Insights/activityLogAlerts@2020-10-01'>.tags?
+param tags resourceInput<'Microsoft.Insights/activityLogAlerts@2026-01-01'>.tags?
 
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
@@ -78,7 +78,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableT
   }
 }
 
-resource activityLogAlert 'Microsoft.Insights/activityLogAlerts@2020-10-01' = {
+resource activityLogAlert 'Microsoft.Insights/activityLogAlerts@2026-01-01' = {
   name: name
   location: location
   tags: finalTags
