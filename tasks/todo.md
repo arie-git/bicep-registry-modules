@@ -641,6 +641,54 @@ For each module: diff upstream vs fork params, add new params/types/resources, r
 - [x] SYNC-27: insights/activity-log-alert — 0.3 → 0.4 (gap: 1) — DONE: deployments to 2024-07-01
 - [x] SYNC-28: insights/metric-alert — 0.3 → 0.4 (gap: 1) — DONE: deployments to 2024-07-01
 
+### SYNC-TD: Technical Debt Comparison vs Upstream (Whitelisted Modules Only)
+
+For each whitelisted module, compare fork against current upstream and identify remaining tech debt: missing params, type mismatches (e.g. `[]?` array-of-arrays), API version drift, missing child modules, stale code, and build errors. Only modules deployed to production (whitelisted) are in scope.
+
+**Whitelisted modules:**
+- [ ] app-configuration/configuration-store
+- [ ] cache/redis
+- [ ] cognitive-services/account
+- [ ] container-registry/registry
+- [ ] container-service/managed-cluster
+- [ ] data-factory/factory
+- [ ] databricks/workspace (+ access-connector)
+- [ ] db-for-postgre-sql/flexible-server
+- [ ] document-db/database-account
+- [ ] event-hub/namespace
+- [ ] insights/action-group
+- [ ] insights/activity-log-alert
+- [ ] insights/component
+- [ ] insights/data-collection-endpoint
+- [ ] insights/data-collection-rule
+- [ ] insights/diagnostic-setting
+- [ ] insights/metric-alert
+- [ ] insights/private-link-scope
+- [ ] insights/scheduled-query-rule
+- [ ] insights/webtest
+- [ ] key-vault/vault
+- [ ] managed-identity/user-assigned-identity
+- [ ] network/application-gateway (+ WAF policy)
+- [ ] network/network-security-group
+- [ ] network/private-endpoint
+- [ ] network/route-table
+- [ ] network/virtual-network
+- [ ] operational-insights/workspace
+- [ ] search/search-service
+- [ ] service-bus/namespace
+- [ ] sql/server
+- [ ] storage/storage-account
+- [ ] web/serverfarm
+- [ ] web/site
+- [ ] web/static-site
+
+**Known patterns to check:**
+- `[]?` array-of-arrays on shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType` already include `[]?`/`[]`)
+- `resourceInput<>` type usage where upstream has adopted it
+- API version drift on resources and `reference()` calls
+- Missing upstream params/child modules since last sync
+- Build errors (test cases especially)
+
 ---
 
 ## META: Child Module Metadata Compliance

@@ -77,13 +77,13 @@ param minimumTlsVersion string = '1.2'
 param publicNetworkAccess string = ''
 
 @description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07]')
-param privateEndpoints privateEndpointType[]?
+param privateEndpoints privateEndpointType
 
 @description('Optional. Configure networking options. This object contains IPs/Subnets to allow or restrict access to private endpoints only. For security reasons, it is recommended to configure this object on the Namespace. [Policy: drcp-evh-03, drcp-evh-04]')
 param networkRuleSets networkRuleSetType?
 
 @description('Optional. The diagnostic settings of the service.')
-param diagnosticSettings diagnosticSettingType[]?
+param diagnosticSettings diagnosticSettingType
 
 @description('Optional. The lock settings of the service.')
 param lock lockType?
