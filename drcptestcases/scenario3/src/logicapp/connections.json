@@ -1,0 +1,31 @@
+{
+  "serviceProviderConnections": {
+    "AzureBlob": {
+      "parameterValues": {
+        "blobStorageEndpoint": "@appsetting('AzureBlob_blobStorageEndpoint')",
+        "authProvider": {
+          "Type": "ManagedServiceIdentity"
+        }
+      },
+      "parameterSetName": "ManagedServiceIdentity",
+      "serviceProvider": {
+        "id": "/serviceProviders/AzureBlob"
+      },
+      "displayName": "storageStatefulBlob"
+    },
+    "azureTables": {
+      "parameterValues": {
+        "tableStorageEndpoint": "@appsetting('azureTables_tableStorageEndpoint')",
+        "authProvider": {
+          "Type": "ManagedServiceIdentity"
+        }
+      },
+      "parameterSetName": "ManagedServiceIdentity",
+      "serviceProvider": {
+        "id": "/serviceProviders/azureTables"
+      },
+      "displayName": "storageStatefulTable"
+    }
+  },
+  "managedApiConnections": {}
+}

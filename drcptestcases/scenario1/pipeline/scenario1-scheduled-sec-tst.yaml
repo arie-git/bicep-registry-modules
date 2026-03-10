@@ -1,0 +1,48 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(folderName)_$(environmentSnowId)_$(environmentType)_$(location)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+schedules:
+  - cron: "0 1 1,15 * *" # UTC time
+    displayName: Daily full run
+    branches:
+      include:
+        - main
+    always: true
+
+variables:
+  folderName: 'scenario1'
+  environmentType: 'tst'
+  location: 'swedencentral'
+  environmentSnowId: 'ENV23978'
+  applicationInstanceCode: '0194'
+  networkAddressSpace: '10.238.64.0/27'
+  engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: DRCP-Templates/templates
+    ref: 'refs/heads/main'
+
+# pool: CPP-Ubuntu2204-Latest
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          folderName: ${{variables.folderName}}
+          fileNames:
+            - main
+          applicationInstanceCode: ${{variables.applicationInstanceCode}}
+          environmentType: ${{variables.environmentType}}
+          location: ${{variables.location}}
+          environmentSnowId: ${{variables.environmentSnowId}}
+          engineersGroupObjectId: ${{variables.engineersGroupObjectId}}
+          networkAddressSpace: ${{variables.networkAddressSpace}}

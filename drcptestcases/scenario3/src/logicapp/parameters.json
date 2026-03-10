@@ -1,0 +1,10 @@
+{
+  "containerName": {
+    "type": "String",
+    "value": "logicapp"
+  },
+  "tableName": {
+    "type": "String",
+    "value": "logicapp"
+  }
+}

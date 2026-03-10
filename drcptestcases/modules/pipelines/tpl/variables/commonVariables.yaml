@@ -1,0 +1,82 @@
+parameters:
+- name: 'environmentType'
+  type: string
+  default: 'dev'
+  values:
+  - 'dev'
+  - 'tst'
+  - 'acc'
+  - 'prd'
+- name: 'location'
+  type: string
+  default: 'swedencentral'
+  values:
+  - 'westeurope'
+  - 'northeurope'
+  - 'swedencentral'
+- name: 'environmentSnowId'
+  type: string
+- name: 'applicationSnowId'
+  type: string
+  default: 'AM-CCC'
+- name: 'applicationCode'
+  type: string
+  default: 'drcptst'
+- name: 'applicationInstanceCode'
+  type: string
+  default: ''
+
+variables:
+# ServiceNow registrations
+- name: environmentSnowId
+  value: '${{parameters.environmentSnowId}}'
+- name: applicationSnowId
+  value: '${{parameters.applicationSnowId}}'
+# IaC naming parts
+- name: organizationCode
+  value: 's2'
+- name: departmentCode
+  value: 'c3'
+- name: applicationCode
+  value: '${{parameters.applicationCode}}'
+- name: applicationInstanceCode
+  value: '${{parameters.applicationInstanceCode}}'
+- name: environmentType
+  value: '${{parameters.environmentType}}'
+- name: location
+  value: ${{parameters.location}}
+- name: locationShort
+  ${{ if eq(parameters.location,'westeurope') }}:
+    value: 'we'
+  ${{ if eq(parameters.location,'northeurope') }}:
+    value: 'ne'
+  ${{ if eq(parameters.location,'swedencentral') }}:
+    value: 'sec'
+  # Azure
+- name: subscriptionName
+  value: '${{variables.applicationSnowId}}-${{variables.environmentSnowId}}-{{upper(parameters.environmentType)}}'
+- name: serviceConnectionName
+  value: 'SC-${{variables.applicationSnowId}}-${{variables.environmentSnowId}}'
+  # Pipeline helpers
+- name: isManualTrigger
+  value:  ${{ eq(variables['Build.Reason'],'Manual') }}
+- name: isScheduledTrigger
+  value: ${{ eq(variables['Build.Reason'],'Schedule') }}
+- name: isPullRequestTrigger
+  value: ${{ eq(variables['Build.Reason'],'PullRequest') }}
+- name: isCiTrigger
+  value: ${{ in(variables['Build.Reason'],'IndividualCI','BatchedCI') }}
+- name: branchName
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/') }}:
+    value: $[ replace(replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), '/', ''), '-', '') ]
+  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/pull/') }}:
+    value: $[ replace(replace(replace(variables['System.PullRequest.SourceBranch'], 'refs/heads/', ''), '/', ''), '-', '') ]
+  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    value: $[ replace(replace(replace(variables['Build.SourceBranch'], 'refs/tags/', ''), '/', ''), '-', '') ]
+  ${{ else }}:
+    value: $[ replace(replace(replace(variables['Build.SourceBranch'], 'refs/', ''), '/', ''), '-', '') ]
+  # Pipeline logic
+- name: requestRemovalApproval
+  value: not(or(variables.isScheduledTrigger,variables.isCiTrigger))
+- name: pool
+  value: CPP-Ubuntu2204-Preview

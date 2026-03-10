@@ -1,0 +1,22 @@
+{
+    "accounts.account": "privatelink.cognitiveservices.azure.com",
+    "databaseAccounts.sql": "privatelink.documents.azure.com",
+    "factories.dataFactory": "privatelink.datafactory.azure.net",
+    "namespaces.namespace": "privatelink.servicebus.windows.net",
+    "registries.registry": "privatelink.azurecr.io",
+    "servers.mysqlServer": "privatelink.mysql.database.azure.com",
+    "servers.postgresqlServer": "private.postgres.database.azure.com",
+    "servers.sqlServer": "privatelink.database.windows.net",
+    "SignalR.signalr": "privatelink.service.signalr.net",
+    "sites.api": "privatelink.azurewebsites.net",
+    "sites.functionapp": "privatelink.azurewebsites.net",
+    "sites.site": "privatelink.azurewebsites.net",
+    "sites.web": "privatelink.azurewebsites.net",
+    "storageAccounts.blob": "privatelink.blob.core.windows.net",
+    "storageAccounts.dfs": "privatelink.dfs.core.windows.net",
+    "storageAccounts.file": "privatelink.file.core.windows.net",
+    "storageAccounts.queue": "privatelink.queue.core.windows.net",
+    "storageAccounts.table": "privatelink.table.core.windows.net",
+    "vaults.vault": "privatelink.vaultcore.azure.net",
+    "workspaces.amlworkspace": "privatelink.api.azureml.ms"
+}

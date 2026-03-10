@@ -1,0 +1,41 @@
+parameters:
+  BuildConfiguration: ''
+  PublishProject: ''
+  SolutionRootFolder: ''
+
+jobs:
+  - job: 'Build_Publish_Zip_Artifact'
+    variables:
+      solutionRootPath: '$(Build.SourcesDirectory)/${{parameters.SolutionRootFolder}}'
+    steps:
+      - task: DotNetCoreCLI@2
+        displayName: 'Restore project dependencies'
+        inputs:
+          command: 'restore'
+          feedsToUse: 'select'
+          includeNuGetOrg: true
+          projects: '$(solutionRootPath)/**/*.csproj'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build project - ${{parameters.BuildConfiguration}}'
+        inputs:
+          command: 'build'
+          projects: '$(solutionRootPath)/**/*.csproj'
+          arguments: >
+            --configuration ${{parameters.BuildConfiguration}}
+            --no-restore
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Publish the project - ${{parameters.BuildConfiguration}}'
+        inputs:
+          command: 'publish'
+          projects: '$(solutionRootPath)/**/${{parameters.PublishProject}}'
+          publishWebProjects: false
+          zipAfterPublish: true
+          arguments: >
+            --configuration ${{parameters.BuildConfiguration}}
+            --no-build
+            --output $(Build.ArtifactStagingDirectory)/${{parameters.BuildConfiguration}}
+
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Artifact: drop'

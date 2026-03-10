@@ -1,0 +1,160 @@
+# Name format
+name: $(TeamProject)_$(BuildDefinitionName)_$(SourceBranchName)_$(folderName)_$(environmentSnowId)_${{parameters.environmentType}}$(locationShort)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+  - name: 'folderName'
+    displayName: 'Which repo folder to deploy?'
+    type: string
+    default: 'scenario10'
+    values:
+      - 'scenario10'
+  - name: 'adfName'
+    displayName: 'Azure DataFactory Name'
+    type: string
+  - name: kvName
+    displayName: 'KeyVault Name'
+    type: string
+    default: 'scne10'
+  - name: 'adlsName'
+    displayName: 'ADLS Name'
+    type: string
+    default: '01'
+  - name: 'storageAccountName'
+    displayName: 'Storage Account Name'
+    type: string
+    default: '01'
+  - name: 'location'
+    type: string
+    default: 'westeurope'
+    values:
+      - 'westeurope'
+      - 'northeurope'
+  - name: 'environmentId'
+    displayName: 'ServiceNow environment Id'
+    type: string
+    default: 'ENV23455'
+
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: DRCP-Templates/templates
+      ref: 'refs/heads/main'
+
+variables:
+  # repo
+  folderName: '${{parameters.folderName}}'
+  # ServiceNow registrations
+  environmentSnowId: '${{parameters.environmentId}}'
+  applicationSnowId: 'AM-CCC'
+  # Azure
+  subscriptionName: '${{variables.applicationSnowId}}-${{variables.environmentSnowId}}-DEV'
+  serviceConnectionName: 'SC-${{variables.applicationSnowId}}-${{variables.environmentSnowId}}'
+
+  adfName: '${{parameters.adfName}}'
+  kvName: '${{parameters.kvName}}'
+  adlsName: '${{parameters.adlsName}}'
+  saName: '${{parameters.storageAccountName}}'
+
+pool: CPP-Ubuntu2204-Preview
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+      - stage: deployInfra
+        displayName: 'Deploying infrastructure'
+        jobs:
+          - job: deployWhatif
+            displayName: 'Validate the deployment code'
+            steps:
+              - checkout: self
+                clean: true
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  taskName: '${{variables.folderName}}/src/DataPipeline1.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline1.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    kvName: '${{variables.kvName}}'
+                    adlsName: '${{variables.adlsName}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  taskName: '${{variables.folderName}}/src/DataPipeline2.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline2.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    kvName: '${{variables.kvName}}'
+                    adlsName: '${{variables.adlsName}}'
+                    storageAccountName: '${{variables.saName}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  taskName: '${{variables.folderName}}/src/DataPipeline3.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline3.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    kvName: '${{variables.kvName}}'
+                    adlsName: '${{variables.adlsName}}'
+                    storageAccountName: '${{variables.saName}}'
+
+          - job: deployRun
+            displayName: 'Run the deployment'
+            dependsOn: deployWhatif
+            steps:
+              - checkout: self
+                clean: true
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  whatIf: ''
+                  taskName: '${{variables.folderName}}/src/$DataPipeline1.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline1.bicep'
+                  location: '${{ parameters.location }}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    kvName: '${{variables.kvName}}'
+                    adlsName: '${{variables.adlsName}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  whatIf: ''
+                  taskName: '${{variables.folderName}}/src/DataPipeline2.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline2.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    kvName: '${{variables.kvName}}'
+                    adlsName: '${{variables.adlsName}}'
+                    storageAccountName: '${{variables.saName}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  whatIf: ''
+                  taskName: '${{variables.folderName}}/src/DataPipeline3.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline3.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    kvName: '${{variables.kvName}}'
+                    adlsName: '${{variables.adlsName}}'
+                    storageAccountName: '${{variables.saName}}'

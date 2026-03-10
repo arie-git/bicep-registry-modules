@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "FUNCTIONS_EXTENSION_VERSION": "~4",
+    "CosmosDbConnection__accountEndpoint": "https://s2c3drcptst0801devwecosmos.documents.azure.com:443/"
+  }
+}

@@ -1,0 +1,42 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+- name: whatIf
+  displayName: 'provide empty string if this is not a test deployment'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+- name: applicationId
+  type: string
+- name: environmentId
+  type: string
+- name: resourceGroupName
+  type: string
+- name: resourceFilter
+  type: string
+
+steps:
+- task: AzurePowerShell@5
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    ScriptType: 'filePath'
+    ScriptPath: modules/scripts/removeApplicationInfra.ps1
+    ScriptArguments:
+      -groupName ${{parameters.resourceGroupName}} `
+      -resourceFilter ${{parameters.resourceFilter}} `
+      -vnetGroupName '${{parameters.applicationId}}-${{parameters.environmentId}}-VirtualNetworks' `
+      -vnetName '${{parameters.applicationId}}-${{parameters.environmentId}}-VirtualNetwork' `
+      -whatIf '${{replace(parameters.whatIf,'-','')}}'
+    azurePowerShellVersion: latestVersion
+    pwsh: true

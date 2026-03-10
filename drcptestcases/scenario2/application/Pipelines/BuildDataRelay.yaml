@@ -1,0 +1,66 @@
+# Build Name format
+name: $(TeamProject)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+parameters:
+  - name: AppName
+    displayName: 'Function App Name'
+    type: string
+    default: 's2cccscne20102devwewebapp'
+
+  - name: ServiceConnectionName
+    displayName: 'Service Connection Name'
+    type: string
+    default: 'SC-AM-CCC-ENV23145'
+
+  - name: environmentId
+    displayName: 'Environment Id'
+    type: string
+    default: 'ENV23145'
+
+variables:
+  AgentPool: CPP-Ubuntu2204-Preview
+  BuildConfiguration: 'Release'
+  PublishProject: 'datarelay.csproj'
+  SolutionRootFolder: 'scenario2'
+  BranchName: 'main'
+  SolutionName: 'datarelay'
+  AppSettings: >
+    -DataRelay:CosmosDBDatabaseName "iotdevices"
+    -DataRelay:CosmosDbConnectionString "@Microsoft.KeyVault(SecretUri=https://s2cccscne206devwekv.vault.azure.net/secrets/s2cccscne206devwecosmos-connectionString1/)"
+    -DataRelay:CosmosDBContainerName "humidity"
+  AdoProjectName: 'S02-App-AM-CCC'
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: DRCP-Templates/templates
+    ref: 'refs/heads/main'
+
+trigger: none
+
+pool: CPP-Ubuntu2204-Preview
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    customerEnvironmentId: ${{parameters.environmentId}}
+    pipelineStages:
+    - stage: buildDeplyApplication
+      displayName: 'Build and Deploy application'
+      pool:
+        name: ${{variables.AgentPool}}
+      jobs:
+      - template: /scenario2/application/Pipelines/PipelineTemplates/jobs/BuildPublishZipArtifact.yaml@self
+        parameters:
+          BuildConfiguration: ${{variables.BuildConfiguration}}
+          PublishProject: ${{variables.PublishProject}}
+          SolutionRootPath: '$(Build.SourcesDirectory)/${{variables.SolutionRootFolder}}'
+      - template: scenario2/application/Pipelines/PipelineTemplates/jobs/DeployFunctionApp.yaml@self
+        parameters:
+          AppName: ${{parameters.AppName}}
+          AppSettings: ${{variables.AppSettings}}
+          BranchName: ${{variables.BranchName}}
+          ProjectName: ${{variables.AdoProjectName}}
+          ServiceConnectionName: ${{parameters.ServiceConnectionName}}
+          SolutionName: ${{variables.SolutionName}}
+          DependsOn: 'Build_Publish_Zip_Artifact'

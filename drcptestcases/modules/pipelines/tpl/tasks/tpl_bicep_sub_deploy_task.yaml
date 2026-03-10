@@ -1,0 +1,108 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: bicepFilePath # path to bicep's folder
+  type: string
+- name: bicepFileName
+  type: string
+- name: bicepCustomParametersURI
+  type: string
+  default: ''
+- name: bicepCustomParametersPath
+  type: string
+  default: ''
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+  values:
+  - 'westeurope'
+  - 'northeurope'
+  - 'swedencentral'
+- name: whatIf
+  displayName: 'provide empty string if this is not a test deployment'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+- name: bicepParameters
+  type: object
+  default: []
+
+steps:
+- bash: |
+    echo "##vso[task.setvariable variable=buildArgStringOther;]"
+  displayName: "Initialize variable buildArgStringOther"
+- ${{ each arg in parameters.bicepParameters }}:
+  - bash: |
+      echo "##vso[task.setvariable variable=buildArgStringOther;] --parameters ${{ arg.key }}='${{ arg.value }}' $(buildArgStringOther)"
+      echo "--parameters ${{ arg.key }}='${{ arg.value }}'"
+    displayName: "Append ${{ arg.key }} to bicep parameters"
+  # - bash: |
+  #     echo "buildstring=$(buildArgStringOther)"
+  #   displayName: ECHO-${{ arg.key }}
+- task: AzureCLI@2
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: 'bash'
+    useGlobalConfig: false
+    scriptLocation: inlineScript
+    inlineScript: |
+
+      az bicep version
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running pipeline id $(Build.BuildId)."
+
+      bicepFile=${{parameters.bicepFilePath}}/${{parameters.bicepFileName}}
+
+      # Test bicep file with help of linter rules
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running bicep build of $bicepFile"
+      res=$( az bicep build --file $bicepFile --stdout 2>&1 > /dev/null )
+      if [[ "$res" == *"ERROR: "* ]]; then
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Errors found in bicep build."
+        echo $res
+        exit 1
+      fi
+
+      location=${{ parameters.location }}
+      locShort=${location/westeurope/we}
+      locShort=${locShort/northeurope/ne}
+      locShort=${locShort/swedencentral/sec}
+
+      deploymentName="$(Build.BuildId)${{replace(parameters.bicepFileName,'.bicep','')}}${{ parameters.whatIf }}"
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Starting the deployment '${deploymentName}'."
+
+      cmd_string=" \
+        az deployment sub create ${{ parameters.whatIf }} \
+          --location ${{ parameters.location }} \
+          --name '$deploymentName' \
+          --template-file $bicepFile \
+          --parameters whatIf='${{ parameters.whatIf }}' \
+          --parameters location='${{ parameters.location }}' \
+          --parameters deploymentId='$(Build.BuildId)' "
+
+      if [[ "$(buildArgStringOther)" != "" ]]; then
+        cmd_string+=" $(buildArgStringOther)"
+      fi
+
+      if [[ "${{ parameters.bicepCustomParametersURI }}" != "" ]]; then
+        cmd_string+=" --parameters @${{ parameters.bicepCustomParametersURI }}"
+      fi
+
+      if [[ "${{ parameters.bicepCustomParametersPath }}" != "" ]]; then
+        cmd_string+=" --parameters @${{ parameters.bicepCustomParametersPath }}"
+      fi
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running command: ${cmd_string}"
+
+      eval ${cmd_string} || exit 1
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Ended the deployment '${deploymentName}'."
+

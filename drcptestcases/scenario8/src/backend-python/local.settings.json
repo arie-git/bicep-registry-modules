@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "CosmosDbConnection__accountEndpoint": "https://s2c3drcptst0801devwecosmos.documents.azure.com:443/",
+    "AzureFiles_accountName": "s2c3drcptst0801devwesta",
+    "AzureFiles_shareName": "s2c3drcptst0801devweshare"
+  }
+}

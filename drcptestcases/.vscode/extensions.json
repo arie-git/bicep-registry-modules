@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-dotnettools.csharp",
+    "ukoloff.win-ca",
+    "shardulm94.trailing-spaces",
+    "ms-python.vscode-pylance",
+    "ms-vscode.powershell",
+    "davidanson.vscode-markdownlint",
+    "visualstudioexptteam.vscodeintellicode",
+    "oderwat.indent-rainbow",
+    "ms-azuretools.vscode-bicep",
+    "ms-vscode.vscode-node-azure-pack",
+    "ms-vscode.azure-repos"
+  ]
+}

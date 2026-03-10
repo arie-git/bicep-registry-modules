@@ -1,0 +1,131 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+- name: whatIf
+  displayName: 'provide empty string if this is not a test deployment'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+- name: applicationId
+  type: string
+- name: environmentId
+  type: string
+- name: resourceGroupName
+  type: string
+- name: resourceFilter
+  type: string
+
+steps:
+- task: AzureCLI@2
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: pscore
+    useGlobalConfig: false
+    scriptLocation: inlineScript
+    inlineScript: |
+      $ErrorActionPreference = "SilentlyContinue";
+      az config set extension.use_dynamic_install=yes_without_prompt || exit 1
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running pipeline id $(Build.BuildId)."
+
+      $location="${{parameters.location}}"
+      $groupName="${{parameters.resourceGroupName}}"
+      $resourceFilter="${{parameters.resourceFilter}}"
+      $vnetGroupName="${{parameters.applicationId}}-${{parameters.environmentId}}-VirtualNetworks"
+      $vnetName="${{parameters.applicationId}}-${{parameters.environmentId}}-VirtualNetwork"
+
+      if (az group exists --name $groupName){
+        $cmd_string="az group delete --name $groupName --yes"
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Will run command: $cmd_string"
+        if ("${{ parameters.whatIf }}" -eq "" ){
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running ..."
+          Invoke-Expression -Command $cmd_string
+        }
+      }
+      else
+      {
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') The resource group '$groupName' does not exist."
+      }
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Searching for soft-deleted keyVault with '$resourceFilter' filter."
+
+      kvList=$(az keyvault list-deleted --query "[?contains(name, '$resourceFilter')].name" -o tsv)
+      foreach ($name in $kvList)
+      {
+        $cmd_string = ""
+        cmd_string="az keyvault purge --name $name --location $location"
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Will run command: $cmd_string"
+        if ("${{ parameters.whatIf }}" -eq "" ){
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running ..."
+          Invoke-Expression -Command $cmd_string
+        }
+      }
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Searching for soft-deleted APIMs with '$resourceFilter' filter."
+
+      apimList=$(az apim deletedservice list --query "[?contains(name, '$resourceFilter')].name" -o tsv)
+      foreach ($name in $apimList)
+      {
+        $cmd_string = ""
+        cmd_string="az apim deletedservice purge --service-name $name --location $location"
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Will run command: $cmd_string"
+        if ("${{ parameters.whatIf }}" -eq "" ){
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running ..."
+          Invoke-Expression -Command $cmd_string
+        }
+      }
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Searching for subnets with '$resourceFilter' filter in VNet '$vnetName' under the resource group $vnetGroupName."
+
+      $subnetsList=$(az network vnet subnet list -g $vnetGroupName --vnet-name $vnetName --query "[?contains(name, '$resourceFilter')].id" -o tsv)
+      foreach ($id in $subnetsList)
+      {
+        $cmd_string = ""
+        $cmd_string="az network vnet subnet delete --ids $id"
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Will run command: $cmd_string"
+        if ("${{ parameters.whatIf }}" -eq "" ){
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running ..."
+          Invoke-Expression -Command $cmd_string
+        }
+      }
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Searching for Nsgs with '$resourceFilter' filter under the resource group $vnetGroupName."
+
+      $nsgsList=$(az network nsg list -g $vnetGroupName --query "[?contains(name, '$resourceFilter')].id" -o tsv)
+      foreach($id in $nsgsList)
+      {
+        $cmd_string = ""
+        $cmd_string="az network nsg delete --ids $id"
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Will run command: $cmd_string"
+        if ("${{ parameters.whatIf }}" -eq "" ){
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running ..."
+          Invoke-Expression -Command $cmd_string
+        }
+      }
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Searching for Resource Groups with 'agw-rg' filter."
+
+      $appGwRgList = az group list --query "[?contains(name, 'agw-rg')].name" -o tsv
+      foreach($rgName in $appGwRgList)
+      {
+        $cmd_string = ""
+        $cmd_string="az group delete --name $rgName --yes"
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Will run command: $cmd_string"
+        if ("${{ parameters.whatIf }}" -eq "" ){
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running ..."
+          Invoke-Expression -Command $cmd_string
+        }
+      }
+
+      Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Ended the task."

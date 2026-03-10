@@ -1,0 +1,91 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: bicepFilePath # path to bicep's folder
+  type: string
+- name: bicepFileName
+  type: string
+- name: bicepCustomParametersURI
+  type: string
+  default: ''
+- name: systemFullName
+  displayName: 'naming : ORG-DEPT-APPPLICATION-SYSTEM-LOCATION-ENVIRONMENT'
+  type: string
+  default: ''
+- name: resourceGroupName
+  type: string
+- name: environmentType
+  displayName: 'Type of environment (sbx, dev, sit, uat, prd)'
+  type: string
+  values: ['sbx','dev','sit','uat','prd']
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+  values: [ 'westeurope', 'northeurope', 'swedencentral']
+- name: whatIf
+  displayName: 'provide empty string if this is not a test'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+
+steps:
+- task: AzureCLI@2
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: 'bash'
+    useGlobalConfig: false
+    scriptLocation: inlineScript
+    inlineScript: |
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running pipeline id $(Build.BuildId) in ${{ parameters.environmentType }} environment."
+
+      bicepFile=${{ parameters.bicepFilePath }}/${{ parameters.bicepFileName }}
+
+      # Test bicep file with help of linter rules
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running bicep build of $bicepFile"
+      res=$( az bicep build --file $bicepFile --stdout 2>&1 > /dev/null )
+      if [[ "$res" == *"ERROR: "* ]]; then
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Errors found in bicep build."
+        echo $res
+        exit 1
+      fi
+
+      location=${{ parameters.location }}
+      locShort=${location/westeurope/we}
+      locShort=${locShort/northeurope/ne}
+      locShort=${locShort/swedencentral/sec}
+
+      deploymentName="$(Build.BuildId)_${{parameters.systemFullName}}_${{ parameters.whatIf }}"
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Starting the deployment '${deploymentName}'."
+
+      cmd_string=" \
+        az deployment group create ${{ parameters.whatIf }} \
+          --resource-group '${{ parameters.resourceGroupName}}' \
+          --name '$deploymentName' \
+          --template-file $bicepFile \
+          --parameters systemFullName='${{parameters.systemFullName}}' \
+          --parameters environmentType='${{ parameters.environmentType }}' \
+          --parameters location='${{ parameters.location }}' \
+          --parameters whatIf='${{ parameters.whatIf }}' \
+          --parameters deploymentId='$(Build.BuildId)' \
+          --parameters @${{ parameters.bicepFilePath }}/_${{ parameters.environmentType }}_parameters.json"
+
+      if [[ "${{ parameters.bicepCustomParametersURI }}" != "" ]]; then
+        cmd_string+=" --parameters @${{ parameters.bicepCustomParametersURI }}"
+      fi
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running command: '${cmd_string}'"
+
+      eval ${cmd_string} || exit 1
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Ended the deployment '${deploymentName}'."
+

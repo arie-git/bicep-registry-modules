@@ -1,0 +1,44 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Insert_or_Update_Entity": {
+                "type": "ServiceProvider",
+                "inputs": {
+                    "parameters": {
+                        "tableName": "@parameters('tableName')",
+                        "entity": {
+                            "PartitionKey": "@{triggerBody()?['name']}",
+                            "RowKey": "@{utcNow()}"
+                        }
+                    },
+                    "serviceProviderConfiguration": {
+                        "connectionName": "azureTables",
+                        "operationId": "upsertEntity",
+                        "serviceProviderId": "/serviceProviders/azureTables"
+                    }
+                },
+                "runAfter": {}
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "triggers": {
+            "When_a_blob_is_added_or_updated": {
+                "type": "ServiceProvider",
+                "inputs": {
+                    "parameters": {
+                        "path": "@parameters('containerName')"
+                    },
+                    "serviceProviderConfiguration": {
+                        "connectionName": "AzureBlob",
+                        "operationId": "whenABlobIsAddedOrModified",
+                        "serviceProviderId": "/serviceProviders/AzureBlob"
+                    }
+                }
+            }
+        },
+        "parameters": {}
+    },
+    "kind": "Stateful"
+}

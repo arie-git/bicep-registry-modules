@@ -1,0 +1,195 @@
+# Name format
+parameters:
+- name: 'isDeployment'
+  displayName: 'Run deployment stage?'
+  type: boolean
+- name: 'isRemoval'
+  displayName: 'Run removal stage?'
+  type: boolean
+- name: 'folderName'
+  displayName: 'Which repo folder to deploy?'
+  type: string
+- name: 'fileNames'
+  displayName: 'Bicep file names to deploy (without .bicep extension)'
+  type: object
+- name: 'applicationCode'
+  displayName: 'Application'
+  type: string
+  default: 'drcptst'
+  values:
+    - 'drcptst'
+    - 'scne'
+    - 'lztst'
+- name: 'applicationInstanceCode'
+  displayName: 'Instance of the application'
+  type: string
+- name: 'environmentType'
+  type: string
+- name: 'location'
+  type: string
+- name: 'environmentSnowId'
+  displayName: 'ServiceNow environment Id'
+  type: string
+- name: 'engineersGroupObjectId'
+  displayName: 'objectId of Engineers AAD security group'
+  type: string
+  default: ''
+- name: networkAddressSpace
+  type: string
+  default: ''
+- name: askForRemovalApproval
+  type: boolean
+  default: true
+- name: skipWhatif
+  type: boolean
+  default: false
+- name: removalNotifyUsers
+  type: string
+  default: '[S02-App-AM-CCC]/APG Engineers'
+
+stages:
+  - ${{ if parameters.isDeployment }}:
+    - stage: deployInfra
+      displayName: 'Deploying infrastructure'
+      variables:
+        - template: /modules/pipelines/tpl/variables/commonVariables.yaml@self
+          parameters:
+            environmentType: ${{parameters.environmentType}}
+            location: ${{parameters.location}}
+            environmentSnowId: ${{parameters.environmentSnowId}}
+            applicationCode: ${{parameters.applicationCode}}
+            applicationInstanceCode: ${{parameters.applicationInstanceCode}}
+      jobs:
+        - ${{ if not(parameters.skipWhatif) }}:
+          - job: deployWhatif
+            displayName: 'Validate the deployment code'
+            steps:
+            - checkout: self
+              clean: true
+            - ${{ each fileName in parameters.fileNames }}:
+              - template: /modules/pipelines/tpl/tasks/tpl_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  taskName: '${{parameters.folderName}}/infra/${{fileName}}.bicep'
+                  bicepFilePath: '${{parameters.folderName}}/infra'
+                  bicepFileName: '${{fileName}}.bicep'
+                  bicepCustomParametersPath: '${{parameters.folderName}}/infra/parameters.json'
+                  location:  '${{variables.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    applicationId: '${{variables.applicationSnowId}}'
+                    environmentId: '${{variables.environmentSnowId}}'
+                    environmentType: '${{variables.environmentType}}'
+                    namePrefix: ''
+                    organizationCode: '${{variables.organizationCode}}'
+                    departmentCode: '${{variables.departmentCode}}'
+                    applicationCode: '${{variables.applicationCode}}'
+                    applicationInstanceCode: '${{variables.applicationInstanceCode}}'
+                    ${{ if not(eq(parameters.networkAddressSpace,'')) }}:
+                      networkAddressSpace: '${{parameters.networkAddressSpace}}'
+                    ${{ if not(eq(parameters.engineersGroupObjectId,'')) }}:
+                      engineersGroupObjectId: '${{parameters.engineersGroupObjectId}}'
+        - deployment: deployRun
+          displayName: 'Run the deployment'
+          ${{ if not(parameters.skipWhatif) }}:
+            dependsOn: deployWhatif
+          timeoutInMinutes: 120
+          environment:
+            name: ${{parameters.environmentSnowId}}
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                - checkout: self
+                  clean: true
+                - ${{ each fileName in parameters.fileNames }}:
+                  - template: /modules/pipelines/tpl/tasks/tpl_bicep_sub_deploy_task.yaml@self
+                    parameters:
+                      whatIf: ''
+                      taskName: '${{parameters.folderName}}/infra/${{fileName}}.bicep'
+                      bicepFilePath: '${{parameters.folderName}}/infra'
+                      bicepFileName: '${{fileName}}.bicep'
+                      bicepCustomParametersPath: '${{parameters.folderName}}/infra/parameters.json'
+                      location:  '${{ variables.location }}'
+                      serviceConnectionName: '${{variables.serviceConnectionName}}'
+                      bicepParameters:
+                        applicationId: '${{variables.applicationSnowId}}'
+                        environmentId: '${{variables.environmentSnowId}}'
+                        environmentType: '${{variables.environmentType}}'
+                        namePrefix: ''
+                        organizationCode: '${{variables.organizationCode}}'
+                        departmentCode: '${{variables.departmentCode}}'
+                        applicationCode: '${{variables.applicationCode}}'
+                        applicationInstanceCode: '${{parameters.applicationInstanceCode}}'
+                        ${{ if not(eq(parameters.networkAddressSpace,'')) }}:
+                          networkAddressSpace: '${{parameters.networkAddressSpace}}'
+                        ${{ if not(eq(parameters.engineersGroupObjectId,'')) }}:
+                          engineersGroupObjectId: '${{parameters.engineersGroupObjectId}}'
+
+  - ${{ if parameters.isRemoval }}:
+      - stage: removeInfra
+        displayName: 'Remove infrastructure'
+        condition: always()
+        ${{ if parameters.isDeployment }}:
+          dependsOn: deployInfra
+        variables:
+          - template: /modules/pipelines/tpl/variables/commonVariables.yaml@self
+            parameters:
+              environmentType: ${{parameters.environmentType}}
+              location: ${{parameters.location}}
+              environmentSnowId: ${{parameters.environmentSnowId}}
+              applicationCode: ${{parameters.applicationCode}}
+              applicationInstanceCode: ${{parameters.applicationInstanceCode}}
+        jobs:
+          - ${{ if not(parameters.skipWhatif) }}:
+            - job: removeWhatif
+              displayName: 'Verify Removal'
+              steps:
+              - checkout: none
+              - template: /modules/pipelines/tpl/tasks/tpl_cli_group_undeploy_task.yaml@self
+                parameters:
+                  taskName: 'Infra'
+                  location:  ${{ variables.location }}
+                  serviceConnectionName: ${{ variables.serviceConnectionName }}
+                  applicationId: '${{variables.applicationSnowId}}'
+                  environmentId: '${{variables.environmentSnowId}}'
+                  resourceGroupName:  '${{variables.applicationCode}}${{variables.applicationInstanceCode}}-${{variables.environmentType}}-${{variables.location}}-rg'
+                  resourceFilter: '${{variables.organizationCode}}${{variables.departmentCode}}${{variables.applicationCode}}${{variables.applicationInstanceCode}}${{variables.environmentType}}${{variables.locationShort}}'
+                  environmentType: '${{variables.environmentType}}'
+          - ${{ if and(variables.requestRemovalApproval,parameters.askForRemovalApproval) }}:
+            - job: waitForValidation
+              ${{ if not(parameters.skipWhatif) }}:
+                dependsOn: removeWhatif
+              displayName: 'Approve Removal'
+              pool: server
+              timeoutInMinutes: 90
+              steps:
+              - task: ManualValidation@0
+                timeoutInMinutes: 60
+                inputs:
+                  notifyUsers: ${{parameters.removalNotifyUsers}}
+                  instructions: 'Please approve/reject the removal of resources. Pipeline id $(Build.BuildId)'
+                  onTimeout: 'reject'
+          - deployment: removeRun
+            displayName: 'Run Removal'
+            ${{ if and(variables.requestRemovalApproval,parameters.askForRemovalApproval) }}:
+              dependsOn: waitForValidation
+            ${{ elseif not(parameters.skipWhatif) }}:
+              dependsOn: removeWhatif
+            environment:
+              name: ${{parameters.environmentSnowId}}
+            strategy:
+              runOnce:
+                deploy:
+                  steps:
+                  - checkout: none
+                  - template: /modules/pipelines/tpl/tasks/tpl_cli_group_undeploy_task.yaml@self
+                    parameters:
+                      taskName: 'Infra'
+                      location:  ${{ variables.location }}
+                      serviceConnectionName: ${{ variables.serviceConnectionName }}
+                      applicationId: '${{variables.applicationSnowId}}'
+                      environmentId: '${{variables.environmentSnowId}}'
+                      resourceGroupName:  '${{variables.applicationCode}}${{variables.applicationInstanceCode}}-${{variables.environmentType}}-${{variables.location}}-rg'
+                      resourceFilter: '${{variables.organizationCode}}${{variables.departmentCode}}${{variables.applicationCode}}${{variables.applicationInstanceCode}}${{variables.environmentType}}${{variables.locationShort}}'
+                      environmentType: '${{variables.environmentType}}'
+                      whatIf: ''

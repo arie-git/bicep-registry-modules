@@ -1,0 +1,68 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_${{parameters.environmentSnowId}}_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+- name: 'entraApplicationId'
+  displayName: 'applicationId of app registration'
+  type: string
+- name: 'ownerObjectId'
+  displayName: 'objectId of new owner identity'
+  type: string
+- name: 'environmentSnowId'
+  displayName: 'ServiceNow environment Id'
+  type: string
+
+variables:
+- name: applicationSnowId
+  value: 'AM-CCC'
+- name: environmentSnowId
+  value: ${{parameters.environmentSnowId}}
+- name: serviceConnectionName
+  value: 'SC-${{variables.applicationSnowId}}-${{variables.environmentSnowId}}'
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: DRCP-Templates/templates
+    ref: 'refs/heads/main'
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineSteps:
+      - checkout: self
+        clean: true
+      - task: AzureCLI@2
+        displayName: 'Configure app registration'
+        timeoutInMinutes: 10
+        inputs:
+          azureSubscription: ${{ variables.serviceConnectionName }}
+          scriptType: 'bash'
+          useGlobalConfig: false
+          scriptLocation: inlineScript
+          inlineScript: |
+            az config set extension.use_dynamic_install=yes_without_prompt || exit 1
+
+            az bicep version
+
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running pipeline id $(Build.BuildId)."
+
+            echo "Current owners of application registration are"
+            az ad app owner list --id ${{parameters.entraApplicationId}} --query "[].id"
+
+            echo "Adding ${{parameters.ownerObjectId}} to application registration owners"
+            az ad app owner add --id ${{parameters.entraApplicationId}} --owner-object-id ${{parameters.ownerObjectId}}
+
+            echo "Current owners of enterprise application are"
+            az ad sp owner list --id ${{parameters.entraApplicationId}} --query "[].id"
+
+            applicationObjectId=$(az ad sp show --id ${{parameters.entraApplicationId}} --query "id" -o tsv)
+
+            echo "Adding ${{parameters.ownerObjectId}} to enterprise application owners"
+            az rest --method POST --uri "https://graph.microsoft.com/beta/servicePrincipals/${applicationObjectId}/owners/\$ref" --body '{"@odata.id": "https://graph.microsoft.com/v1.0/directoryObjects/${{parameters.ownerObjectId}}"}'
+
+

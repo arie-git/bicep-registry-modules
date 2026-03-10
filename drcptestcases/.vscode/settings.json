@@ -1,0 +1,13 @@
+{
+    "azureFunctions.deploySubpath": "scenario4\\src\\eventHubFunctionApp/bin/Release/net7.0/publish",
+    "azureFunctions.scmDoBuildDuringDeployment": true,
+    "azureFunctions.pythonVenv": ".venv",
+    "azureFunctions.projectLanguage": "C#",
+    "azureFunctions.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureFunctions.projectLanguageModel": 2,
+    "azureFunctions.templateFilter": "All",
+    "azureFunctions.preDeployTask": "publish (functions)",
+    "azureFunctions.projectSubpath": "scenario4\\src\\eventHubFunctionApp",
+    "dotnet.defaultSolution": "disable"
+}

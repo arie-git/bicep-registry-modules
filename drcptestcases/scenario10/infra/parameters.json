@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adfRepoConfig": {
+      "value": {
+        "repoEnabled": true,
+        "repoAccountName": "connectdrcpapg1",
+        "repoProjectName": "S02-App-AM-CCC",
+        "repoRootFolder": "/",
+        "repositoryName": "S02-App-AM-CCC-DrcpTestCases",
+        "repoCollaborationBranch": "adf-policy"
+      }
+    },
+    "linkedIntegrationRuntime": {
+      "value": true
+    },
+    "masterAdfIr": {
+      "value": {
+        "dev": "/subscriptions/c3931da1-e02c-43f6-b305-f764520abe23/resourcegroups/adf-shared-rg/providers/Microsoft.DataFactory/factories/s2c3-drcptst-adf/integrationruntimes/integrationRuntime1",
+        "tst": "/subscriptions/e10a578b-1c7b-4ff5-b893-de93e5a86d05/resourcegroups/lztst10-tst-swedencentral-rg/providers/Microsoft.DataFactory/factories/s2c3lztst10tstsecadf/integrationruntimes/selfhosted"
+      }
+    },
+    "clientsEnvironmentsAdoPrincipalIds" : {
+      "value": {
+        "dev": [],
+        "tst": [
+          "d1106e0c-5ffb-471e-988d-c69d8d9b8d3f",
+          "e6c86478-1160-4378-aebe-58a30521946c",
+          "72ab75a0-f804-4956-812d-cfccfc24b8c0"
+        ]
+      }
+    },
+    "clientsEnvironmentsAdoRoleDefinitions": {
+      "value": {
+        "dev": "",
+        "tst": "/subscriptions/e10a578b-1c7b-4ff5-b893-de93e5a86d05/providers/Microsoft.Authorization/roleDefinitions/f41b3eb4-eaa8-48f2-b979-7a04b7dd2841"
+      }
+    }
+  }
+}

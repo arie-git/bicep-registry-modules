@@ -1,0 +1,114 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_${{parameters.folderName}}_${{parameters.applicationInstanceCode}}_${{parameters.environmentSnowId}}_${{parameters.environmentType}}_${{parameters.location}}_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+- name: 'isDeployment'
+  displayName: 'Run deployment stage?'
+  type: boolean
+  default: true
+- name: 'isRemoval'
+  displayName: 'Run removal stage?'
+  type: boolean
+  default: false
+- name: 'folderName'
+  displayName: 'Which repo folder to deploy?'
+  type: string
+  default: 'scenario1'
+  values:
+  - 'scenario1'
+  - 'scenario2'
+  - 'scenario3'
+  - 'scenario4'
+  - 'scenario5'
+  - 'scenario6'
+  - 'scenario7'
+  - 'scenario8'
+  - 'scenario9'
+  - 'scenario10'
+  - 'scenario11'
+  - 'scenario12'
+- name: 'fileNames'
+  displayName: 'Bicep file names to deploy (without .bicep extension)'
+  type: object
+  default:
+  - main
+- name: 'applicationCode'
+  displayName: 'Application'
+  type: string
+  default: 'drcptst'
+  values:
+    - 'drcptst'
+    - 'scne'
+    - 'lztst'
+- name: 'applicationInstanceCode'
+  displayName: 'Instance code (e.g. 0801)'
+  type: string
+  default: '0101'
+- name: 'environmentType'
+  type: string
+  default: 'dev'
+  values:
+  - 'dev'
+  - 'tst'
+  - 'acc'
+  - 'prd'
+- name: 'location'
+  type: string
+  default: 'swedencentral'
+  values:
+  - 'swedencentral'
+  - 'westeurope'
+  - 'northeurope'
+- name: 'environmentSnowId'
+  displayName: 'ServiceNow environment Id'
+  type: string
+  default: 'ENV23968'
+- name: networkAddressSpace
+  displayName: 'addressPrefix for the subnets (e.g. 1.2.3.4/27), or 0 for default value'
+  type: string
+  default: '0'
+- name: 'engineersGroupObjectId'
+  displayName: 'objectId of Engineers AAD security group, or 0 for no group'
+  type: string
+  default: '623a26f3-3341-4911-bfe2-0e9da839c26e'
+- name: skipWhatif
+  type: boolean
+  default: false
+- name: askForRemovalApproval
+  displayName: 'Ask for approval before removal?'
+  type: boolean
+  default: true
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: DRCP-Templates/templates
+    ref: 'refs/heads/main'
+
+# pool: CPP-Ubuntu2204-Preview
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          isDeployment: ${{parameters.isDeployment}}
+          isRemoval: ${{parameters.isRemoval}}
+          folderName: ${{parameters.folderName}}
+          fileNames: ${{parameters.fileNames}}
+          applicationCode: ${{parameters.applicationCode}}
+          applicationInstanceCode: ${{parameters.applicationInstanceCode}}
+          environmentType: ${{parameters.environmentType}}
+          location: ${{parameters.location}}
+          environmentSnowId: ${{parameters.environmentSnowId}}
+          ${{ if not(eq(parameters.networkAddressSpace,'0')) }}:
+            networkAddressSpace: ${{parameters.networkAddressSpace}}
+          ${{ if ne(parameters.engineersGroupObjectId,'0') }}:
+            engineersGroupObjectId: ${{parameters.engineersGroupObjectId}}
+          skipWhatif: ${{parameters.skipWhatif}}
+          askForRemovalApproval: ${{parameters.askForRemovalApproval}}

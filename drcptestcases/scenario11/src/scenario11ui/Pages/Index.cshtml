@@ -1,0 +1,18 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+
+    <h1 class="display-4">Welcome @Model.ClientPrincipalName</h1>
+
+    <p>This is a test app by AM CCC.</p>
+
+@* @foreach (var header in Request.Headers)
+{
+    <p><strong>@header.Key:</strong> @header.Value</p>
+} *@
+
+</div>

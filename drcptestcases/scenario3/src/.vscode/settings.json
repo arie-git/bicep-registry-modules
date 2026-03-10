@@ -1,0 +1,9 @@
+{
+    "azureLogicAppsStandard.deploySubpath": "logicapp/bin/Release/net6.0/publish",
+    "azureLogicAppsStandard.projectLanguage": "C#",
+    "azureLogicAppsStandard.projectRuntime": "~4",
+    "debug.internalConsoleOptions": "neverOpen",
+    "azureLogicAppsStandard.preDeployTask": "publish",
+    "python.envFile": "${workspaceFolder}\\.databricks\\.databricks.env",
+    "databricks.python.envFile": "${workspaceFolder}/.env"
+}

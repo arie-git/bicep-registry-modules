@@ -1,0 +1,95 @@
+parameters:
+  - name: taskName
+    displayName: 'Name of the task (e.g. "Deployment, Verification")'
+    type: string
+  - name: bicepFilePath # path to bicep's folder
+    type: string
+  - name: bicepFileName
+    type: string
+  - name: bicepCustomParametersURI
+    type: string
+    default: ''
+  - name: bicepCustomParametersPath
+    type: string
+    default: ''
+  - name: location
+    displayName: 'Location of the deployment'
+    type: string
+  - name: whatIf
+    displayName: 'provide empty string if this is not a test deployment'
+    type: string
+    default: '--what-if'
+  - name: serviceConnectionName
+    displayName: 'Name of the ADO service connection'
+    type: string
+    default: ''
+  - name: bicepParameters
+    type: object
+    default: [ ]
+
+steps:
+  - powershell: |
+      Write-Host "##vso[task.setvariable variable=buildArgStringOther;]"
+    displayName: "Initialize variable buildArgStringOther"
+  - ${{ each arg in parameters.bicepParameters }}:
+      - powershell: |
+          Write-Host "##vso[task.setvariable variable=buildArgStringOther;] --parameters ${{ arg.key }}='${{ arg.value }}' $(buildArgStringOther)"
+          Write-Host "--parameters ${{ arg.key }}='${{ arg.value }}'"
+        displayName: "Append ${{ arg.key }} to bicep parameters"
+
+  - task: AzureCLI@2
+    displayName: '${{ parameters.taskName }}'
+    ${{ if eq(parameters['whatIf'], '--what-if') }}:
+      condition: always()
+    timeoutInMinutes: 120
+    inputs:
+      azureSubscription: ${{ parameters.serviceConnectionName }}
+      scriptType: pscore
+      useGlobalConfig: false
+      scriptLocation: inlineScript
+      inlineScript: |
+        $ErrorActionPreference = "SilentlyContinue";
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running pipeline id $(Build.BuildId)."
+        $bicepFile="${{parameters.bicepFilePath}}/${{parameters.bicepFileName}}"
+        
+        # Test bicep file with help of linter rules
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running bicep build of $bicepFile"
+        $res=$( az bicep build --file $bicepFile )
+        if ($res -like "*Error*") {
+          Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Errors found in bicep build."
+          Write-Host $res
+          exit 1
+        }
+        
+        $deploymentName="$(Build.BuildId)_${{parameters.bicepFileName}}${{ parameters.whatIf }}"
+        
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Starting the deployment '$deploymentName'."
+        
+        $cmd_string= "az deployment sub create ${{ parameters.whatIf }} ``
+            --location ${{ parameters.location }} ``
+            --name '$deploymentName' ``
+            --template-file $bicepFile ``
+            --parameters whatIf='${{ parameters.whatIf }}' ``
+            --parameters location='${{ parameters.location }}' ``
+            --parameters deploymentId='$(Build.BuildId)' "
+        
+        if ( "$(buildArgStringOther)" -ne "" )
+        {
+          $cmd_string+=" $(buildArgStringOther)"
+        }
+        
+        if ( "${{ parameters.bicepCustomParametersURI }}" -ne "" )
+        {
+          $cmd_string+=" --parameters @${{ parameters.bicepCustomParametersURI }}"
+        }
+        
+        if ( "${{ parameters.bicepCustomParametersPath }}" -ne "" )
+        {
+          $cmd_string+=" --parameters @${{ parameters.bicepCustomParametersPath }}"
+        }
+        
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Running command: $cmd_string"
+        
+        Invoke-Expression -Command $cmd_string
+        
+        Write-Host "$(Get-Date -Format 'dd/MM/yyyy HH:mm:ss') Ended the deployment '$deploymentName'."

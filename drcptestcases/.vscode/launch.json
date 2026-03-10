@@ -1,0 +1,43 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "C#: <project-name> Debug",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/<relative-path-to-project-folder><project-name>.csproj"
+        },
+        {
+            "name": ".NET Core Launch (console)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/bin/Debug/net6.0/test.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Attach to Python Functions",
+            "type": "python",
+            "request": "attach",
+            "port": 9091,
+            "preLaunchTask": "func: host start"
+        },
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}"
+        }
+    ]
+}

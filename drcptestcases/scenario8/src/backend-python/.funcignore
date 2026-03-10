@@ -1,0 +1,4 @@
+.venv
+*.json2
+*.md
+__pycache__

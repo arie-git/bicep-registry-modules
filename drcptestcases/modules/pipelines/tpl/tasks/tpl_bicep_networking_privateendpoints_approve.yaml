@@ -1,0 +1,90 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: resourcesFilter
+  type: string
+- name: resourceGroupName
+  type: string
+- name: environmentType
+  displayName: 'Type of environment (sbx, dev, sit, uat, prd)'
+  type: string
+  values: ['sbx','dev','sit','uat','prd']
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+  values: [ 'westeurope', 'northeurope']
+- name: whatIf
+  displayName: 'provide empty string if this is not a test'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+
+steps:
+- task: AzureCLI@2
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: 'bash'
+    useGlobalConfig: false
+    scriptLocation: inlineScript
+    inlineScript: |
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running pipeline id $(Build.BuildId) in ${{ parameters.environmentType }} environment."
+
+      groupName="${{parameters.resourceGroupName}}"
+      resourceFilter="${{parameters.resourcesFilter}}"
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Starting the approval of Storage Account endpoint connection requests for target resources filtered by '${resourceFilter}'."
+
+      resources=$(az storage account list --resource-group ${groupName} --query "[?contains(name,'${resourceFilter}')].id" -o tsv)
+
+      for resource in $resources
+      do
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for pending connections to: '${resource}'"
+        connections=$(az network private-endpoint-connection list --id ${resource} --query "[?properties.privateLinkServiceConnectionState.status=='Pending'].id" -o tsv)
+
+        for connection in $connections
+        do
+          if [[ "${{ parameters.whatIf }}" != "" ]]; then
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Found to be approved: '${connection}'"
+          else
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Approving: '${connection}'"
+            az storage account private-endpoint-connection approve --id "${connection}"
+          fi
+        done
+
+      done
+
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Starting the approval of SQL Server endpoint connection requests for target resources filtered by '${resourceFilter}'."
+
+      unset resources
+      resources=$(az sql server list --resource-group ${groupName} --query "[?contains(name,'${resourceFilter}')].id" -o tsv)
+
+      for resource in $resources
+      do
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for pending connections to: '${resource}'"
+        connections=$(az network private-endpoint-connection list --id ${resource} --query "[?properties.privateLinkServiceConnectionState.status=='Pending'].id" -o tsv)
+
+        for connection in $connections
+        do
+          if [[ "${{ parameters.whatIf }}" != "" ]]; then
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Found to be approved: '${connection}'"
+          else
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Approving: '${connection}'"
+            az network private-endpoint-connection approve --id "${connection}" --description "Approved by IaC pipeline $(Build.BuildId)."
+          fi
+        done
+
+      done
+
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Ended."
+

@@ -1,0 +1,139 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: resourcesFilter
+  type: string
+- name: resourceGroupName
+  type: string
+- name: environmentType
+  displayName: 'Type of environment (sbx, dev, sit, uat, prd)'
+  type: string
+  values: ['sbx','dev','sit','uat','prd']
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+  values: [ 'westeurope', 'northeurope', 'swedencentral']
+- name: whatIf
+  displayName: 'provide empty string if this is not a test'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+
+steps:
+- task: AzureCLI@2
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: 'bash'
+    useGlobalConfig: false
+    scriptLocation: inlineScript
+    inlineScript: |
+      az config set default.group="${{parameters.resourceGroupName}}"
+
+      az config set extension.use_dynamic_install=yes_without_prompt || exit 1
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running pipeline id $(Build.BuildId) in ${{ parameters.environmentType }} environment."
+
+      groupName="${{parameters.resourceGroupName}}"
+      resourceFilter="${{parameters.resourcesFilter}}"
+
+      location=${{ parameters.location }}
+      locShort=${location/westeurope/weu}
+      locShort=${locShort/northeurope/neu}
+      locShort=${locShort/swedencentral/sec}
+
+      declare -a resourceTypes=(
+        "Microsoft.Network/privateEndpoints"
+        "Microsoft.Storage/storageAccounts"
+        "Microsoft.Sql/servers"
+        "Microsoft.DataFactory/factories"
+        "Microsoft.ServiceBus/namespaces"
+        "Microsoft.KeyVault/vaults"
+        "Microsoft.Network/connections"
+        "Microsoft.Network/virtualNetworkGateways"
+        "Microsoft.Network/loadBalancers"
+        "Microsoft.Network/networkInterfaces"
+        "Microsoft.Network/publicIpAddresses"
+        "Microsoft.Network/networkSecurityGroups"
+        "Microsoft.Network/virtualNetworks"
+        "-other-"
+      )
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for resources with '${resourceFilter}' filter under the '${groupName}'."
+
+      #cmd_string="az resource list --resource-group \"${groupName}\" -o tsv"
+      #echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+      az graph query -q "where resourceGroup =~ '${groupName}' | project id" --query "data[?contains(id,'${resourceFilter}')].id" -o tsv || exit 1
+
+      #cmd_string="az resource list --resource-group \"${groupName}\" --query \"[?contains(id,'${resourceFilter}')].id\" -o tsv"
+      #echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+      #az resource list --resource-group "${groupName}" --query "[?contains(id,'${resourceFilter}')].id" -o tsv
+
+      for resType in "${resourceTypes[@]}"; do
+
+        unset resourceIds
+        if [[ "${resType}" == "-other-" ]]; then
+          #resourceIds=( $(az resource list --resource-group "${groupName}" --query "[?contains(id,'${resourceFilter}')].id " -o tsv) )
+          resourceIds=( $(az graph query -q "where resourceGroup =~ '${groupName}' | project id" --query "data[?contains(id,'${resourceFilter}')].id" -o tsv))
+        else
+          #resourceIds=( $(az resource list --resource-group "${groupName}" --resource-type "${resType}" --query "[?contains(id,'${resourceFilter}')].id " -o tsv) )
+          #  and type =~ 'Microsoft.Storage/storageAccounts'
+          resourceIds=( $(az graph query -q "where resourceGroup =~ '${groupName}' and type =~ '${resType}' | project id" --query "data[?contains(id,'${resourceFilter}')].id" -o tsv))
+
+        fi
+        rlen=${#resourceIds[@]}
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Found ${rlen} resources of '${resType}' type."
+
+        unset id
+        for id in "${resourceIds[@]}"; do
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] To be removed ${id}"
+
+          if [[ "${{ parameters.whatIf }}" == "" ]]; then
+            cmd_string="az resource delete --resource-group '${groupName}' --ids '${id}' --verbose"
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: '${cmd_string}'"
+
+            if [[ "${resType}" == "Microsoft.KeyVault/vaults" ]]; then
+              unset kvName
+              kvName=$(az keyvault list-deleted --query "[?properties.vaultId=='${id}'].name|[0]" -o json)
+              if [[ "${kvName}" ]]; then
+                cmd_string="az keyvault purge --name $kvName --location ${location}"
+                echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: '${cmd_string}'"
+              else
+                echo "[$(date '+%d/%m/%Y %H:%M:%S')] KeyVault ${id} is not in the list of soft-deleted."
+              fi
+              echo "[$(date '+%d/%m/%Y %H:%M:%S')] Done with ${kvName}."
+            fi
+
+          else
+            az resource delete --resource-group "${groupName}" --ids "${id}" --verbose || exit 1
+
+            if [[ "${resType}" == "Microsoft.KeyVault/vaults" ]]; then
+              unset kvName
+              kvName=$(az keyvault list-deleted --query "[?properties.vaultId=='${id}'].name|[0]" -o json)
+
+              if [[ "${kvName}" ]]; then
+                if [[ $(az keyvault show-deleted --name $kvName --location ${location} --output tsv --query "name" 2> /dev/null) != '' ]]; then
+                  echo "[$(date '+%d/%m/%Y %H:%M:%S')] Purging keyvault ${kvName} now."
+                  az keyvault purge --name $kvName --location ${location} || exit 1
+                else
+                  echo "[$(date '+%d/%m/%Y %H:%M:%S')] Keyvault ${kvName} is not found among deleted. This needs a manual fix !!!"
+                  exit 1
+                fi
+              else
+                echo "[$(date '+%d/%m/%Y %H:%M:%S')] KeyVault ${id} is not in the list of soft-deleted."
+              fi
+            fi
+
+          fi
+        done
+
+      done
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Ended the task."

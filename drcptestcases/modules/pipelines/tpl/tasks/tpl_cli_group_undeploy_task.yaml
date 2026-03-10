@@ -1,0 +1,170 @@
+parameters:
+- name: taskName
+  displayName: 'Name of the task (e.g. "Deployment, Verification")'
+  type: string
+- name: location
+  displayName: 'Location of the deployment'
+  type: string
+- name: whatIf
+  displayName: 'provide empty string if this is not a test deployment'
+  type: string
+  default: '--what-if'
+- name: serviceConnectionName
+  displayName: 'Name of the ADO service connection'
+  type: string
+  default: ''
+- name: applicationId
+  type: string
+- name: environmentId
+  type: string
+- name: resourceGroupName
+  type: string
+- name: resourceFilter
+  type: string
+- name: environmentType
+  type: string
+  default: ''
+
+steps:
+- task: AzureCLI@2
+  displayName: '${{ parameters.taskName }}'
+  ${{ if eq(parameters['whatIf'], '--what-if') }}:
+    condition: always()
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: ${{ parameters.serviceConnectionName }}
+    scriptType: 'bash'
+    useGlobalConfig: false
+    scriptLocation: inlineScript
+    inlineScript: |
+      az config set extension.use_dynamic_install=yes_without_prompt || exit 1
+
+      az bicep version
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running pipeline id $(Build.BuildId)."
+
+      groupName="${{parameters.resourceGroupName}}"
+      resourceFilter="${{parameters.resourceFilter}}"
+      location="${{parameters.location}}"
+      vnetGroupName="${{parameters.applicationId}}-${{parameters.environmentId}}-VirtualNetworks"
+      vnetName="${{parameters.applicationId}}-${{parameters.environmentId}}-VirtualNetwork"
+      environmentType="${{parameters.environmentType}}"
+
+      ############################
+      #
+      #  Workloads
+      #
+      ############################
+
+      if [ $(az group exists --name ${groupName}) = false ]
+      then
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] The resource group '${groupName}' does not exist."
+
+      else
+
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for private endpoints with '${resourceFilter}' filter under the resource group ${groupName}."
+        pepList=$(az network private-endpoint list -g ${groupName} --query "[?contains(name, '$resourceFilter')].id" -o tsv)
+        for id in $pepList
+        do
+          cmd_string="az network private-endpoint delete --ids $id"
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+          if [[ "${{ parameters.whatIf }}" == "" ]]; then
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+            eval ${cmd_string} || exit 1
+          fi
+        done
+
+        cmd_string="az group delete --name ${groupName} --yes"
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+        if [[ "${{ parameters.whatIf }}" == "" ]]; then
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+          eval ${cmd_string} || exit 1
+        fi
+
+      fi
+
+      if [[ "$environmentType" == "dev" ]]; then
+
+        # KeyVaults
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for soft-deleted keyVaults with '${resourceFilter}' filter."
+        kvList=$(az keyvault list-deleted --query "[?contains(name, '$resourceFilter')].name" -o tsv)
+        for name in $kvList
+        do
+          cmd_string="az keyvault purge --name $name --location $location"
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+          if [[ "${{ parameters.whatIf }}" == "" ]]; then
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+            eval ${cmd_string} || exit 1
+          fi
+        done
+
+        # API Management
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for soft-deleted APIMs with '${resourceFilter}' filter."
+        apimList=$(az apim deletedservice list --query "[?contains(name, '$resourceFilter')].name" -o tsv)
+        for name in $apimList
+        do
+          cmd_string="az apim deletedservice purge --service-name $name --location $location"
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+          if [[ "${{ parameters.whatIf }}" == "" ]]; then
+            echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+            eval ${cmd_string} || exit 1
+          fi
+        done
+
+      fi
+
+      ############################
+      #
+      #  Networking
+      #
+      ############################
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for subnets with '${resourceFilter}' filter in VNet '${vnetName}' under the resource group ${vnetGroupName}."
+      subnetsList=$(az network vnet subnet list -g $vnetGroupName --vnet-name $vnetName --query "[?contains(name, '$resourceFilter')].id" -o tsv)
+      for id in $subnetsList
+      do
+        cmd_string="az network vnet subnet delete --ids $id"
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+        if [[ "${{ parameters.whatIf }}" == "" ]]; then
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+          eval ${cmd_string} || exit 1
+        fi
+      done
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for NSGs with '${resourceFilter}' filter under the resource group ${vnetGroupName}."
+      nsgsList=$(az network nsg list -g $vnetGroupName --query "[?contains(name, '$resourceFilter')].id" -o tsv)
+      for id in $nsgsList
+      do
+        cmd_string="az network nsg delete --ids $id"
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+        if [[ "${{ parameters.whatIf }}" == "" ]]; then
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+          eval ${cmd_string} || exit 1
+        fi
+      done
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for route tables with '${resourceFilter}' filter under the resource group ${vnetGroupName}."
+      rtList=$(az network route-table list -g $vnetGroupName --query "[?contains(name, '$resourceFilter')].id" -o tsv)
+      for id in $rtList
+      do
+        cmd_string="az network route-table delete --ids $id"
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+        if [[ "${{ parameters.whatIf }}" == "" ]]; then
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+          eval ${cmd_string} || exit 1
+        fi
+      done
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Searching for application gateway resource groups to be removed."
+      appGwRgList=$(az group list --query "[?contains(name, '$resourceFilter-agw-rg')].name" -o tsv)
+      for rgName in $appGwRgList
+      do
+        cmd_string="az group delete --name ${rgName} --yes"
+        echo "[$(date '+%d/%m/%Y %H:%M:%S')] Will run command: ${cmd_string}"
+        if [[ "${{ parameters.whatIf }}" == "" ]]; then
+          echo "[$(date '+%d/%m/%Y %H:%M:%S')] Running ..."
+          eval ${cmd_string} || exit 1
+        fi
+      done
+
+      echo "[$(date '+%d/%m/%Y %H:%M:%S')] Ended the task."
