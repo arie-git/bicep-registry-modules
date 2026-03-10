@@ -754,6 +754,101 @@ Every main.bicep (parent AND child) must have: `metadata owner`, `metadata compl
 
 ---
 
+## BUILD-FIX: Machine Build Results 2026-03-10
+
+Full build run on machine with ACR access (bicep v0.41.2). PE module published as v0.2.0 before build.
+Log file: `/workspaces/bicep-registry-modules/machine-build-results-2026-03-10.txt`
+
+### Pattern: WAF-aligned dependencies for defaults test cases
+
+When Azure policy denies public network access, the "defaults" test case must deploy with private endpoints. Use the waf-aligned dependencies for the defaults test (reuse `../waf-aligned/dependencies.bicep`). See `cognitive-services/account/tests/e2e/defaults/main.test.bicep` for the reference pattern:
+
+```bicep
+module nestedDependencies '../waf-aligned/dependencies.bicep' = {
+  scope: resourceGroup
+  name: '...-nestedDependencies'
+  params: { ... }
+}
+// Then deploy module with privateEndpoints using nestedDependencies.outputs.subnetResourceId
+```
+
+**TODO**: Document this pattern in `instructions.md` as a standard practice.
+
+### BF-1: cache/redis — defaults test build failure
+
+- **Error**: `Exception: Failed to build template [...\cache\redis\tests\e2e\defaults\main.test.bicep]`
+- **Root cause**: Parent module references `br/amavm:res/network/private-endpoint:0.2.0`. The setModuleReadMe script builds test files without `az bicep restore`, so PE ACR module is not in local cache for newly added modules. Also, defaults test deploys without PE which would violate public network access policy at deployment time.
+- **Fix**: Rewrite defaults test to use waf-aligned dependencies pattern — reference `../waf-aligned/dependencies.bicep` for VNet/subnet/private DNS zone, deploy with `privateEndpoints` configured.
+- [x] Update `tests/e2e/defaults/main.test.bicep` to use waf-aligned deps pattern (rewritten with PE + Premium SKU)
+- [ ] Verify `bicep build` passes on machine with ACR access (PE module needed)
+
+### BF-2: document-db/database-account — defaults test build failure
+
+- **Error**: `Exception: Failed to build template [...\document-db\database-account\tests\e2e\defaults\main.test.bicep]`
+- **Root cause**: Same as BF-1. Parent references PE module. Defaults test needs PE for policy compliance.
+- **Fix**: Same pattern — reference `../waf-aligned/dependencies.bicep`, add `privateEndpoints` to deployment.
+- [x] Update `tests/e2e/defaults/main.test.bicep` to use waf-aligned deps pattern (rewritten with PE + networkRestrictions)
+- [ ] Verify `bicep build` passes on machine with ACR access
+
+### BF-3: event-hub/namespace — waf-aligned + max test build failures
+
+- **Error**: `Exception: Failed to build template [...\event-hub\namespace\tests\e2e\waf-aligned\main.test.bicep]` and `[...\max\main.test.bicep]`
+- **Root cause**: Parent module references `br/amavm:res/network/private-endpoint:0.2.0`. PE not in local cache for this newly added module. Both waf-aligned and max tests reference the parent module which transitively requires PE.
+- **Fix**: Use local PE path temporarily for build validation (BV-1 pattern). The test content itself is correct — the issue is purely the ACR reference resolution.
+- **Note**: The `diagnostic.dependencies.bicep` (from `utils/e2e-template-assets/templates/`) is used by both tests and is a valid reference — there is a working sample included.
+- [ ] Verify tests build with local PE path (BV-1)
+- [ ] Ensure PE is published before running full build
+
+### BF-4: insights/scheduled-query-rule — waf-aligned + max test build failures
+
+- **Error**: `Exception: Failed to build template [...\scheduled-query-rule\tests\e2e\waf-aligned\main.test.bicep]` and `[...\max\main.test.bicep]`
+- **Root cause**: Both test files use parameter `suppressForMinutes: 'PT5M'` (line 89 in waf-aligned, line 115 in max) but the parent module parameter is named `muteActionsDuration` (line 76 of main.bicep).
+- **Fix**: Rename `suppressForMinutes` to `muteActionsDuration` in both test files.
+- [x] Fix `tests/e2e/waf-aligned/main.test.bicep` — renamed `suppressForMinutes` to `muteActionsDuration`
+- [x] Fix `tests/e2e/max/main.test.bicep` — renamed `suppressForMinutes` to `muteActionsDuration`
+- [x] Verify `bicep build` passes (both tests build successfully with only warnings)
+
+### BF-5: insights/activity-log-alert — max test build failure
+
+- **Error**: `Exception: Failed to build template [...\activity-log-alert\tests\e2e\max\main.test.bicep]`
+- **Root cause**: Likely related to `resourceInput<'Microsoft.Insights/activityLogAlerts@2020-10-01'>` type resolution. The API version `2020-10-01` is 1986 days old (linter warning suggests `2026-01-01`). The `resourceInput<>` syntax may not resolve types correctly for this old API in bicep v0.41.2. The dependencies file also uses `@2018-11-30` for ManagedIdentity and `@2022-06-01` for actionGroups.
+- **Actual root cause**: Two issues found:
+  1. API version `2020-10-01` was 1986 days old → updated to `2026-01-01`
+  2. `param roleAssignments roleAssignmentType[]?` was wrong — `roleAssignmentType` in `types.bicep` is already defined as `{...}[]?` (nullable array), so `[]?` made it array-of-arrays. Fixed to `roleAssignmentType`.
+- [x] Investigated exact build error — BCP034 type mismatch on roleAssignments (array-of-arrays)
+- [x] Updated API version from `2020-10-01` to `2026-01-01`
+- [x] Fixed `roleAssignmentType[]?` → `roleAssignmentType`
+- [x] Verify `bicep build` passes — all 3 tests (defaults, max, waf-aligned) build successfully
+
+### BF-6: container-service/managed-cluster — BCP192 (known)
+
+- **Error**: `Error BCP192: Unable to restore the artifact with reference "br:s2amavmdevsecacr.azurecr.io/avm/res/kubernetes-configuration/extension:0.3.8": The artifact does not exist in the registry.`
+- **Root cause**: Known issue (BV-2). Module references `kubernetes-configuration/extension` which is not in the fork/ACR.
+- **Status**: Expected — no action unless this module is added to the fork.
+
+### BF-7: app-configuration/configuration-store — BCP321 warning (resolved)
+
+- **Warning**: BCP321 on PE output type mismatch (`customDnsConfigs`, `networkInterfaceResourceIds`) — lines 394-395 of main.bicep.
+- **Root cause**: Was an error (BCP083/BCP053) on bicep v0.40, became a warning (BCP321) after upgrade to v0.41.2. The PE module output names (`customDnsConfigs`, `networkInterfaceResourceIds`) match correctly. The warning is about nullable type coercion.
+- **Status**: Resolved by bicep upgrade. Warning is cosmetic — no code change required.
+
+### Build Warnings Summary (non-blocking)
+
+These warnings appeared across multiple modules. Not errors, but should be tracked for future cleanup:
+
+| Warning | Modules Affected | Notes |
+|---|---|---|
+| `use-recent-api-versions` for `Microsoft.Resources/deployments@2024-03-01` | redis, cognitive-services, document-db, event-hub, data-collection-endpoint, diagnostic-setting, private-link-scope, app-gateway-waf-policy, insights/webtest | Should be `2024-07-01` or newer |
+| `use-recent-api-versions` for `Microsoft.Insights/diagnosticSettings@2021-05-01-preview` | cognitive-services, event-hub, container-registry, app-gateway | 1774 days old |
+| `use-recent-api-versions` for container-registry child modules `@2023-06-01-preview` | container-registry (webhook, scope-map, cache-rule, credential-set, replication) | 1013 days old |
+| `no-unused-imports` | container-registry/cache-rule (minimalBuiltInRoleNames), data-factory/integration-runtime (minimalBuiltInRoleNames), data-factory/factory (networkAclsType, linkedServiceTypePropertiesType), container-service (privateEndpointType, customerManagedKeyType), databricks/workspace (managedIdentitiesType), key-vault (managedIdentitiesType), app-gateway (customerManagedKeyManagedDiskType, customerManagedKeyType) | Clean up unused imports |
+| `BCP187` "notes" property | Multiple modules (all modules using telemetry with `notes` field) | Expected — ARM schema gap |
+| `BCP187` "privateDnsZoneGroup" property | cognitive-services, data-factory, key-vault, app-gateway | Expected — ARM schema gap |
+| `BCP318` null safety | container-registry (3), databricks/workspace (2), app-gateway (2), data-collection-rule (6) | Consider adding `?` safe access |
+| `BCP321` type coercion | app-configuration, data-factory, document-db, event-hub | Nullable type mismatch on PE outputs |
+
+---
+
 ## Completed Tasks
 
 - [x] Set up multi-agent task management structure
