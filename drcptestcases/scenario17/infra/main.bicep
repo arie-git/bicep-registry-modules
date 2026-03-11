@@ -100,7 +100,7 @@ module names 'br/amavm:utl/amavm/naming:0.1.0' = {
 var subnetsName = names.outputs.namingConvention['Microsoft.Network/virtualNetworks/subnets']
 var privateEndpointsName = names.outputs.namingConvention['Microsoft.Network/privateEndpoints']
 
-module nsg 'dummy_skip' = {
+module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
   name: '${deployment().name}-nsg'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
@@ -115,7 +115,7 @@ module nsg 'dummy_skip' = {
   }
 }
 
-module udr 'dummy_skip' = {
+module udr 'br/amavm:res/network/route-table:0.1.0' = {
   name: '${deployment().name}-rt'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
@@ -155,7 +155,7 @@ var subnetsConfig = [
 ]
 
 @batchSize(1) // sequential to prevent VNet conflicts
-module subnets 'dummy_skip' = [for index in range(0, 2): {
+module subnets 'br/amavm:res/network/virtual-network/subnet:0.2.0' = [for index in range(0, 2): {
   scope: az.resourceGroup(vnetResourceGroupName)
   name: '${deployment().name}-subnet${index}'
   params: {
@@ -184,7 +184,7 @@ var subnetPrivateEndpoints = subnets[0]
 // --------------------------------------------------
 
 var logAnalyticsWorkspaceName = names.outputs.namingConvention['Microsoft.OperationalInsights/workspaces']
-module logAnalyticsWorkspace 'dummy_skip' = {
+module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-laworkspace'
   params: {
@@ -195,7 +195,7 @@ module logAnalyticsWorkspace 'dummy_skip' = {
 }
 
 var applicationInsightsName = names.outputs.namingConvention['Microsoft.Insights/components']
-module applicationInsights 'dummy_skip' = {
+module applicationInsights 'br/amavm:res/insights/component:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-appinsights'
   params: {
@@ -215,7 +215,7 @@ module applicationInsights 'dummy_skip' = {
 // --------------------------------------------------
 
 var storageAccountName = names.outputs.namingConvention['Microsoft.Storage/storageAccounts']
-module storageAccount 'dummy_skip' = {
+module storageAccount 'br/amavm:res/storage/storage-account:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-storage'
   params: {
@@ -295,7 +295,7 @@ module storageAccount 'dummy_skip' = {
 // --------------------------------------------------
 
 var keyVaultName = names.outputs.namingConvention['Microsoft.KeyVault/vaults']
-module keyVault 'dummy_skip' = {
+module keyVault 'br/amavm:res/key-vault/vault:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-keyvault'
   params: {
@@ -352,7 +352,7 @@ module keyVault 'dummy_skip' = {
 // --------------------------------------------------
 
 var hostingPlanName = names.outputs.namingConvention['Microsoft.Web/serverfarms']
-module appServicePlan 'dummy_skip' = {
+module appServicePlan 'br/amavm:res/web/serverfarm:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-appserviceplan'
   params: {
@@ -372,7 +372,7 @@ module appServicePlan 'dummy_skip' = {
 }
 
 var functionAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module functionApp 'dummy_skip' = {
+module functionApp 'br/amavm:res/web/site:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-funcapp'
   params: {
@@ -425,7 +425,7 @@ module functionApp 'dummy_skip' = {
 // --------------------------------------------------
 
 var staticWebAppName = '${namePrefix}${applicationCode}${applicationInstanceCode}-swa-${environmentType}'
-module staticWebApp 'dummy_skip' = {
+module staticWebApp 'br/amavm:res/web/static-site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-swa'
   params: {

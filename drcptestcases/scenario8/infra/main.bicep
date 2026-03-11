@@ -103,7 +103,7 @@ module names 'br/amavm:utl/amavm/naming:0.1.0' = {
 var subnetsName = names.outputs.namingConvention['Microsoft.Network/virtualNetworks/subnets']
 var privateEndpointsName = names.outputs.namingConvention['Microsoft.Network/privateEndpoints']
 
-module nsg 'dummy_skip' = {
+module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
   name: '${deployment().name}-nsg'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
@@ -118,7 +118,7 @@ module nsg 'dummy_skip' = {
   }
 }
 
-module udr 'dummy_skip' = {
+module udr 'br/amavm:res/network/route-table:0.1.0' = {
   name: '${deployment().name}-rt'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
@@ -129,7 +129,7 @@ module udr 'dummy_skip' = {
 }
 
 // Subnet for private endpoints (Service Bus, Key Vault, Storage)
-module subnetIn 'dummy_skip' = {
+module subnetIn 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
   name: '${deployment().name}-subnet-pe'
   params: {
@@ -146,7 +146,7 @@ module subnetIn 'dummy_skip' = {
 }
 
 // Subnet for Function App egress (VNet integration)
-module subnetOut 'dummy_skip' = {
+module subnetOut 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
   name: '${deployment().name}-subnet-func'
   params: {
@@ -173,7 +173,7 @@ module subnetOut 'dummy_skip' = {
 }
 
 // Subnet for PostgreSQL Flexible Server (VNet-delegated — DRCP requires VNet integration, not PE)
-module subnetPg 'dummy_skip' = {
+module subnetPg 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
   name: '${deployment().name}-subnet-pg'
   params: {
@@ -208,7 +208,7 @@ module subnetPg 'dummy_skip' = {
 // --------------------------------------------------
 
 var logAnalyticsWorkspaceName = names.outputs.namingConvention['Microsoft.OperationalInsights/workspaces']
-module logAnalyticsWorkspace 'dummy_skip' = {
+module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-laworkspace'
   params: {
@@ -219,7 +219,7 @@ module logAnalyticsWorkspace 'dummy_skip' = {
 }
 
 var applicationInsightsName = names.outputs.namingConvention['Microsoft.Insights/components']
-module applicationInsights 'dummy_skip' = {
+module applicationInsights 'br/amavm:res/insights/component:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-appinsights'
   params: {
@@ -239,7 +239,7 @@ module applicationInsights 'dummy_skip' = {
 // --------------------------------------------------
 
 var keyVaultName = names.outputs.namingConvention['Microsoft.KeyVault/vaults']
-module keyVault 'dummy_skip' = {
+module keyVault 'br/amavm:res/key-vault/vault:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-keyvault'
   params: {
@@ -282,7 +282,7 @@ module keyVault 'dummy_skip' = {
 // --------------------------------------------------
 
 var storageAccountName = names.outputs.namingConvention['Microsoft.Storage/storageAccounts']
-module storageAccount 'dummy_skip' = {
+module storageAccount 'br/amavm:res/storage/storage-account:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-storageaccount'
   params: {
@@ -345,7 +345,7 @@ module storageAccount 'dummy_skip' = {
 // --------------------------------------------------
 
 var postgresqlName = names.outputs.namingConvention['Microsoft.DBforPostgreSQL/flexibleServers']
-module postgresqlServer 'dummy_skip' = {
+module postgresqlServer 'br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-postgresql'
   params: {
@@ -425,7 +425,7 @@ module postgresqlServer 'dummy_skip' = {
 // --------------------------------------------------
 
 var serviceBusName = names.outputs.namingConvention['Microsoft.ServiceBus/namespaces']
-module serviceBusNamespace 'dummy_skip' = {
+module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-servicebus'
   params: {
@@ -502,7 +502,7 @@ module serviceBusNamespace 'dummy_skip' = {
 // --------------------------------------------------
 
 var aspName = names.outputs.namingConvention['Microsoft.Web/serverfarms']
-module appServicePlan 'dummy_skip' = {
+module appServicePlan 'br/amavm:res/web/serverfarm:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-asp'
   params: {
@@ -522,7 +522,7 @@ module appServicePlan 'dummy_skip' = {
 }
 
 var functionAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module functionApp 'dummy_skip' = {
+module functionApp 'br/amavm:res/web/site:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-func'
   params: {
