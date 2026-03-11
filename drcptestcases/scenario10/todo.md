@@ -248,23 +248,26 @@ The goal is a fully deployable Unity Catalog setup that can be validated via `bi
 - [ ] Replace role-assignment helpers with inline `roleAssignments` param
 - [ ] Validate `bicep build` passes
 
-### central.bicep — 11 local refs to migrate
+### central.bicep — 11 local refs migrated → 3 local + 6 AMAVM (3 eliminated)
 
 | Local module | AMAVM replacement | Status |
 |---|---|---|
-| `naming.bicep` | `br/amavm:utl/amavm/naming` | Migrate |
-| NSG | `br/amavm:res/network/network-security-group` | Migrate |
-| Route Table | `br/amavm:res/network/route-table` | Migrate |
-| Subnet | `br/amavm:res/network/virtual-network/subnet` | Migrate |
-| Log Analytics | `br/amavm:res/operational-insights/workspace` | Migrate |
-| Key Vault | `br/amavm:res/key-vault/vault` | Migrate |
-| Data Factory | `br/amavm:res/data-factory/factory` | Migrate |
-| PE (x3) | `privateEndpoints` param | Inline |
-| SHIR | Keep local (`shir-auth.bicep`) | N/A |
+| `naming.bicep` | Keep local (separate task) | KEEP |
+| NSG | `br/amavm:res/network/network-security-group:0.1.0` | DONE |
+| Route Table | `br/amavm:res/network/route-table:0.1.0` | DONE |
+| Subnet | `br/amavm:res/network/virtual-network/subnet:0.2.0` | DONE |
+| Log Analytics | `br/amavm:res/operational-insights/workspace:0.1.0` | DONE |
+| Key Vault | `br/amavm:res/key-vault/vault:0.3.0` (inline PE/RBAC/diag) | DONE |
+| Data Factory | `br/amavm:res/data-factory/factory:0.2.0` (inline PE/diag/IR) | DONE |
+| KV PE | Inlined on Key Vault module | ELIMINATED |
+| ADF PE | Inlined on ADF module | ELIMINATED |
+| ADF IR | Inlined as `integrationRuntimes` param | ELIMINATED |
+| RBAC | Keep local (`role-assignment.bicep`) | KEEP |
+| SHIR | Keep local (`shir-auth.bicep`) | KEEP |
 
-- [ ] Audit central.bicep local modules
-- [ ] Migrate applicable modules to AMAVM
-- [ ] Validate `bicep build` passes
+- [x] Audit central.bicep local modules
+- [x] Migrate applicable modules to AMAVM
+- [x] Validate `bicep build` passes (BCP192 only — expected without ACR auth)
 
 ---
 

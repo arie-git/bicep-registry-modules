@@ -18,7 +18,7 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (ACR task) + 1 (`acrRoleAssignment.bicep`) | 13 |
 | 8 | **PostgreSQL + Service Bus** (repurposed) | **Fully AMAVM** | 1 (`naming.bicep`) | 11 |
 | 9 | AKS + ACR + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 16 |
-| 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 3 local (naming, IR, role-assignment) + central.bicep: 11 local | main: 12 |
+| 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 3 local (naming, IR, role-assignment) + central.bicep: 3 local (naming, rbac, shir-auth) | main: 12, central: 6 |
 | 11 | Web Apps + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 15 |
 | 12 | N-Tier SQL (pattern module) | **Complete** | 0 (only scenario with zero local refs) | 2 |
 | **13** | **Redis Cache (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
@@ -107,7 +107,7 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [x] Add linked services (ls_keyvault, ls_adls, ls_blob, ls_adls_uc, ls_databricks) — MI auth, no hardcoded URLs
 - [x] Support pure Bicep deployment (gitConfigureLater, adfRepoConfig optional)
 - [x] Validate `bicep build` passes (warnings only, no errors)
-- [ ] Migrate central.bicep local modules to AMAVM where equivalents exist
+- [x] Migrate central.bicep local modules to AMAVM (6 migrated, 3 eliminated via inlining, 3 kept local)
 - [ ] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory)
 - [ ] Update README with UC architecture and policy compliance table
 
@@ -190,6 +190,30 @@ Log Analytics + Diagnostics
 - [ ] Keep `task.bicep` local (ACR Tasks not in AMAVM)
 - [ ] Validate `bicep build` passes
 - [ ] Update README to reflect simplified architecture
+
+### Cross-Scenario — Role Assignment Migration (GAP-6 in tasks/todo.md)
+
+**Prerequisite:** Sync `authorization/role-assignment` from upstream AVM into AMAVM fork (see GAP-6).
+
+5 scenarios use local role-assignment helpers for circular dependency breaking or cross-subscription RBAC. Once the AMAVM `authorization/role-assignment/rg-scope` module is available, replace them all.
+
+| Scenario | Local module(s) | Pattern | Refs |
+|---|---|---|---|
+| 4 | `roleAssignment.bicep`, `evhRoleAssignment.bicep`, `kvRoleAssignment.bicep` | Circular dep: FuncApp↔Storage, FuncApp↔EVH, FuncApp↔KV | 4 |
+| 7 | `acrRoleAssignment.bicep` | Circular dep: WebApp↔ACR | 1 |
+| 10 central | `security/rbac/role-assignment.bicep` | ADO RBAC (multi-principal batch) | 1 |
+| 10 main | `data-factory/modules/role-assignment.bicep` | Cross-subscription shared IR RBAC | 1 |
+| 16 | `modules/rbac.bicep` | AI Search MI → Storage (multi-principal) | 2 |
+
+**Migration approach:** AMAVM module takes single `principalId`, so batch patterns become caller-level `for` loops. Role GUIDs already used directly in most scenarios (no dependency on the 309-role name mapping).
+
+- [ ] Blocked until GAP-6 AMAVM module is created
+- [ ] Migrate scenario 4 (3 local helpers → AMAVM)
+- [ ] Migrate scenario 7 (1 local helper → AMAVM)
+- [ ] Migrate scenario 10 central + main (2 local helpers → AMAVM)
+- [ ] Migrate scenario 16 (1 local helper → AMAVM or inline on storage)
+- [ ] Remove replaced local modules
+- [ ] Validate `bicep build` on all affected scenarios
 
 ### Scenario 5 — Public IP (1 local ref — blocked)
 
@@ -623,77 +647,18 @@ West Europe is no longer used for deployments. All references should be cleaned 
   - [ ] `modules/infra/naming.bicep` — location abbreviation mapping
   - [ ] `modules/infra/network/virtual-network/README.md` — documentation
 
-### Environment Mapping for New Scenarios (13-16)
+### Environment Mapping for New Scenarios (13-17)
 
-New scenarios need DEV and TST network allocations in Sweden Central that don't overlap with existing ranges.
+**Address space is no longer a constraint.** With ADO exclusive locks (see P2.9), scenarios run sequentially within their concurrency group and always tear down. All scenarios in a group reuse the same CIDR block — no per-scenario allocation needed.
 
-**Current DEV allocations (10.238.18.0/24 + 10.238.19.0/24):**
-
-| Scenario | CIDR | Range | Size |
-|---|---|---|---|
-| 1 | 10.238.18.0/27 | .0-.31 | /27 |
-| 2 | 10.238.18.32/27 | .32-.63 | /27 |
-| 3 | 10.238.18.64/27 | .64-.95 | /27 |
-| 4 | 10.238.18.96/27 | .96-.127 | /27 |
-| 7 | 10.238.18.128/26 | .128-.191 | /26 |
-| 5 | 10.238.18.192/26 | .192-.255 | /26 |
-| 8 | 10.238.19.0/26 | .0-.63 | /26 |
-| 10 | 10.238.19.64/27 | .64-.95 | /27 |
-| 9 | 10.238.19.128/26 | .128-.191 | /26 |
-| 11 | 10.238.19.192/26 | .192-.255 | /26 |
-
-**Free DEV ranges:**
-- `10.238.19.96/27` (.96-.127) — between scenario 10 and 9
-
-That's only 1 free /27 in the existing /24 blocks. New scenarios need additional address space or a new /24 block.
-
-**Proposed DEV allocations for new scenarios (ENV23968/ENV23969):**
-
-| Scenario | CIDR | Size | Justification |
-|---|---|---|---|
-| 12 | (uses ntier pattern, may not need VNet) | /27 | Verify if VNet is abstracted |
-| 13 | 10.238.19.96/27 | /27 | 1 subnet (PE only) |
-| 14 | needs new /24 block or reuse freed WE space | /27 | 2 subnets (PE + egress) |
-| 15 | needs new /24 block | /27 | 1 subnet (PE only) |
-| 16 | needs new /24 block | /26 | 3 subnets (PE + 2 egress) |
-
-**Current TST allocations (10.238.64.0/24 + 10.238.65.0/24):**
-
-| Scenario | CIDR | Range | Size |
-|---|---|---|---|
-| 1 | 10.238.64.0/27 | .0-.31 | /27 |
-| 2 | 10.238.64.32/27 | .32-.63 | /27 |
-| 3 | 10.238.64.64/27 | .64-.95 | /27 |
-| 4 | 10.238.64.96/27 | .96-.127 | /27 |
-| 7 | 10.238.64.128/26 | .128-.191 | /26 |
-| 5 | 10.238.64.192/26 | .192-.255 | /26 |
-| 8 | 10.238.65.0/26 | .0-.63 | /26 |
-| 10 | 10.238.65.64/27 | .64-.95 | /27 |
-| 11 | 10.238.65.192/26 | .192-.255 | /26 |
-
-**Free TST ranges:**
-- `10.238.65.96/27` (.96-.127)
-- `10.238.65.128/26` (.128-.191)
-
-**Proposed TST allocations:**
-
-| Scenario | CIDR | Size |
-|---|---|---|
-| 13 | 10.238.65.96/27 | /27 |
-| 14 | 10.238.65.128/27 | /27 |
-| 15 | 10.238.65.160/27 | /27 |
-| 16 | 10.238.65.192/26 | /26 (conflicts with S11 — needs resolution) |
+Each scenario's `networkAddressSpace` param should be set to the group's shared CIDR:
+- **Group A** (VNet-A, ENV23968/23978): shared `/25` from the VNet's address space
+- **Group B** (VNet-B, ENV23969/23979): shared `/24` from the VNet's address space (S9/AKS needs the largest block)
 
 **Action items:**
-- [ ] Confirm with platform team: available address space for DEV scenarios 14-16 (need new /24 block or freed West Europe space)
-- [ ] Confirm TST scenario 11 actual start address (.192 or .196 — README says .196 which is not /26-aligned)
-- [ ] Assign DEV CIDR for scenario 13: `10.238.19.96/27`
-- [ ] Assign TST CIDRs for scenarios 13-15 in free TST range `10.238.65.96/26`
-- [ ] Request new address space for scenario 16 (DEV + TST) — needs /26 for 3 subnets
-- [ ] Update scenario `main.bicep` defaults with assigned `networkAddressSpace` values
-- [ ] Create pipeline YAML for scenarios 13, 14, 15 (deploy + teardown, nightly schedule)
-- [ ] Add nightly schedule slots: scenario 12 at 12am, 13 at 1:13am (offset to avoid collision), etc.
-- [ ] Ensure all pipelines include teardown stage so environments stay clean
+- [ ] Standardize `networkAddressSpace` defaults to use shared group CIDRs
+- [ ] Assign new scenarios to groups (see P2.9 for rebalancing proposal)
+- [ ] Create pipeline YAML for scenarios 13-17 (deploy + teardown, exclusive lock environment)
 
 ### Environment Strategy
 
@@ -703,6 +668,125 @@ That's only 1 free /27 in the existing /24 blocks. New scenarios need additional
 | TST (ENV23978/ENV23979) | Policy compliance validation | Strict — mirrors production policies, no dev shortcuts | Scenarios with nightly pipeline |
 
 **Principle:** Every scenario should deploy to DEV first (less restrictive, faster iteration). Once stable, add TST pipeline to validate under strict policies. Teardown must always run — no leftover resources.
+
+---
+
+## P2.9 — Test Concurrency & Scheduling
+
+### Problem
+
+All scenarios deploy subnets into **shared VNets**. Azure Resource Manager serializes operations on a VNet — if two scenarios create/delete subnets in the same VNet simultaneously, ARM returns conflict errors. Current pipelines rely on 1-hour time staggering with **no concurrency locks**. With 17 scenarios this approach breaks down.
+
+### Current State
+
+**VNet topology** — 4 shared VNets (2 per env type):
+
+| VNet | Env Type | Env IDs | Address Space | Scenarios |
+|---|---|---|---|---|
+| VNet-A-DEV | DEV | ENV23968 | `10.238.18.0/24` | 1, 2, 3, 4, 5, 7 |
+| VNet-B-DEV | DEV | ENV23969 | `10.238.19.0/24` | 8, 9, 10, 11, 12 |
+| VNet-A-TST | TST | ENV23978 | `10.238.64.0/24` | 1, 2, 3, 4, 5, 7 |
+| VNet-B-TST | TST | ENV23979 | `10.238.65.0/24` | 8, 9, 10, 11, 12 |
+
+**Concurrency rule**: Scenarios sharing a VNet form a **concurrency group** — only one can be deploying or tearing down at a time.
+
+**Current scheduling** (bi-weekly, 1st + 15th of month):
+
+| Hour (UTC) | Group A (VNet-A) | Group B (VNet-B) |
+|---|---|---|
+| 01:00 | S1 | — |
+| 02:00 | S2 | — |
+| 03:00 | S3 | — |
+| 04:00 | S4 | — |
+| 05:00 | S5 | — |
+| 07:00 | S7 | — |
+| 08:00 | — | S8 |
+| 09:00 | — | S9 |
+| 10:00 | — | S10 |
+| 11:00 | — | S11 |
+| 12:00 | — | S12 |
+
+**Problems:**
+1. Groups run sequentially today (A finishes, then B starts) — wastes 6 hours
+2. No concurrency lock — if S1 takes >60 min, it overlaps with S2 (same VNet = ARM conflict)
+3. New scenarios 13-17 have no schedule slots or address space
+4. `ptn/data/ingestion` commented out in S12 — when enabled adds subnet pressure
+
+### Address Space — Solved by Exclusive Lock + Teardown
+
+Since every pipeline always runs **deploy → teardown** and the exclusive lock ensures only one scenario uses a VNet at a time, subnets are always cleaned up before the next scenario starts. All scenarios in a group **reuse the same address space** — they don't need unique, non-overlapping CIDRs.
+
+**Implication**: Each group just needs a shared block large enough for the single largest scenario:
+- **Group A**: Largest is S5 (App Gateway, 3 subnets) — needs /26
+- **Group B**: Largest is S9 (AKS, 4 subnets including /25) — needs /25
+
+Both groups' existing `/24` blocks are more than sufficient. New scenarios 13-17 fit into existing VNets with zero changes — they just need a `networkAddressSpace` param that's large enough for their subnets.
+
+**Each scenario should use the same shared CIDR** (e.g., the first available /25 or /26 in the VNet's address space). No per-scenario CIDR allocation table needed.
+
+**Scenario 12 `ptn/data/ingestion`**: When enabled, it deploys ~3 subnets. With exclusive lock + teardown, it simply reuses the same shared block as every other Group B scenario. No subnet budget concern.
+
+### Proposed Approach
+
+#### 1. ADO Exclusive Lock per VNet (prevents ARM conflicts)
+
+Use Azure DevOps **environment exclusive locks** to guarantee only one scenario deploys to a VNet at a time:
+
+```yaml
+# Each scenario pipeline uses its VNet's lock environment
+- deployment: deployInfra
+  environment: 'drcp-vnet-b-dev'     # exclusive lock — queues if another run is active
+  strategy:
+    runOnce:
+      deploy: ...
+```
+
+Create 4 ADO environments with `exclusivelock` check:
+- `drcp-vnet-a-dev` (scenarios 1-5, 7)
+- `drcp-vnet-b-dev` (scenarios 8-17)
+- `drcp-vnet-a-tst` (scenarios 1-5, 7)
+- `drcp-vnet-b-tst` (scenarios 8-17)
+
+**Effect**: Scenarios auto-queue if their VNet is in use. No manual stagger needed. Group A and Group B run fully in parallel (different VNets). Address space reused by every scenario through deploy+teardown.
+
+#### 2. Parallel groups to halve total runtime
+
+Today groups run sequentially (A then B) taking ~12 hours. With exclusive locks, schedule both groups at the same start time:
+
+| Hour (UTC) | Group A (VNet-A) | Group B (VNet-B) |
+|---|---|---|
+| 01:00 | S1 | S8 |
+| ~01:30 | S2 (auto-queued) | S9 (auto-queued) |
+| ~02:00 | S3 | S10 |
+| ... | ... | ... |
+
+Each scenario takes ~20-30 min. With exclusive locks, the next auto-starts when the previous finishes. Total runtime drops from ~12 hours to ~3 hours per group.
+
+#### 3. Shared CIDR per group
+
+All scenarios in a group use the **same `networkAddressSpace`** — large enough for the biggest consumer:
+- Group A: `/25` (covers S5's 3 subnets with room to spare)
+- Group B: `/24` (covers S9's AKS multi-pool layout)
+
+New scenarios just pass this shared CIDR. No per-scenario allocation needed.
+
+#### 4. Rebalancing groups
+
+Group B currently has 5 scenarios (8-12) plus all new scenarios (13-17) = 10 total. Group A has 6 (1-5, 7). Consider moving some new scenarios to Group A for balance:
+- Move S13 (Redis) and S15 (Cosmos) to Group A — simple, fast-deploying scenarios
+- Keep S14 (EVH), S16 (AI), S17 (SWA) in Group B
+- Result: Group A = 8, Group B = 8 — balanced ~4h each
+
+### Tasks
+
+- [ ] Create 4 ADO environments with exclusive lock: `drcp-vnet-{a,b}-{dev,tst}`
+- [ ] Update all scenario pipeline YAMLs to use environment-based deployment (replaces time stagger)
+- [ ] Standardize `networkAddressSpace` param: one shared CIDR per group (remove per-scenario allocations)
+- [ ] Schedule Group A and Group B at the same start time (01:00 UTC)
+- [ ] Decide group assignment for scenarios 13-17 (balance runtime across groups)
+- [ ] Create pipeline YAMLs for scenarios 13-17
+- [ ] Verify S12 `ptn/data/ingestion` works with the shared CIDR when uncommented
+- [ ] Document concurrency groups in top-level `drcptestcases/README.md`
 
 ---
 

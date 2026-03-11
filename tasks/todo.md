@@ -80,6 +80,38 @@ Needed by DRCP test cases (scenarios 5, 8) for Application Gateway public IP. Si
 - [ ] Apply Module Customization Checklist
 - [ ] `bicep build` passes
 
+### GAP-6: Role Assignment (authorization/role-assignment)
+
+Upstream AVM module exists at `microsoft-avm/avm/res/authorization/role-assignment/` with three scope variants (`rg-scope`, `sub-scope`, `mg-scope`). Low complexity — no child resources, clean parameter interface. Replaces 5+ local role-assignment helper modules scattered across test scenarios.
+
+**Upstream module features:**
+- Single `principalId` + `roleDefinitionIdOrName` per call (callers loop for multiple principals)
+- RBAC conditions support (`condition`, `conditionVersion`)
+- Delegated managed identity support
+- Proper outputs: `name`, `resourceId`, `scope`, `resourceGroupName`
+- API version: `2022-04-01` (stable)
+
+**Local modules it replaces:**
+- `drcptestcases/modules/infra/security/rbac/role-assignment.bicep` (309 hardcoded role names, batch `principalIds` array)
+- `drcptestcases/scenario4/infra/roleAssignment.bicep` (storage blob RBAC)
+- `drcptestcases/scenario4/infra/evhRoleAssignment.bicep` (event hub RBAC)
+- `drcptestcases/scenario4/infra/kvRoleAssignment.bicep` (key vault RBAC)
+- `drcptestcases/scenario7/infra/acrRoleAssignment.bicep` (ACR pull RBAC)
+- `drcptestcases/scenario16/infra/modules/rbac.bicep` (storage blob/table RBAC)
+- `drcptestcases/modules/infra/integration/data-factory/modules/role-assignment.bicep` (ADF IR cross-sub RBAC)
+
+**Tasks:**
+- [ ] Sync `rg-scope/main.bicep` from upstream into `amavm/verified-modules/bicep/res/authorization/role-assignment/`
+- [ ] Apply AMAVM conventions (finalTags, versionInfo, telemetry name truncation, etc.)
+- [ ] `bicep build` passes
+- [ ] Migrate scenario 4 local RBAC helpers (3 modules → AMAVM calls with caller-level loops)
+- [ ] Migrate scenario 7 `acrRoleAssignment.bicep` → AMAVM
+- [ ] Migrate scenario 10 central.bicep `role-assignment.bicep` → AMAVM
+- [ ] Migrate scenario 10 main.bicep `data-factory/modules/role-assignment.bicep` → AMAVM
+- [ ] Migrate scenario 16 `modules/rbac.bicep` → AMAVM (or inline `roleAssignments` on storage)
+- [ ] Remove replaced local modules
+- [ ] Update `drcptestcases/todo.md` scenario status table
+
 ---
 
 ## TECH-DEBT: Per-Module Fixes
