@@ -1,4 +1,6 @@
-// bicep code to create infra for scenario 7
+// bicep code to create infra for scenario 17 — Static Web App + Function API
+// Demonstrates: Static Web App (Standard) with linked Function App API backend,
+// private endpoints, managed identity, VNet integration, diagnostics
 
 targetScope = 'subscription'
 
@@ -17,17 +19,16 @@ param environmentId string
 // Parts used in naming convention
 param namePrefix string = ''
 @maxLength(2)
-param organizationCode string = 's2' //TODO: split the defaults it into a central module ?
+param organizationCode string = 's2'
 @maxLength(3)
 param departmentCode string = 'c3'
-param applicationCode string = 'drcptst' // short application code we use in naming (not the one in Snow, that one is applicationId)
+param applicationCode string = 'drcptst'
 @maxLength(4)
-param applicationInstanceCode string = '0701' // in case if there are more than 1 application deployments (for example, in multiple environments)
+param applicationInstanceCode string = '1701'
 param systemCode string = ''
 @maxLength(2)
 param systemInstanceCode string = ''
 @allowed([
-  'sbx'
   'dev'
   'tst'
   'acc'
@@ -36,15 +37,11 @@ param systemInstanceCode string = ''
 param environmentType string = 'dev'
 
 // System-specific parameters
-@description('CIDR prefix for the virtual network. Needs a /26 prefix')
+@description('CIDR prefix for the virtual network. Needs a /27 prefix (2 x /28 subnets: PE + app egress)')
 param networkAddressSpace string = ''
+@description('AAD group object id for the engineering group')
 param engineersGroupObjectId string = ''
-
-#disable-next-line no-unused-params
-param engineersGroupName string = 'F-DRCP-${applicationId}-${environmentId}-Engineer-001-ASG'
-param engineersContactEmail string = 'apg-am-ccc-enablement@apg-am.nl'
-
-param doDeployApp bool = false
+param engineersContactEmail string = ''
 
 var mytags = union(tags, {
   environmentId: environmentId
@@ -94,20 +91,23 @@ module names 'br/amavm:utl/amavm/naming:0.1.0' = {
 // --------------------------------------------------
 //
 // Networking
-//  - NSG
-//  - Subnets
+//  - NSG, Route Table
+//  - Subnet 0: Private endpoints
+//  - Subnet 1: Function App egress (delegated to Microsoft.Web/serverFarms)
 //
 // --------------------------------------------------
 
-// create NSG
-module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
+var subnetsName = names.outputs.namingConvention['Microsoft.Network/virtualNetworks/subnets']
+var privateEndpointsName = names.outputs.namingConvention['Microsoft.Network/privateEndpoints']
+
+module nsg 'dummy_skip' = {
   name: '${deployment().name}-nsg'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
     name: names.outputs.namingConvention['Microsoft.Network/networkSecurityGroups']
     location: vNet.location
     tags: mytags
-    diagnosticSettings:[
+    diagnosticSettings: [
       {
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
       }
@@ -115,8 +115,7 @@ module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
   }
 }
 
-// Create Route table
-module udr 'br/amavm:res/network/route-table:0.1.0' = {
+module udr 'dummy_skip' = {
   name: '${deployment().name}-rt'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
@@ -126,24 +125,20 @@ module udr 'br/amavm:res/network/route-table:0.1.0' = {
   }
 }
 
-var subnetsName = names.outputs.namingConvention['Microsoft.Network/virtualNetworks/subnets']
-var privateEndpointsName = names.outputs.namingConvention['Microsoft.Network/privateEndpoints']
-
 var subnetsConfig = [
   {
     // subnet for all components via private endpoints
-    addressPrefix: cidrSubnet(effectiveNetworkSpace, 28, 0) //https://gist.github.com/majastrz/bdd776addfa72c0719334996c0aa78f5
+    addressPrefix: cidrSubnet(effectiveNetworkSpace, 28, 0)
     nameIndex: 'In'
     privateEndpointNetworkPolicies: 'Enabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
     serviceEndpoints: []
     delegations: []
   }
-
   {
-    // subnet for outgoing traffic from the Web App
+    // subnet for outgoing traffic from the Function App
     addressPrefix: cidrSubnet(effectiveNetworkSpace, 28, 1)
-    nameIndex: 'frontendOut'
+    nameIndex: 'appOut'
     privateEndpointNetworkPolicies: 'Enabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
     serviceEndpoints: []
@@ -159,8 +154,8 @@ var subnetsConfig = [
   }
 ]
 
-@batchSize(1) // makes it run in sequence
-module subnets 'br/amavm:res/network/virtual-network/subnet:0.2.0' = [ for index in range(0,2) : {
+@batchSize(1) // sequential to prevent VNet conflicts
+module subnets 'dummy_skip' = [for index in range(0, 2): {
   scope: az.resourceGroup(vnetResourceGroupName)
   name: '${deployment().name}-subnet${index}'
   params: {
@@ -183,113 +178,89 @@ var subnetPrivateEndpoints = subnets[0]
 // --------------------------------------------------
 //
 // Logging
-//  - LogAnalytics workspace
+//  - Log Analytics workspace
 //  - Application Insights
 //
 // --------------------------------------------------
-var logAnalyticsWorspaceName = names.outputs.namingConvention['Microsoft.OperationalInsights/workspaces']
-module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0' = {
+
+var logAnalyticsWorkspaceName = names.outputs.namingConvention['Microsoft.OperationalInsights/workspaces']
+module logAnalyticsWorkspace 'dummy_skip' = {
   scope: resourceGroup
-  name: '${deployment().name}-loganalytics'
+  name: '${deployment().name}-laworkspace'
   params: {
+    name: logAnalyticsWorkspaceName
     location: location
-    name: logAnalyticsWorspaceName
     tags: mytags
   }
 }
 
 var applicationInsightsName = names.outputs.namingConvention['Microsoft.Insights/components']
-module applicationInsights 'br/amavm:res/insights/component:0.1.0' = { //'../../modules/infra/observability/application-insights/main.bicep' = {
+module applicationInsights 'dummy_skip' = {
   scope: resourceGroup
   name: '${deployment().name}-appinsights'
   params: {
-    location: location
     name: applicationInsightsName
+    location: location
     workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
     applicationType: 'web'
     kind: 'web'
-    // diagnosticSettings: [
-    //   {
-    //     workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-    //   }
-    // ]
-    // appInsightsKind: 'web'
-    // appInsightsType: 'web'
-    // tagProjectName: applicationInsightsName
     tags: mytags
   }
 }
 
+// --------------------------------------------------
+//
+// Storage account (Function App backing storage)
+//
+// --------------------------------------------------
 
-// ----------------------------------------------
-//
-//  Storage account
-//
-// ----------------------------------------------
-// create storage account
 var storageAccountName = names.outputs.namingConvention['Microsoft.Storage/storageAccounts']
-module storageAccountMod 'br/amavm:res/storage/storage-account:0.2.0' = {
+module storageAccount 'dummy_skip' = {
   scope: resourceGroup
-  name: '${deployment().name}-storageaccount'
+  name: '${deployment().name}-storage'
   params: {
     name: storageAccountName
     location: location
     skuName: 'Standard_LRS'
-    accessTier: 'Hot'
-    enableHierarchicalNamespace: false
     allowSharedKeyAccess: false
-    blobServices:{
-      diagnosticSettings:[
+    blobServices: {
+      diagnosticSettings: [
         {
           workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
         }
       ]
     }
     fileServices: {
-      diagnosticSettings:[
+      diagnosticSettings: [
         {
           workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
         }
       ]
     }
     tableServices: {
-      diagnosticSettings:[
+      diagnosticSettings: [
         {
           workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
         }
       ]
     }
-    queueServices:{
-      diagnosticSettings:[
+    queueServices: {
+      diagnosticSettings: [
         {
           workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
         }
       ]
     }
-
-    roleAssignments: (isDevEnvironment) ? [
-      {
-        principalId:engineersGroupObjectId
-        principalType: 'Group'
-        roleDefinitionIdOrName: 'Storage Blob Data Contributor'
-      }
-      {
-        principalId: engineersGroupObjectId
-        principalType: 'Group'
-        roleDefinitionIdOrName: 'Storage File Data Privileged Contributor'
-      }
-      {
-        principalId: engineersGroupObjectId
-        principalType: 'Group'
-        roleDefinitionIdOrName: 'Storage Queue Data Contributor'
-      }
-      {
-        principalId: engineersGroupObjectId
-        principalType: 'Group'
-        roleDefinitionIdOrName: 'Storage Table Data Contributor'
-      }
-    ] : []
-    privateEndpoints:[
+    roleAssignments: isDevEnvironment
+      ? [
+          {
+            principalId: engineersGroupObjectId
+            principalType: 'Group'
+            roleDefinitionIdOrName: 'Storage Blob Data Contributor'
+          }
+        ]
+      : []
+    privateEndpoints: [
       {
         subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
         service: 'blob'
@@ -307,33 +278,31 @@ module storageAccountMod 'br/amavm:res/storage/storage-account:0.2.0' = {
         service: 'queue'
       }
     ]
-    diagnosticSettings:[
+    diagnosticSettings: [
       {
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
       }
     ]
     tags: mytags
   }
-  dependsOn: subnets // This prevents conflicting parallel operations on subnets and VNet
+  dependsOn: subnets
 }
 
 // --------------------------------------------------
 //
-// KeyVault
-//  - (potentially) used by app service in configuration
+// Key Vault (API configuration secrets)
 //
 // --------------------------------------------------
 
-// create keyvault and assign RBAC to engineering group
 var keyVaultName = names.outputs.namingConvention['Microsoft.KeyVault/vaults']
-module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
+module keyVault 'dummy_skip' = {
   scope: resourceGroup
   name: '${deployment().name}-keyvault'
   params: {
     name: keyVaultName
     enablePurgeProtection: !isDevEnvironment
     softDeleteRetentionInDays: 7
-    networkAcls:{
+    networkAcls: {
       bypass: 'AzureServices'
     }
     privateEndpoints: [
@@ -341,7 +310,7 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
         name: '${privateEndpointsName}-kv'
         location: vNet.location
         service: 'vault'
-        subnetResourceId: subnets[0].outputs.resourceId
+        subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
         tags: mytags
       }
     ]
@@ -352,22 +321,19 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
       }
     ]
     roleAssignments: union(
-      isDevEnvironment ? [
-        {
-          principalId: engineersGroupObjectId
-          roleDefinitionIdOrName: 'a4417e6f-fecd-4de8-b567-7b0420556985' // KeyVault Certificate Officer
-          principalType: 'Group'
-        }
-        {
-          principalId: engineersGroupObjectId
-          roleDefinitionIdOrName: '00482a5a-887f-4fb3-b363-3b7fe8e74483' // KeyVault Admin
-          principalType: 'Group'
-        }
-      ] : [],
+      isDevEnvironment
+        ? [
+            {
+              principalId: engineersGroupObjectId
+              roleDefinitionIdOrName: '00482a5a-887f-4fb3-b363-3b7fe8e74483' // Key Vault Admin
+              principalType: 'Group'
+            }
+          ]
+        : [],
       [
         {
-          principalId: webApp.outputs.systemAssignedMIPrincipalId
-          roleDefinitionIdOrName: '4633458b-17de-408a-b874-0445c86b69e6' //Key Vault Secrets User
+          principalId: functionApp.outputs.systemAssignedMIPrincipalId
+          roleDefinitionIdOrName: '4633458b-17de-408a-b874-0445c86b69e6' // Key Vault Secrets User
           principalType: 'ServicePrincipal'
         }
       ]
@@ -378,78 +344,22 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
 
 // --------------------------------------------------
 //
-// Azure Container Registry
+// Function App (API backend for Static Web App)
+//  - Linux Node.js, system-assigned MI
+//  - Private endpoint, VNet integration
+//  - Connected to Key Vault and Storage via MI
 //
 // --------------------------------------------------
 
-// create ACR and assign RBAC to engineering group
-var acrName = names.outputs.namingConvention['Microsoft.ContainerRegistry/registries']
-var acrCacheRuleName = names.outputs.namingConvention['Microsoft.ContainerRegistry/registries/cacheRules']
-module acr 'br/amavm:res/container-registry/registry:0.2.0' = {
-  scope: resourceGroup
-  name: '${deployment().name}-acr'
-  params: {
-    name: acrName
-    location: vNet.location
-    sku: 'Premium'
-    roleAssignments: (isDevEnvironment) ? [
-      {
-        principalId: engineersGroupObjectId
-        roleDefinitionIdOrName: 'AcrDelete'
-        principalType: 'Group'
-      }
-    ]: []
-    privateEndpoints: [
-      {
-        subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
-      }
-    ]
-    diagnosticSettings: [
-      {
-        logAnalyticsDestinationType: 'Dedicated'
-        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-      }
-    ]
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
-    }
-    cacheRules: [
-      {
-        name: acrCacheRuleName
-        sourceRepository: 'mcr.microsoft.com/dotnet/samples'
-        targetRepository: 'samples'
-      }
-    ]
-    tags: mytags
-  }
-}
-
-// module agentpools '../../modules/infra/compute/container-registry/agent-pool.bicep' = {
-//   scope: resourceGroup
-//   name: '${deployment().name}-acr-pools'
-//   params: {
-//     acrName: acr.outputs.name
-//     virtualNetworkSubnetResourceId: subnetPrivateEndpoints.outputs.resourceId
-//   }
-// }
-
-// --------------------------------------------------
-//
-// Docker container in App Service
-//
-// --------------------------------------------------
-
-// create app service plan
 var hostingPlanName = names.outputs.namingConvention['Microsoft.Web/serverfarms']
-module appServicePlan 'br/amavm:res/web/serverfarm:0.1.0' = {
+module appServicePlan 'dummy_skip' = {
   scope: resourceGroup
   name: '${deployment().name}-appserviceplan'
   params: {
     name: hostingPlanName
     location: vNet.location
     kind: 'Linux'
-    skuName: 'B1'
+    skuName: 'S1'
     skuCapacity: 1
     zoneRedundant: false
     diagnosticSettings: [
@@ -461,18 +371,17 @@ module appServicePlan 'br/amavm:res/web/serverfarm:0.1.0' = {
   }
 }
 
-var dockerImage = 'samples:aspnetapp'
-
-// create docker app on app service
-var webAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module webApp 'br/amavm:res/web/site:0.1.0' = {
+var functionAppName = names.outputs.namingConvention['Microsoft.Web/sites']
+module functionApp 'dummy_skip' = {
   scope: resourceGroup
-  name: '${deployment().name}-wa'
+  name: '${deployment().name}-funcapp'
   params: {
-    name: webAppName
+    name: functionAppName
     location: vNet.location
+    kind: 'functionapp,linux'
     serverFarmResourceId: appServicePlan.outputs.resourceId
-    kind: 'app,linux,container'
+    storageAccountResourceId: storageAccount.outputs.resourceId
+    storageAccountUseIdentityAuthentication: true
     privateEndpoints: [
       {
         subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
@@ -485,14 +394,10 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
       }
     ]
     appInsightResourceId: applicationInsights.outputs.resourceId
-    authSettingV2Configuration: {}
     appSettingsKeyValuePairs: {
       FUNCTIONS_EXTENSION_VERSION: '~4'
-      WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
-      WEBSITES_ENABLE_APP_SERVICE_STORAGE: false
-    }
-    siteConfigurationAdditional: {
-      linuxFxVersion: 'DOCKER|${acr.outputs.loginServer}/${dockerImage}'
+      FUNCTIONS_WORKER_RUNTIME: 'node'
+      WEBSITE_NODE_DEFAULT_VERSION: '~20'
     }
     outboundVnetRouting: {
       allTraffic: true
@@ -500,51 +405,68 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
       imagePullTraffic: true
     }
     tags: mytags
+  }
+}
+
+// --------------------------------------------------
+//
+// Static Web App (SPA frontend)
+//  - Standard SKU (required for PE)
+//  - Private endpoint, no public access
+//  - Linked backend to Function App API
+//  - No source control integration (provider: 'None')
+//
+// DRCP policies enforced:
+//  - drcp-swa-network: publicNetworkAccess = 'Disabled'
+//  - drcp-swa-sku: sku = 'Standard'
+//  - drcp-swa-pe: PE in same subscription
+//  - drcp-swa-dns: private DNS zone (auto-deployed by policy)
+//
+// --------------------------------------------------
+
+var staticWebAppName = '${namePrefix}${applicationCode}${applicationInstanceCode}-swa-${environmentType}'
+module staticWebApp 'dummy_skip' = {
+  scope: resourceGroup
+  name: '${deployment().name}-swa'
+  params: {
+    name: staticWebAppName
+    location: location
+    sku: 'Standard'
+    publicNetworkAccess: 'Disabled'
+    provider: 'None'
+    buildProperties: {
+      appLocation: '/'
+      outputLocation: 'dist'
+      apiLocation: 'api'
     }
-  }
-
-// use app identity to grant access to read from the KeyVault
-var appIdentity = webApp.outputs.systemAssignedMIPrincipalId
-
-// use app identity to grant access to read from the ACR
-// Separate helper module: acr ↔ webApp cycle prevents inline roleAssignments
-// (acr needs webApp.MI for AcrPull, webApp needs acr.loginServer for Docker image)
-module acrFuncAppRbac 'acrRoleAssignment.bicep' = {
-  scope: resourceGroup
-  name: '${deployment().name}-acr-webapp-rbac'
-  params: {
-    containerRegistryName: acr.outputs.name
-    principalId: appIdentity
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: '7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
-  }
-}
-
-// ------------------------
-//
-// Application deployment part. TODO move to a separate file
-//
-// ------------------------
-
-// Use ACR to build and host an image
-var acrTaskName = 'build-aznamingtool'
-module acrDockerBuildTask '../../modules/infra/compute/container-registry/task.bicep' = if (doDeployApp) {
-  scope: resourceGroup
-  name: '${deployment().name}-acr-task'
-  params: {
-    acrName: acr.outputs.name
-    name: acrTaskName
-    location: acr.outputs.location
-    dockerContextPath: 'https://github.com/mspnp/AzureNamingTool.git#master:src'
-    dockerFilePath: 'Dockerfile'
-    dockerImageName: dockerImage
-    agentPoolName: ''
-    doTaskRun: false
-    enableTimeTrigger: true
+    linkedBackend: {
+      backendResourceId: functionApp.outputs.resourceId
+    }
+    privateEndpoints: [
+      {
+        name: '${privateEndpointsName}-swa'
+        subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
+        tags: mytags
+      }
+    ]
+    roleAssignments: isDevEnvironment
+      ? [
+          {
+            principalId: engineersGroupObjectId
+            principalType: 'Group'
+            roleDefinitionIdOrName: 'Contributor'
+          }
+        ]
+      : []
+    tags: mytags
   }
 }
 
-output keyvaultName string = keyVault.outputs.name
-output functionAppName string = webApp.outputs.name
-output functionAppPlanName string = appServicePlan.outputs.name
-//output functions array = webApp.outputs.functions
+// --------------------------------------------------
+// Outputs
+// --------------------------------------------------
+
+output staticWebAppName string = staticWebApp.outputs.name
+output staticWebAppHostname string = staticWebApp.outputs.defaultHostname
+output functionAppName string = functionApp.outputs.name
+output keyVaultName string = keyVault.outputs.name

@@ -42,6 +42,9 @@ param networkAddressSpace string = ''
 param engineersGroupObjectId string = '4ac8afa1-dfbc-4096-967c-4b0fba1f37f6'
 param engineersContactEmail string = 'apg-am-ccc-enablement@apg-am.nl'
 
+@description('Object IDs of app registration owners (Entra ID users)')
+param appOwnerObjectIds array = []
+
 // var engineersGroupName = 'F-DRCP-${applicationId}-${environmentId}-Engineer-001-ASG'
 // resource engineersGroup 'Microsoft.Graph/groups@v1.0' existing = {
 //   uniqueName: engineersGroupName
@@ -49,6 +52,8 @@ param engineersContactEmail string = 'apg-am-ccc-enablement@apg-am.nl'
 // var engineersGroupObjectId2 = engineersGroup.id
 
 var mytags = union(tags, {
+  environmentId: environmentId
+  applicationId: applicationId
   businessUnit: organizationCode
   purpose: '${applicationCode}${applicationInstanceCode}${systemCode}${systemInstanceCode}'
   environmentType: environmentType
@@ -73,6 +78,7 @@ module namesMod 'br/amavm:utl/amavm/naming:0.1.0' = {
   params: {
     prefix: namePrefix
     organization: organizationCode
+    department: departmentCode
     workload: '${applicationCode}${applicationInstanceCode}'
     role: systemCode
     roleIndex: systemInstanceCode
@@ -510,10 +516,7 @@ module appRegistrationFront 'modules/appregistration.bicep' = {
   name: '${deployment().name}-appreg-front'
   scope: resourceGroup
   params: {
-    ownerObjectIds: [
-     '766abcbb-45ef-4016-bd0a-dc7fe5a0e358' //Arie
-     'fe46cfb3-593f-4408-b8ef-e32a092d501d' //Sander
-    ]
+    ownerObjectIds: appOwnerObjectIds
     clientAppName: '${webAppFrontName}-entra-client-app'
     clientAppDisplayName: '${webAppFrontName} Front End App Registration'
     webAppName: webAppFrontName
@@ -549,10 +552,7 @@ module appRegistrationBack 'modules/appregistration.bicep' = {
   name: '${deployment().name}-appreg-back'
   scope: resourceGroup
   params: {
-    ownerObjectIds: [
-     '766abcbb-45ef-4016-bd0a-dc7fe5a0e358' //Arie
-     'fe46cfb3-593f-4408-b8ef-e32a092d501d' //Sander
-    ]
+    ownerObjectIds: appOwnerObjectIds
     clientAppName: '${webAppBackName}-entra-client-app'
     clientAppDisplayName: '${webAppBackName} Back End App Registration'
     webAppName: webAppBackName
@@ -582,9 +582,7 @@ module appRegistrationBack 'modules/appregistration.bicep' = {
   }
 }
 
-var dockerImage = 'samples:aspnetapp'
-
-// create docker app on app service
+// create web apps on app service
 var webAppName = namesMod.outputs.namingConvention['Microsoft.Web/sites']
 var webAppFrontName = '${webAppName}01'
 var webAppBackName = '${webAppName}02'

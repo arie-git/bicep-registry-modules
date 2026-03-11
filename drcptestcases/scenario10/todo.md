@@ -273,9 +273,9 @@ The goal is a fully deployable Unity Catalog setup that can be validated via `bi
 
 ## P2 — README Update
 
-- [ ] Update README with Unity Catalog architecture
-- [ ] Add DRCP policy compliance table
-- [ ] Standardize to template format (components table, deploy/remove)
+- [x] Update README with Unity Catalog architecture
+- [x] Add DRCP policy compliance table
+- [x] Standardize to template format (components table, deploy/remove)
 
 ---
 

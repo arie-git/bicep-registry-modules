@@ -70,7 +70,7 @@ resource vNet 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
 var effectiveNetworkSpace = (networkAddressSpace != '') ? networkAddressSpace : vNet.properties.addressSpace.addressPrefixes[0]
 
 
-module names '../../modules/infra/naming.bicep' = {
+module names 'br/amavm:utl/amavm/naming:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-names'
   params: {

@@ -93,5 +93,8 @@ __queuestorage__
 scenario3/src/logicapp/local.settings.json
 scenario3/src/logicapp/workflow-designtime/local.settings.json
 
+# Bicep build artifacts (scenario infra directories only — deployment-scripts main.json is intentional)
+scenario*/infra/main.json
+
 # Dev container setup
 **/.devcontainer.json

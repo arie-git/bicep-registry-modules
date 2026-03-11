@@ -1,5 +1,5 @@
-// bicep code to create infra for scenario 14 — Event Hub + Function App (event-driven)
-// Demonstrates: Event Hub namespace with inline hubs, Function App consumer, VNet integration
+// bicep code to create infra for scenario 14 — Event Hub + Function App + App Configuration (event-driven)
+// Demonstrates: Event Hub namespace with inline hubs, App Configuration with feature flags, Function App consumer, VNet integration
 
 targetScope = 'subscription'
 
@@ -72,7 +72,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: mytags
 }
 
-module names '../../modules/infra/naming.bicep' = {
+module names 'br/amavm:utl/amavm/naming:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-names'
   params: {
@@ -345,8 +345,85 @@ module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.1.0' = {
 
 // --------------------------------------------------
 //
+// App Configuration Store
+//  - Feature flags and configuration key-values
+//  - Entra ID auth only (local auth disabled)
+//  - Private endpoint, no public access
+//
+// DRCP policies enforced:
+//  - drcp-appcs-01: publicNetworkAccess disabled (via PE)
+//  - drcp-appcs-02: disableLocalAuth = true
+//  - drcp-appcs-03: private endpoint configured
+//
+// --------------------------------------------------
+
+var appConfigName = names.outputs.namingConvention['Microsoft.AppConfiguration/configurationStores']
+module appConfig 'br/amavm:res/app-configuration/configuration-store:0.1.0' = {
+  scope: resourceGroup
+  name: '${deployment().name}-appcs'
+  params: {
+    name: appConfigName
+    location: location
+    tags: mytags
+    sku: 'Standard'
+    disableLocalAuth: true
+    enablePurgeProtection: false
+    softDeleteRetentionInDays: 1
+    managedIdentities: {
+      systemAssigned: true
+    }
+    keyValues: [
+      {
+        name: '.appconfig.featureflag~2FEnableEventProcessing'
+        value: '{"id":"EnableEventProcessing","description":"Enables event processing from Event Hub","enabled":true}'
+        contentType: 'application/vnd.microsoft.appconfig.ff+json;charset=utf-8'
+      }
+      {
+        name: '.appconfig.featureflag~2FEnableDetailedLogging'
+        value: '{"id":"EnableDetailedLogging","description":"Enables detailed diagnostic logging","enabled":false}'
+        contentType: 'application/vnd.microsoft.appconfig.ff+json;charset=utf-8'
+      }
+      {
+        name: 'EventProcessing:BatchSize'
+        value: '100'
+      }
+    ]
+    privateEndpoints: [
+      {
+        name: '${privateEndpointsName}-appcs'
+        subnetResourceId: subnetIn.outputs.resourceId
+        tags: mytags
+      }
+    ]
+    roleAssignments: union(
+      isDevEnvironment ? [
+        {
+          principalId: engineersGroupObjectId
+          principalType: 'Group'
+          roleDefinitionIdOrName: 'App Configuration Data Owner'
+        }
+      ] : [],
+      [
+        {
+          principalId: functionApp.outputs.systemAssignedMIPrincipalId
+          principalType: 'ServicePrincipal'
+          roleDefinitionIdOrName: 'App Configuration Data Reader'
+        }
+      ]
+    )
+    diagnosticSettings: [
+      {
+        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
+      }
+    ]
+  }
+}
+
+// --------------------------------------------------
+//
 // Function App (Event Hub triggered)
 //  - Consumes events from Event Hub
+//  - Reads configuration from App Configuration
 //  - VNet integrated, PE for inbound
 //
 // --------------------------------------------------
@@ -408,6 +485,7 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = {
       FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
       WEBSITE_RUN_FROM_PACKAGE: 1
       EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespaceName}.servicebus.windows.net'
+      AppConfigEndpoint: 'https://${appConfigName}.azconfig.io'
     }
     tags: mytags
   }
@@ -416,3 +494,5 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = {
 output eventHubNamespaceName string = eventHubNamespace.outputs.name
 output eventHubName string = eventHubName
 output functionAppName string = functionApp.outputs.name
+output appConfigName string = appConfig.outputs.name
+output appConfigEndpoint string = 'https://${appConfigName}.azconfig.io'

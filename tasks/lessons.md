@@ -91,3 +91,6 @@ When upstream AVM modules have features like `secretsExportConfiguration` (key e
 
 ### 24. Stay on-plan -- don't scope-creep into "improvements"
 When working through todo items, don't start "improving" adjacent files that aren't in the task list. Adding metadata, fixing typos, or restructuring files that aren't broken is scope creep. If something genuinely needs fixing, add it to todo.md first, then work on it as a separate task.
+
+### 25. ALWAYS call Azure best practices tools before generating Bicep code
+Before writing ANY Bicep code, plans, or todos involving Azure resources, call `mcp__plugin_azure_azure__get_azure_bestpractices` with `resource: "general", action: "code-generation"`. This is a BLOCKING requirement from MEMORY.md. Also use `mcp__plugin_azure_azure__documentation` for service-specific configuration details. Do not skip even if you think you know the answer — the tools may surface updated guidance or constraints.

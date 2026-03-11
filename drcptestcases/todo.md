@@ -10,25 +10,24 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 
 | Scenario | Architecture | AMAVM Status | Active local refs | AMAVM refs |
 |---|---|---|---|---|
-| 1 | Function App + KV + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 12 |
-| 2 | Function App + KV + Cosmos DB | **Fully AMAVM** | 1 (`naming.bicep`) | 12 |
-| 3 | Function App + Logic App + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 12 |
-| 4 | Function App + Event Hub | **Fully AMAVM** | 1 (`naming.bicep`) + `roleAssignment.bicep` | 14 |
-| 5 | App Gateway + Web Apps + Function App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (public-ip-address) | 15 |
-| 7 | Docker App Service + ACR + Logic App | **Nearly AMAVM** | 1 (`naming.bicep`) + 1 (ACR task) + 1 (`acrRoleAssignment.bicep`) | 13 |
-| 8 | **PostgreSQL + Service Bus** (repurposed) | **Fully AMAVM** | 1 (`naming.bicep`) | 11 |
-| 9 | AKS + ACR + Storage | **Fully AMAVM** | 1 (`naming.bicep`) | 16 |
-| 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 3 local (naming, IR, role-assignment) + central.bicep: 3 local (naming, rbac, shir-auth) | main: 12, central: 6 |
-| 11 | Web Apps + SQL | **Fully AMAVM** | 1 (`naming.bicep`) | 15 |
-| 12 | N-Tier SQL (pattern module) | **Complete** | 0 (only scenario with zero local refs) | 2 |
-| **13** | **Redis Cache (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
-| **14** | **Event Hub + Function App** | **Implemented** | 1 (`naming.bicep`) | 11 |
-| **15** | **Cosmos DB NoSQL (standalone)** | **Implemented** | 1 (`naming.bicep`) | 5 |
-| **16** | **AI Chatbot: OpenAI + AI Search** | **Planned** (from chatbot-poc) | — | — |
+| 1 | Function App + KV + SQL | **Fully AMAVM** | 0 | 13 |
+| 2 | Function App + KV + Cosmos DB | **Fully AMAVM** | 0 | 13 |
+| 3 | Function App + Logic App + Storage | **Fully AMAVM** | 0 | 13 |
+| 4 | Function App + Event Hub | **Fully AMAVM** | `roleAssignment.bicep` (x3) | 15 |
+| 5 | App Gateway + Web Apps + Function App | **Nearly AMAVM** | 1 (public-ip-address) | 16 |
+| 7 | Docker App Service + ACR | **Nearly AMAVM** | 1 (ACR task) + 1 (`acrRoleAssignment.bicep`) | 11 |
+| 8 | **PostgreSQL + Service Bus** (repurposed) | **Fully AMAVM** | 0 | 12 |
+| 9 | AKS + ACR + Storage | **Fully AMAVM** | 0 | 17 |
+| 10 | Data Factory + Databricks | **Nearly AMAVM** | main.bicep: 2 local (IR, role-assignment) + central.bicep: 2 local (rbac, shir-auth) | main: 13, central: 7 |
+| 11 | Web Apps + SQL | **Fully AMAVM** | 0 | 16 |
+| 12 | N-Tier SQL (pattern module) | **Complete** | 0 | 2 |
+| **13** | **Redis Cache (standalone)** | **Fully AMAVM** | 0 | 6 |
+| **14** | **Event Hub + App Config + Function App** | **Fully AMAVM** | 0 | 13 |
+| **15** | **Cosmos DB NoSQL (standalone)** | **Fully AMAVM** | 0 | 6 |
+| **16** | **AI Chatbot: OpenAI + AI Search** | **Planned** (from chatbot-poc) | 2 (appregistration, rbac) | ~15 |
+| **17** | **Static Web App + Function API** | **Fully AMAVM** | 0 | 11 |
 
-| **17** | **Static Web App + Function API** | **Planned** | — | — |
-
-**Note:** Scenario 6 does not exist (removed or never created). Local ref counts exclude commented-out references. `naming.bicep` is a utility module that will remain local (not an AMAVM candidate). Scenarios 13-15 implemented, scenario 16 migrated from chatbot-poc (needs cleanup). Scenario 8 being repurposed from APIM to PostgreSQL + Service Bus. Scenario 17 is new (Static Web App).
+**Note:** Scenario 6 does not exist (removed or never created). All scenarios now use `br/amavm:utl/amavm/naming:0.1.0` (naming migration complete). Scenarios 13-15 implemented, scenario 16 migrated from chatbot-poc (needs cleanup). Scenario 8 repurposed from APIM to PostgreSQL + Service Bus. Scenario 17 implemented (Static Web App + Function API).
 
 ---
 
@@ -109,7 +108,7 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [x] Validate `bicep build` passes (warnings only, no errors)
 - [x] Migrate central.bicep local modules to AMAVM (6 migrated, 3 eliminated via inlining, 3 kept local)
 - [ ] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory)
-- [ ] Update README with UC architecture and policy compliance table
+- [x] Update README with UC architecture and policy compliance table
 
 ### Scenario 8 — **REPURPOSED:** PostgreSQL + Service Bus (message-driven processing)
 
@@ -186,10 +185,13 @@ Log Analytics + Diagnostics
 **Change:** Remove Logic App from scenario 7. Logic App is already fully covered by S3. Scenario 7's unique value is ACR + Docker + ACR Build Task.
 
 - [x] Replace ACR `role-assignment.bicep` with local helper (`acrRoleAssignment.bicep`) — cycle `acr ↔ webApp` prevents inline
-- [ ] Remove Logic App module, second App Service Plan, and Logic App subnet — simplify to ACR + Docker only
-- [ ] Keep `task.bicep` local (ACR Tasks not in AMAVM)
-- [ ] Validate `bicep build` passes
-- [ ] Update README to reflect simplified architecture
+- [x] Remove Logic App module, second App Service Plan, and Logic App subnet — simplify to ACR + Docker only
+  - Removed: Logic App module, appServicePlan2, logicAppOut subnet, UAMI, copyStorageKeysToKeyvault helper, fileShare
+  - Fixed: `allowSharedKeyAccess: false` (was `true` for Logic App), removed `UsedBy: 'LogicApp'` tag
+  - Subnet count: 3 → 2 (PE + web egress)
+- [x] Keep `task.bicep` local (ACR Tasks not in AMAVM)
+- [x] Validate `bicep build` passes — 0 scenario7 errors, 43 warnings (all from upstream AMAVM modules)
+- [x] Update README to reflect simplified architecture
 
 ### Cross-Scenario — Role Assignment Migration (GAP-6 in tasks/todo.md)
 
@@ -332,7 +334,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Wire private endpoint, RBAC (Redis Cache Contributor for dev), diagnostic settings
 - [x] Create `drcptestcases/scenario13/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm least-privilege role for Redis data access
-- [ ] Create `drcptestcases/scenario13/pipelines/` with deploy + teardown
+- [x] Create `drcptestcases/scenario13/pipeline/` with deploy + teardown — dev (appCode 1395, cron 13:00) + tst (appCode 1394). EnvSnowId + networkAddressSpace TODOs need filling.
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
@@ -389,14 +391,14 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario14/infra/main.bicep` — Event Hub + Function App, inline hubs/consumer groups, PE, Entra auth
 - [x] Wire inline eventhubs, consumer groups, private endpoint, RBAC (Data Receiver for Function App)
 - [x] Create `drcptestcases/scenario14/README.md` using standard template
-- [ ] **Add App Configuration module** — PE, disableLocalAuth, inline keyValues for feature flags
-- [ ] Wire App Configuration RBAC (Data Reader) + Function App endpoint setting
+- [x] **Add App Configuration module** — PE, disableLocalAuth, inline keyValues for feature flags
+- [x] Wire App Configuration RBAC (Data Reader) + Function App endpoint setting
 - [ ] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver / App Configuration Data Reader roles
-- [ ] Create `drcptestcases/scenario14/pipelines/` with deploy + teardown
+- [x] Create `drcptestcases/scenario14/pipeline/` with deploy + teardown — dev (appCode 1495, cron 14:00) + tst (appCode 1494). EnvSnowId + networkAddressSpace TODOs need filling.
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
-- [ ] Re-validate `bicep build` after adding App Configuration
+- [x] Re-validate `bicep build` after adding App Configuration
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
-- [ ] Update README with App Configuration component
+- [x] Update README with App Configuration component
 
 ### Scenario 15 — Cosmos DB NoSQL CRUD API (document-db/database-account)
 
@@ -435,7 +437,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Wire inline sqlDatabases, private endpoint, RBAC (DocumentDB Account Contributor for dev)
 - [x] Create `drcptestcases/scenario15/README.md` using standard template
 - [ ] Use `/azure:azure-rbac` to confirm Cosmos DB SQL role definitions for data-plane access
-- [ ] Create `drcptestcases/scenario15/pipelines/` with deploy + teardown
+- [x] Create `drcptestcases/scenario15/pipeline/` with deploy + teardown — dev (appCode 1595, cron 15:00) + tst (appCode 1594). EnvSnowId + networkAddressSpace TODOs need filling.
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 
@@ -498,13 +500,13 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 **Tasks:**
 - [x] Copy chatbot-poc infra to `drcptestcases/scenario16/infra/`
 - [x] Copy pipelines, bicepconfig.json, src/ (backend + frontend)
-- [ ] Replace `rbac.bicep` with inline `roleAssignments` where possible — use `/azure:azure-rbac` to verify roles
+- [x] ~~Replace `rbac.bicep` with inline `roleAssignments`~~ — **kept** — circular dependency between storage ↔ search/openai prevents inlining (search MI needs blob contributor, openai MI needs blob contributor, but storage module creates before search/openai exist). See lessons.md rule 22.
 - [x] Fix deprecated VNet routing params → `outboundVnetRouting` (both web apps)
-- [ ] Parameterize hardcoded values (engineer object IDs, subscription IDs)
+- [x] Parameterize hardcoded values — moved owner OIDs to `appOwnerObjectIds` param, added `department` to naming module (fixes unused `departmentCode` warning), removed unused `dockerImage` var, added `environmentId`/`applicationId` to `mytags`
 - [ ] Use `/azure:entra-app-registration` to validate the app registration pattern
-- [ ] Create `drcptestcases/scenario16/pipelines/` with deploy + teardown
+- [x] Create `drcptestcases/scenario16/pipelines/` with deploy + teardown — added `scenario16-scheduled-sec-dev.yaml` (cron 16:00 UTC, 1st+15th) alongside existing manual `main.yaml` + `deploy-app.yaml`
 - [x] Create `drcptestcases/scenario16/README.md` using standard template
-- [ ] Validate `bicep build` passes (note: `microsoftGraphV1` extension may require special bicepconfig)
+- [x] Validate `bicep build` passes — only BCP192 (expected, no ACR login) and pre-existing warnings (no-hardcoded-env-urls, use-safe-access in rbac.bicep). No real errors.
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
 - [ ] Use `/azure:azure-ai` for AI Search and OpenAI configuration best practices
 - [ ] Document shared private link approval process in README (DRCP portal + manual curl approval)
@@ -545,12 +547,17 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - `provider: 'None'` — no source control integration (pure Bicep deployment)
 
 **Tasks:**
-- [ ] Create `drcptestcases/scenario17/infra/main.bicep` — Static Web App + Function API
-- [ ] Static Web App: Standard SKU, PE (staticSites), linked backend, Entra auth
-- [ ] Function App API: PE, MI, VNet integration, linked to SWA
-- [ ] Create `drcptestcases/scenario17/README.md`
-- [ ] Validate `bicep build` passes
-- [ ] Create pipeline YAML
+- [x] Create `drcptestcases/scenario17/infra/main.bicep` — Static Web App + Function API
+  - SWA: Standard SKU, PE (staticSites), publicNetworkAccess=Disabled, provider=None, linkedBackend
+  - Function App: Linux Node.js, PE, MI, VNet integration, identity-based storage
+  - Storage: shared key disabled, 4x PE (blob/file/table/queue), diagnostics
+  - Key Vault: PE, Function App MI → Secrets User
+  - 10 AMAVM module refs, 1 local ref (naming.bicep)
+- [x] Static Web App: Standard SKU, PE (staticSites), linked backend, Entra auth
+- [x] Function App API: PE, MI, VNet integration, linked to SWA
+- [x] Create `drcptestcases/scenario17/README.md`
+- [x] Validate `bicep build` passes — 0 scenario17 errors
+- [x] Create pipeline YAML — `pipeline/scenario17-scheduled-sec-dev.yaml` (ENV23969, appCode 1795) + `pipeline/scenario17-scheduled-sec-tst.yaml` (ENV_TODO, appCode 1794). Cron: 17:00 UTC, 1st+15th. TST envSnowId needs to be filled in.
 
 ---
 
@@ -784,9 +791,85 @@ Group B currently has 5 scenarios (8-12) plus all new scenarios (13-17) = 10 tot
 - [ ] Standardize `networkAddressSpace` param: one shared CIDR per group (remove per-scenario allocations)
 - [ ] Schedule Group A and Group B at the same start time (01:00 UTC)
 - [ ] Decide group assignment for scenarios 13-17 (balance runtime across groups)
-- [ ] Create pipeline YAMLs for scenarios 13-17
+- [x] Create pipeline YAMLs for scenarios 13-17 — all created with ENV_TODO placeholders for envSnowId + networkAddressSpace
 - [ ] Verify S12 `ptn/data/ingestion` works with the shared CIDR when uncommented
 - [ ] Document concurrency groups in top-level `drcptestcases/README.md`
+
+---
+
+## Pipeline Audit (2026-03-11)
+
+### Current State
+
+| Scenario | Pipeline Dir | Files | Schedule (UTC) | Status |
+|----------|:--------:|-------|----------|--------|
+| 1 | `pipeline/` | dev + tst | 01:00 | OK |
+| 2 | `pipelines/` | dev + tst | 02:00 | OK |
+| 3 | `pipelines/` | dev + tst | 03:00 | OK |
+| 4 | `pipelines/` | dev + tst | 04:00 | OK |
+| 5 | `pipeline/` | dev + tst | 05:00 | OK |
+| 7 | `pipeline/` | dev + tst | 07:00 | OK |
+| 8 | `pipeline/` | dev + tst | 08:00 | OK |
+| 9 | `pipeline/` | tst only | 09:00 | **Missing DEV pipeline** |
+| 10 | `pipeline/` | dev + tst + DataPipelines | 10:00 | OK |
+| 11 | `pipeline/` | dev + tst + env-init | 11:00 | OK |
+| 12 | `pipeline/` | dev + tst | 12:00 | OK |
+| 13 | `pipeline/` | dev + tst | 13:00 | OK (created, ENV_TODO) |
+| 14 | `pipeline/` | dev + tst | 14:00 | OK (created, ENV_TODO) |
+| 15 | `pipeline/` | dev + tst | 15:00 | OK (created, ENV_TODO) |
+| 16 | `pipelines/` | main + deploy-app + **scheduled-dev** | 16:00 | OK (scheduled added) |
+| 17 | `pipeline/` | **dev + tst** | 17:00 | OK (created) |
+
+### Open Issues
+
+- [ ] **Scenario 9**: Only has TST pipeline, missing DEV — needs `scenario9-scheduled-sec-dev.yaml`
+- [ ] **Scenarios 13, 14, 15**: No pipeline YAMLs at all — deferred to future session
+- **Directory naming inconsistency**: Some use `pipeline/` (singular), others `pipelines/` (plural) — cosmetic, not breaking. Not worth renaming.
+- **Application instance code pattern**: S10-12 use `{nn}94`/`{nn}93` instead of `{nn}95`/`{nn}94` — legacy, not worth changing
+
+---
+
+## Brainstorm: Function App Code Deployment via Bicep
+
+### Problem
+
+Currently all scenarios deploy infrastructure via Bicep and deploy app code separately via CI/CD pipeline. Explore deploying Function App code **during Bicep deployment time** via a dedicated helper module.
+
+### Options Analyzed
+
+| Option | Mechanism | DRCP OK? | Complexity |
+|--------|-----------|:--------:|:----------:|
+| A. MSDeploy Extension | `msDeployConfiguration.packageUri` on web/site | Yes | Low |
+| B. WEBSITE_RUN_FROM_PACKAGE URL | App setting → blob URL, FA pulls at startup | Yes | Low |
+| C. Deployment Script (az CLI) | `deploymentScripts` runs `az webapp deploy` | Partial (ACI networking) | Medium |
+| D. Dedicated Helper Module | Wraps A or B with storage + RBAC | Yes | Medium |
+| **E. Run From Package + MI** | `WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID` + blob URL | **Yes — no SAS** | Low |
+
+### Recommendation: Option E (Run From Package + MI) wrapped in Option D (Helper Module)
+
+**Why:**
+- **DRCP-compliant**: No shared keys, no SAS tokens — MI-only access to blob
+- **No ACI dependency**: Avoids deployment script networking issues
+- **Clean separation**: Package upload stays in pipeline, Bicep handles wiring
+- **Reusable**: Helper module parameterizes the pattern for all Function App scenarios
+
+**Helper Module Design** (`modules/infra/function-app-package/main.bicep`):
+```
+Inputs:  functionAppName, storageAccountName, containerName, packageBlobName, functionAppPrincipalId
+Does:    1) Creates blob container  2) Assigns Storage Blob Data Reader to FA MI  3) Outputs blob URL + app settings
+Outputs: packageUrl, appSettings object
+```
+
+**Workflow:**
+1. Bicep deploys infra (storage + function app + helper module)
+2. Pipeline builds FA code → uploads zip to blob container
+3. Function App reads package at startup via MI (no redeployment needed)
+
+### Next Steps
+
+- [ ] Prototype helper module in a new scenario (S18?) or integrate into S14 (Event Hub + Function App)
+- [ ] Validate that `WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID` works with system-assigned MI on DRCP
+- [ ] Test blob container creation via storage account module's `blobServices.containers` param (avoid separate module)
 
 ---
 
@@ -809,7 +892,7 @@ After P0 migrations complete:
 - [ ] Remove `modules/infra/integration/data-factory/` (after scenario 10 migrated — keep `integrationRuntime.bicep` + `role-assignment.bicep` for linked IR pattern)
 - [ ] Remove `modules/infra/network/private-endpoint/` (after all PE refs migrated)
 - [ ] Audit remaining `modules/infra/` for other removable modules
-- [ ] Migrate `naming.bicep` references → `br/amavm:utl/amavm/naming:0.1.0` in all scenarios (scenario 16 already uses AMAVM naming; scenarios 1-12 still use local `../../modules/infra/naming.bicep`)
+- [x] Migrate `naming.bicep` references → `br/amavm:utl/amavm/naming:0.1.0` in all 16 scenario files (params + outputs identical, drop-in replacement)
 - [ ] Keep: scenario-specific helpers, deployment scripts, `public-ip-address`
 - [ ] Remove `modules/infra/integration/api-management/` (no longer needed — S8 repurposed)
 

@@ -44,9 +44,10 @@ Every scenario must enforce these — no exceptions:
 
 ### Before Writing or Reviewing Bicep
 
-1. **Read the relevant policy JSONs** in `policy/Generic/` for the resource type you're configuring (e.g., `AKS*.json` for AKS, `AppService*.json` for web apps)
-2. **Cross-check** your Bicep properties against policy `then.details.field` and `then.details.value` requirements
-3. **Use `/azure:azure-compliance`** skill to validate after writing
+1. **MANDATORY: Call Azure MCP tools first** — run `mcp__plugin_azure_azure__get_azure_bestpractices` (resource: "general", action: "code-generation") BEFORE generating any Bicep code. Use `mcp__plugin_azure_azure__documentation` for service-specific details. This is non-negotiable (see `tasks/lessons.md` rule 25).
+2. **Read the relevant policy JSONs** in `policy/Generic/` for the resource type you're configuring (e.g., `AKS*.json` for AKS, `AppService*.json` for web apps)
+3. **Cross-check** your Bicep properties against policy `then.details.field` and `then.details.value` requirements
+4. **Use `/azure:azure-compliance`** skill to validate after writing
 
 ---
 

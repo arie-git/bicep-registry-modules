@@ -1,0 +1,48 @@
+# Name format
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(folderName)_$(environmentSnowId)_$(environmentType)_$(location)_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+schedules:
+  - cron: "0 14 1,15 * *" # UTC time
+    displayName: Daily full run
+    branches:
+      include:
+        - main
+    always: true
+
+variables:
+  folderName: 'scenario14'
+  environmentType: 'dev'
+  location: 'swedencentral'
+  environmentSnowId: 'ENV_TODO' #TODO: replace with actual DEV environment ServiceNow ID
+  applicationInstanceCode: '1495'
+  networkAddressSpace: '10.238.0.0/27' #TODO: replace with actual /27 address space
+  engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: DRCP-Templates/templates
+    ref: 'refs/heads/main'
+
+pool: CPP-Ubuntu2204-Preview
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          folderName: ${{variables.folderName}}
+          fileNames:
+            - main
+          applicationInstanceCode: ${{variables.applicationInstanceCode}}
+          environmentType: ${{variables.environmentType}}
+          location: ${{variables.location}}
+          environmentSnowId: ${{variables.environmentSnowId}}
+          engineersGroupObjectId: ${{variables.engineersGroupObjectId}}
+          networkAddressSpace: ${{variables.networkAddressSpace}}

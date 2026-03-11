@@ -68,7 +68,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: mytags
 }
 
-module namesMod '../../modules/infra/naming.bicep' = {
+module namesMod 'br/amavm:utl/amavm/naming:0.1.0' = {
   scope: resourceGroup
   name: '${deployment().name}-names'
   params: {
