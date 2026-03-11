@@ -1,5 +1,5 @@
 {
-  "version": "0.1",
+  "version": "0.2",
   "$schema": "https://aka.ms/bicep-registry-module-version-file-schema#",
   "pathFilters": [
     "./main.bicep",

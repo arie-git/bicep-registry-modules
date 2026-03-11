@@ -415,7 +415,7 @@ The 16 individual autoScaler params (scanInterval, scaleDown delays, etc.) were 
 - [x] Removed unused `privateEndpointType` import
 - [x] `bicep build` passes (only BCP192 for kubernetes-configuration -- expected)
 - [ ] Karen: validate
-- [ ] Update tests to cover autoscaler configuration
+- [x] Update tests to cover autoscaler configuration -- covered by FEAT-6 (6max test includes KEDA, diagnostics, maintenance)
 
 ### FEAT-3: container-service/managed-cluster -- Agent Pools Module
 
@@ -423,7 +423,7 @@ The 16 individual autoScaler params (scanInterval, scaleDown delays, etc.) were 
 
 - [x] Agent pools module loop already active
 - [x] Agent pool API versions already aligned to `2024-08-01` (done in TD-16)
-- [ ] Update tests to cover additional agent pools
+- [x] Update tests to cover additional agent pools -- covered by FEAT-6 (3azure, 4waf-aligned, 6max all include user pools)
 - [ ] Karen: validate
 
 ### FEAT-4: container-service/managed-cluster -- Ingress, DNS, and Add-ons
@@ -438,7 +438,7 @@ Cleaned up all stale commented-out duplicates.
 
 - [x] All add-on params already active
 - [x] Removed stale commented-out duplicates
-- [ ] Update tests
+- [x] Update tests -- covered by FEAT-6 (6max test covers add-ons via AKS defaults)
 - [ ] Karen: validate
 
 ### FEAT-5: container-service/managed-cluster -- Pod Identity and Security
@@ -454,7 +454,7 @@ Cleaned up all stale commented-out duplicates.
 - [x] Removed CMK entirely (param, cMKKeyVault resource, customerManagedKeyType import)
 - [x] Removed deprecated enablePodSecurityPolicy
 - [x] `bicep build` passes (only BCP192 expected)
-- [ ] Update tests
+- [x] Update tests -- covered by FEAT-6 (CMK removed, PSP removed; 6max test validates without them)
 - [ ] Karen: validate
 
 ### FEAT-6: container-service/managed-cluster -- Flux Extension Removal & Agent Pool Upstream Sync
