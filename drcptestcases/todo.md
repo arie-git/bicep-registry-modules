@@ -94,7 +94,7 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [x] Replace role-assignment helpers with inline `roleAssignments` (Event Hub + Storage; separate helpers for cross-deps)
 - [x] Fix circular dependency: extracted 3 cross-resource RBAC assignments into separate modules (`roleAssignment.bicep`, `evhRoleAssignment.bicep`, `kvRoleAssignment.bicep`)
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
-- [x] Use `/azure:azure-validate` for pre-deployment readiness check — `bicep build` passes for both main.bicep and central.bicep (warnings only: `use-safe-access` in local role-assignment modules + `prefer-unquoted-property-names` in legacy rbac module). DRCP policy audit done separately (see above): 14 PASS, 2 FAIL (Databricks publicNetworkAccess GAP, ADF Git config in dev), 2 N/A
+- [x] Use `/azure:azure-validate` for pre-deployment readiness check — `bicep build` passes for both main.bicep and central.bicep (warnings only: `use-safe-access` in local role-assignment modules + `prefer-unquoted-property-names` in legacy rbac module). DRCP policy audit done separately (see above): 15 PASS, 1 FAIL (ADF Git config in dev — acceptable if policy exempted), 2 N/A
 - [x] Update README
 
 ### Scenario 10 — Data Factory + Databricks + Unity Catalog (17 local refs across 2 files)
@@ -111,8 +111,8 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [x] Support pure Bicep deployment (gitConfigureLater, adfRepoConfig optional)
 - [x] Validate `bicep build` passes (warnings only, no errors)
 - [x] Migrate central.bicep local modules to AMAVM (6 migrated, 3 eliminated via inlining, 3 kept local)
-- [x] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory) — **14 PASS, 2 FAIL, 2 N/A**
-  - FAIL: Databricks `publicNetworkAccess` not exposed by AMAVM module v0.3.0 → needs module update (GAP)
+- [x] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory) — **15 PASS, 1 FAIL, 2 N/A**
+  - PASS: Databricks `publicNetworkAccess` defaults to `'Disabled'` in AMAVM module (line 203 of workspace/main.bicep)
   - FAIL: ADF Git repo config in dev may trigger `DataFactoryRepoNotAllowed` policy → acceptable if policy exempted in dev scope
   - N/A: Databricks `enableNoPublicIp` + `requireInfrastructureEncryption` (workspace/cluster config, not deployment params)
 - [x] Update README with UC architecture and policy compliance table

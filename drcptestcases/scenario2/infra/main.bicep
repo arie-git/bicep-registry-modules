@@ -377,6 +377,11 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
         FUNCTIONS_EXTENSION_VERSION: '~4'
         FUNCTIONS_WORKER_RUNTIME: 'dotnet'
       }
+      outboundVnetRouting: {
+        allTraffic: true
+        contentShareTraffic: true
+        imagePullTraffic: true
+      }
       tags:tags
   }
 }
