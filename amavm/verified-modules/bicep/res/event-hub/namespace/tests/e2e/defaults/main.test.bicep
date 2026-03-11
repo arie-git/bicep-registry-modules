@@ -18,11 +18,29 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: resourceLocation
 }
 
+module nestedDependencies '../waf-aligned/dependencies.bicep' = {
+  scope: resourceGroup
+  name: '${uniqueString(deployment().name, resourceLocation)}-nestedDependencies'
+  params: {
+    virtualNetworkName: 'dep-vnet-${serviceShort}'
+    managedIdentityName: 'dep-ids-${serviceShort}'
+    storageAccountName: 'depsa${serviceShort}'
+  }
+}
+
 module testDeployment '../../../main.bicep' = {
   scope: resourceGroup
   name: '${uniqueString(deployment().name, resourceLocation)}-test-${serviceShort}'
   params: {
     name: 'evhns-${serviceShort}-${substring(uniqueString(deployment().name), 0, 4)}'
     location: resourceLocation
+    privateEndpoints: [
+      {
+        privateDnsZoneResourceIds: [
+          nestedDependencies.outputs.privateDNSZoneResourceId
+        ]
+        subnetResourceId: nestedDependencies.outputs.subnetResourceId
+      }
+    ]
   }
 }

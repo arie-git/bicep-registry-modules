@@ -925,9 +925,10 @@ Full comparison completed 2026-03-10. Compared all 35 whitelisted modules agains
 
 | Module | Missing Feature | Priority |
 |---|---|---|
-| cache/redis | `secretsExportConfiguration` param | Low |
-| cognitive-services/account | `secretsExportConfiguration` param | Low |
-| event-hub/namespace | `secretsExportConfiguration` param | Low |
+| ~~cache/redis~~ | ~~`secretsExportConfiguration` param~~ | ~~WONTFIX -- DRCP disables key auth~~ |
+| ~~cognitive-services/account~~ | ~~`secretsExportConfiguration` param~~ | ~~WONTFIX -- DRCP disables key auth~~ |
+| ~~event-hub/namespace~~ | ~~`secretsExportConfiguration` param~~ | ~~WONTFIX -- DRCP disables key auth~~ |
+| ~~search/search-service~~ | ~~`secretsExportConfiguration` + keyVaultExport~~ | ~~REMOVED -- DRCP disables key auth (BF-9)~~ |
 
 **Real findings -- other:**
 
@@ -1153,6 +1154,23 @@ module nestedDependencies '../waf-aligned/dependencies.bicep' = {
 - **Error**: `Error BCP192: Unable to restore the artifact with reference "br:s2amavmdevsecacr.azurecr.io/avm/res/kubernetes-configuration/extension:0.3.8": The artifact does not exist in the registry.`
 - **Root cause**: Known issue (BV-2). Module references `kubernetes-configuration/extension` which is not in the fork/ACR.
 - **Status**: Expected -- no action unless this module is added to the fork.
+
+### BF-8: event-hub/namespace -- defaults test build failure (BCP035)
+
+- **Error**: BCP035 -- missing required property `privateEndpoints` in defaults test
+- **Root cause**: `privateEndpoints` param is required (no `?`) because DRCP policy mandates PE. Defaults test deployed without it.
+- **Fix**: Rewrote defaults test to use `../waf-aligned/dependencies.bicep` for VNet/subnet/DNS zone, added `privateEndpoints` array.
+- [x] Update `tests/e2e/defaults/main.test.bicep` with waf-aligned dependencies pattern
+- [x] Verify `bicep build` passes -- all 3 tests (defaults, max, waf-aligned) build clean
+
+### BF-9: search/search-service + event-hub/namespace -- remove keyVaultExport (DRCP violation)
+
+- **Root cause**: DRCP policy disables local auth for both services (`disableLocalAuth=true` -- drcp-srch-01 for search, drcp-evh-05 for event hub). The `keyVaultExport.bicep` modules and `secretsExportConfiguration` feature export API keys that policy forbids using -- contradictory.
+- **Fix**: Removed from search: `secretsExportConfiguration` param, `secretsExport` module deployment, `exportedSecrets` output, `secretsExportConfigurationType` type, `secretSetType` import. Deleted both `modules/keyVaultExport.bicep` files.
+- [x] Remove `secretsExportConfiguration` and related code from search/search-service/main.bicep
+- [x] Delete `search/search-service/modules/keyVaultExport.bicep`
+- [x] Delete `event-hub/namespace/modules/keyVaultExport.bicep` (orphan -- not referenced from main.bicep)
+- [x] Verify `bicep build` passes -- search (main + 2 tests) and event-hub (main + 3 tests) all clean
 
 ### BF-7: app-configuration/configuration-store -- BCP321 warning (resolved)
 
