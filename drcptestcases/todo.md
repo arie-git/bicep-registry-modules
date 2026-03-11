@@ -107,7 +107,10 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [x] Support pure Bicep deployment (gitConfigureLater, adfRepoConfig optional)
 - [x] Validate `bicep build` passes (warnings only, no errors)
 - [x] Migrate central.bicep local modules to AMAVM (6 migrated, 3 eliminated via inlining, 3 kept local)
-- [ ] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory)
+- [x] Validate against all 18 DRCP policies (8 Databricks + 10 Data Factory) — **14 PASS, 2 FAIL, 2 N/A**
+  - FAIL: Databricks `publicNetworkAccess` not exposed by AMAVM module v0.3.0 → needs module update (GAP)
+  - FAIL: ADF Git repo config in dev may trigger `DataFactoryRepoNotAllowed` policy → acceptable if policy exempted in dev scope
+  - N/A: Databricks `enableNoPublicIp` + `requireInfrastructureEncryption` (workspace/cluster config, not deployment params)
 - [x] Update README with UC architecture and policy compliance table
 
 ### Scenario 8 — **REPURPOSED:** PostgreSQL + Service Bus (message-driven processing)
@@ -177,7 +180,7 @@ Log Analytics + Diagnostics
 - [x] Validate against all 16 DRCP policies listed above
 - [x] Validate `bicep build` passes — 0 errors, 0 warnings in S8 code (only AMAVM-internal warnings)
 - [x] Update README with new architecture
-- [ ] Create pipeline YAML
+- [x] Create pipeline YAML — already existed (`scenario8-scheduled-sec-dev.yaml` + `scenario8-scheduled-sec-tst.yaml`)
 - [ ] Update `src/` directory for new architecture (old frontend/backend code references APIM)
 
 ### Scenario 7 — ACR + Docker Web App (simplify — remove Logic App)
@@ -333,7 +336,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario13/infra/main.bicep` — Redis Premium, PE, Entra auth, zone redundant, diagnostics
 - [x] Wire private endpoint, RBAC (Redis Cache Contributor for dev), diagnostic settings
 - [x] Create `drcptestcases/scenario13/README.md` using standard template
-- [ ] Use `/azure:azure-rbac` to confirm least-privilege role for Redis data access
+- [x] Use `/azure:azure-rbac` to confirm least-privilege role for Redis data access — `Redis Cache Contributor` is acceptable for dev engineers (management plane role); no data-plane-only reader exists for Redis Premium
 - [x] Create `drcptestcases/scenario13/pipeline/` with deploy + teardown — dev (appCode 1395, cron 13:00) + tst (appCode 1394). EnvSnowId + networkAddressSpace TODOs need filling.
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
@@ -393,7 +396,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario14/README.md` using standard template
 - [x] **Add App Configuration module** — PE, disableLocalAuth, inline keyValues for feature flags
 - [x] Wire App Configuration RBAC (Data Reader) + Function App endpoint setting
-- [ ] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver / App Configuration Data Reader roles
+- [x] Use `/azure:azure-rbac` to confirm Data Sender / Data Receiver / App Configuration Data Reader roles — Function App MI roles correct (Data Receiver, Data Reader). Engineer group uses Data Owner for EVH + AppConfig in dev — acceptable for dev, overly broad for prod (but gated by `isDevEnvironment`)
 - [x] Create `drcptestcases/scenario14/pipeline/` with deploy + teardown — dev (appCode 1495, cron 14:00) + tst (appCode 1494). EnvSnowId + networkAddressSpace TODOs need filling.
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [x] Re-validate `bicep build` after adding App Configuration
@@ -436,7 +439,7 @@ Three new scenarios to provide dedicated integration test coverage for the newly
 - [x] Create `drcptestcases/scenario15/infra/main.bicep` — Cosmos DB NoSQL, inline DB + 2 containers, PE, Entra auth, diagnostics
 - [x] Wire inline sqlDatabases, private endpoint, RBAC (DocumentDB Account Contributor for dev)
 - [x] Create `drcptestcases/scenario15/README.md` using standard template
-- [ ] Use `/azure:azure-rbac` to confirm Cosmos DB SQL role definitions for data-plane access
+- [x] Use `/azure:azure-rbac` to confirm Cosmos DB SQL role definitions — `DocumentDB Account Contributor` for dev engineers is overly broad (control-plane). Consider downscoping to `Cosmos DB Built-in Data Contributor` for data-plane only. Acceptable for now since gated by `isDevEnvironment`
 - [x] Create `drcptestcases/scenario15/pipeline/` with deploy + teardown — dev (appCode 1595, cron 15:00) + tst (appCode 1594). EnvSnowId + networkAddressSpace TODOs need filling.
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
 - [ ] Use `/azure:azure-validate` for pre-deployment readiness check
@@ -810,7 +813,7 @@ Group B currently has 5 scenarios (8-12) plus all new scenarios (13-17) = 10 tot
 | 5 | `pipeline/` | dev + tst | 05:00 | OK |
 | 7 | `pipeline/` | dev + tst | 07:00 | OK |
 | 8 | `pipeline/` | dev + tst | 08:00 | OK |
-| 9 | `pipeline/` | tst only | 09:00 | **Missing DEV pipeline** |
+| 9 | `pipeline/` | dev + tst | 09:00 | OK (DEV added) |
 | 10 | `pipeline/` | dev + tst + DataPipelines | 10:00 | OK |
 | 11 | `pipeline/` | dev + tst + env-init | 11:00 | OK |
 | 12 | `pipeline/` | dev + tst | 12:00 | OK |
@@ -822,7 +825,7 @@ Group B currently has 5 scenarios (8-12) plus all new scenarios (13-17) = 10 tot
 
 ### Open Issues
 
-- [ ] **Scenario 9**: Only has TST pipeline, missing DEV — needs `scenario9-scheduled-sec-dev.yaml`
+- [x] **Scenario 9**: DEV pipeline created (`scenario9-scheduled-sec-dev.yaml`)
 - [ ] **Scenarios 13, 14, 15**: No pipeline YAMLs at all — deferred to future session
 - **Directory naming inconsistency**: Some use `pipeline/` (singular), others `pipelines/` (plural) — cosmetic, not breaking. Not worth renaming.
 - **Application instance code pattern**: S10-12 use `{nn}94`/`{nn}93` instead of `{nn}95`/`{nn}94` — legacy, not worth changing
