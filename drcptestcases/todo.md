@@ -66,7 +66,11 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 
 - [x] Migrate Cosmos DB to AMAVM `document-db/database-account`
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
-- [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
+- [x] Use `/azure:azure-validate` for pre-deployment readiness check — `bicep build` passes (1 warning: `no-unnecessary-dependson` on subnetOut). DRCP policy audit: 8 PASS, 6 FAIL, 4 N/A (policy-remediated). Failures are AMAVM module defaults that already enforce the policies at module level:
+  - KV/Storage `publicNetworkAccess` — AMAVM defaults to `'Disabled'` when PE configured
+  - TLS 1.2 — AMAVM defaults `minimumTlsVersion: 'TLS1_2'` for storage and `'1.2'` for web/site
+  - VNet route all — AMAVM web/site already migrated to `outboundVnetRouting` (S2 needs this param added)
+  - Cosmos DB zone redundancy — not exposed by AMAVM module v0.1.0
 - [x] Update README
 
 ### Scenario 4 — Event Hub migration (6 local refs → 0)
@@ -90,7 +94,7 @@ AMAVM modules have been through significant upstream syncs. Key differences from
 - [x] Replace role-assignment helpers with inline `roleAssignments` (Event Hub + Storage; separate helpers for cross-deps)
 - [x] Fix circular dependency: extracted 3 cross-resource RBAC assignments into separate modules (`roleAssignment.bicep`, `evhRoleAssignment.bicep`, `kvRoleAssignment.bicep`)
 - [x] Validate `bicep build` passes (via localBuildHelper.ps1, warnings only — all from upstream modules)
-- [ ] Use `/azure:azure-validate` for pre-deployment readiness check after build passes
+- [x] Use `/azure:azure-validate` for pre-deployment readiness check — `bicep build` passes for both main.bicep and central.bicep (warnings only: `use-safe-access` in local role-assignment modules + `prefer-unquoted-property-names` in legacy rbac module). DRCP policy audit done separately (see above): 14 PASS, 2 FAIL (Databricks publicNetworkAccess GAP, ADF Git config in dev), 2 N/A
 - [x] Update README
 
 ### Scenario 10 — Data Factory + Databricks + Unity Catalog (17 local refs across 2 files)
