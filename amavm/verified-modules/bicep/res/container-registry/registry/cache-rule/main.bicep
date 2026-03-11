@@ -22,7 +22,7 @@ param credentialSetResourceId string?
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
-import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../../bicep-shared/environments.bicep'
+import { telemetryId } from '../../../../../bicep-shared/environments.bicep'
 
 
 #disable-next-line no-deployments-resources

@@ -1062,8 +1062,6 @@ type trustedRootCertificatesType = {
 }[]?
 
 import {
-  customerManagedKeyManagedDiskType
-  customerManagedKeyType
   diagnosticSettingType
   lockType
   managedIdentitiesType

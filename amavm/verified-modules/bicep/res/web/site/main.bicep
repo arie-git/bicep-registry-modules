@@ -15,7 +15,7 @@ metadata compliance = '''Compliant usage of this module requires:
 - siteConfig.remoteDebuggingEnabled: false
 - config.linuxFxVersion: latest runtimes are used. IMPORTANT: This module does not ensure this control by default.
 - authSettingV2Configuration.enabled: true and authSettingV2Configuration.platform.enabled: true
-- authSettingV2Configuration: uses federated identity credentials (FIC) by default — no client secrets
+- authSettingV2Configuration: uses federated identity credentials (FIC) by default -- no client secrets
 - managedIdentities: not empty
 '''
 metadata complianceVersion = '20260309'
@@ -222,7 +222,7 @@ param appSettingsKeyValuePairs object?
 @description('''Optional. The auth settings V2 configuration.
 When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.
 
-The default uses federated identity credentials (FIC) — no client secret is stored. Instead, `clientSecretSettingName` points to the
+The default uses federated identity credentials (FIC) -- no client secret is stored. Instead, `clientSecretSettingName` points to the
 app setting `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`, whose value must be the client ID of the app's managed identity. Easy Auth V2
 reads this app setting and uses the managed identity to obtain tokens via federated credential assertion.
 
@@ -581,7 +581,7 @@ var defaultLogCategories = [
 ]
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.web-site.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64
@@ -928,7 +928,7 @@ output resourceId string = app.id
 output slotNames array = [for (slot, index) in (slots ?? []): app_slots[index].name]
 
 @description('The list of the slot resource ids.')
-#disable-next-line outputs-should-not-contain-secrets // False positive: same as above — resource IDs don't expose secrets
+#disable-next-line outputs-should-not-contain-secrets // False positive: same as above -- resource IDs don't expose secrets
 output slotResourceIds array = [for (slot, index) in (slots ?? []): app_slots[index].outputs.resourceId]
 
 @description('The resource group the site was deployed into.')

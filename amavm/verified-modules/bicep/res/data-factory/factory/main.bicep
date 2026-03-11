@@ -482,7 +482,6 @@ import {
   diagnosticSettingType
   lockType
   managedIdentitiesType
-  networkAclsType
   privateEndpointType
   roleAssignmentType
   customerManagedKeyType
@@ -493,7 +492,6 @@ import {
 } from 'integration-runtime/main.bicep'
 
 import {
-  linkedServiceTypePropertiesType
   linkedServiceType
 } from 'linked-service/main.bicep'
 

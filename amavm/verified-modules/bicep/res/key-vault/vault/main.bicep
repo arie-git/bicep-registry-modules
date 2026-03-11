@@ -445,7 +445,6 @@ output evidenceOfNonCompliance bool = (sku != 'premium' || keyVault.properties.p
 import {
   diagnosticSettingType
   lockType
-  managedIdentitiesType
   networkAclsType
   privateEndpointType
   roleAssignmentType

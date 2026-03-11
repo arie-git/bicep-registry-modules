@@ -46,7 +46,7 @@ param enableTelemetry bool = true
 // Variables   //
 // =========== //
 
-import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../../bicep-shared/environments.bicep'
+import { telemetryId } from '../../../../../bicep-shared/environments.bicep'
 
 var managedVirtualNetworkVar = {
   referenceName: type == 'Managed' ? managedVirtualNetworkName : null

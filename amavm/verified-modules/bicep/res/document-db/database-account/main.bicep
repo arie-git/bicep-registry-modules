@@ -93,19 +93,19 @@ param maxIntervalInSeconds int = 300
 @description('Optional. Configuration for databases when using Azure Cosmos DB for NoSQL.')
 param sqlDatabases sqlDatabaseType[]?
 
-// COMMENTED OUT: Future feature — MongoDB databases are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- MongoDB databases are not allowed per company policy (NoSQL only).
 // @description('Optional. Configuration for databases when using Azure Cosmos DB for MongoDB RU.')
 // param mongodbDatabases mongoDbType[]?
 
-// COMMENTED OUT: Future feature — Gremlin databases are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Gremlin databases are not allowed per company policy (NoSQL only).
 // @description('Optional. Configuration for databases when using Azure Cosmos DB for Apache Gremlin.')
 // param gremlinDatabases gremlinDatabaseType[]?
 
-// COMMENTED OUT: Future feature — Tables are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Tables are not allowed per company policy (NoSQL only).
 // @description('Optional. Configuration for databases when using Azure Cosmos DB for Table.')
 // param tables tableType[]?
 
-// COMMENTED OUT: Future feature — Cassandra keyspaces are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra keyspaces are not allowed per company policy (NoSQL only).
 // @description('Optional. Configuration for keyspaces when using Azure Cosmos DB for Apache Cassandra.')
 // param cassandraKeyspaces cassandraKeyspaceType[]?
 
@@ -127,11 +127,11 @@ param sqlRoleDefinitions sqlRoleDefinitionType[]?
 @description('Optional. Configurations for Azure Cosmos DB for NoSQL native role-based access control assignments.')
 param sqlRoleAssignments sqlRoleAssignmentType[]?
 
-// COMMENTED OUT: Future feature — Cassandra role definitions are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra role definitions are not allowed per company policy (NoSQL only).
 // @description('Optional. Configurations for Azure Cosmos DB for Apache Cassandra native role-based access control definitions. Allows the creations of custom role definitions.')
 // param cassandraRoleDefinitions cassandraRoleDefinitionType[]?
 
-// COMMENTED OUT: Future feature — Cassandra role assignments are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra role assignments are not allowed per company policy (NoSQL only).
 // @description('Optional. Azure Cosmos DB for Apache Cassandra native data plane role-based access control assignments. Each assignment references a role definition unique identifier and a principal identifier.')
 // param cassandraRoleAssignments cassandraStandaloneRoleAssignmentType[]?
 
@@ -285,7 +285,7 @@ var identity = !empty(managedIdentities)
 // ============ //
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.documentdb-databaseaccount.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}',
     64
@@ -319,7 +319,7 @@ resource cMKKeyVault 'Microsoft.KeyVault/vaults@2024-11-01' existing = if (!empt
   }
 }
 
-// Only NoSQL is allowed — kind is always 'GlobalDocumentDB'
+// Only NoSQL is allowed -- kind is always 'GlobalDocumentDB'
 resource databaseAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' = {
   name: name
   location: location
@@ -364,7 +364,7 @@ resource databaseAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' = {
       name: capability
     })
     ...(!empty(cors) ? { cors: cors } : {}) // Cors can only be provided if not null/empty
-    // Cassandra connector removed — not applicable for NoSQL-only
+    // Cassandra connector removed -- not applicable for NoSQL-only
     minimalTlsVersion: minimumTlsVersion
     capacity: {
       totalThroughputLimit: totalThroughputLimit
@@ -383,7 +383,7 @@ resource databaseAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' = {
             isZoneRedundant: zoneRedundant
           }
         ]
-    // NoSQL common properties — always applied since we only support NoSQL
+    // NoSQL common properties -- always applied since we only support NoSQL
     consistencyPolicy: {
       defaultConsistencyLevel: defaultConsistencyLevel
       ...(defaultConsistencyLevel == 'BoundedStaleness'
@@ -407,10 +407,10 @@ resource databaseAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' = {
     enableFreeTier: enableFreeTier
     enableAutomaticFailover: enableAutomaticFailover
     enableAnalyticalStorage: enableAnalyticalStorage
-    // NoSQL supports Microsoft Entra authentication — always use the disableLocalAuthentication parameter
+    // NoSQL supports Microsoft Entra authentication -- always use the disableLocalAuthentication parameter
     disableLocalAuth: disableLocalAuthentication
     disableKeyBasedMetadataWriteAccess: disableKeyBasedMetadataWriteAccess
-    // MongoDB apiProperties block removed — not applicable for NoSQL-only
+    // MongoDB apiProperties block removed -- not applicable for NoSQL-only
   }
 }
 
@@ -522,7 +522,7 @@ module databaseAccount_sqlRoleAssignments 'sql-role-assignment/main.bicep' = [
   }
 ]
 
-// COMMENTED OUT: Future feature — Cassandra role definitions are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra role definitions are not allowed per company policy (NoSQL only).
 // module databaseAccount_cassandraRoleDefinitions 'cassandra-role-definition/main.bicep' = [
 //   for (cassandraRoleDefinition, index) in (cassandraRoleDefinitions ?? []): {
 //     name: '${uniqueString(deployment().name, location)}-cassandra-rd-${index}'
@@ -538,7 +538,7 @@ module databaseAccount_sqlRoleAssignments 'sql-role-assignment/main.bicep' = [
 //   }
 // ]
 
-// COMMENTED OUT: Future feature — Cassandra role assignments are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra role assignments are not allowed per company policy (NoSQL only).
 // module databaseAccount_cassandraRoleAssignments 'cassandra-role-assignment/main.bicep' = [
 //   for (cassandraRoleAssignment, index) in (cassandraRoleAssignments ?? []): {
 //     name: '${uniqueString(deployment().name)}-cassandra-ra-${index}'
@@ -556,7 +556,7 @@ module databaseAccount_sqlRoleAssignments 'sql-role-assignment/main.bicep' = [
 //   }
 // ]
 
-// COMMENTED OUT: Future feature — MongoDB databases are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- MongoDB databases are not allowed per company policy (NoSQL only).
 // module databaseAccount_mongodbDatabases 'mongodb-database/main.bicep' = [
 //   for mongodbDatabase in (mongodbDatabases ?? []): {
 //     name: '${uniqueString(deployment().name, location)}-mongodb-${mongodbDatabase.name}'
@@ -571,7 +571,7 @@ module databaseAccount_sqlRoleAssignments 'sql-role-assignment/main.bicep' = [
 //   }
 // ]
 
-// COMMENTED OUT: Future feature — Gremlin databases are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Gremlin databases are not allowed per company policy (NoSQL only).
 // module databaseAccount_gremlinDatabases 'gremlin-database/main.bicep' = [
 //   for gremlinDatabase in (gremlinDatabases ?? []): {
 //     name: '${uniqueString(deployment().name, location)}-gremlin-${gremlinDatabase.name}'
@@ -586,7 +586,7 @@ module databaseAccount_sqlRoleAssignments 'sql-role-assignment/main.bicep' = [
 //   }
 // ]
 
-// COMMENTED OUT: Future feature — Tables are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Tables are not allowed per company policy (NoSQL only).
 // module databaseAccount_tables 'table/main.bicep' = [
 //   for table in (tables ?? []): {
 //     name: '${uniqueString(deployment().name, location)}-table-${table.name}'
@@ -600,7 +600,7 @@ module databaseAccount_sqlRoleAssignments 'sql-role-assignment/main.bicep' = [
 //   }
 // ]
 
-// COMMENTED OUT: Future feature — Cassandra keyspaces are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra keyspaces are not allowed per company policy (NoSQL only).
 // module databaseAccount_cassandraKeyspaces 'cassandra-keyspace/main.bicep' = [
 //   for cassandraKeyspace in (cassandraKeyspaces ?? []): {
 //     name: '${uniqueString(deployment().name, location)}-cassandradb-${cassandraKeyspace.name}'
@@ -867,7 +867,7 @@ type sqlDatabaseType = {
   tags: object?
 }
 
-// COMMENTED OUT: Future feature — Gremlin database type is not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Gremlin database type is not allowed per company policy (NoSQL only).
 // import { graphType } from 'gremlin-database/main.bicep'
 // @export()
 // @description('The type for a gremlin database.')
@@ -884,7 +884,7 @@ type sqlDatabaseType = {
 //   throughput: int?
 // }
 
-// COMMENTED OUT: Future feature — MongoDB database type is not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- MongoDB database type is not allowed per company policy (NoSQL only).
 // import { collectionType } from 'mongodb-database/main.bicep'
 // @export()
 // @description('The type for a mongo database.')
@@ -901,7 +901,7 @@ type sqlDatabaseType = {
 //   tags: object?
 // }
 
-// COMMENTED OUT: Future feature — Table type is not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Table type is not allowed per company policy (NoSQL only).
 // @export()
 // @description('The type for a table.')
 // type tableType = {
@@ -915,7 +915,7 @@ type sqlDatabaseType = {
 //   throughput: int?
 // }
 
-// COMMENTED OUT: Future feature — Cassandra types are not allowed per company policy (NoSQL only).
+// COMMENTED OUT: Future feature -- Cassandra types are not allowed per company policy (NoSQL only).
 // import { cassandraRoleAssignmentType } from 'cassandra-role-definition/main.bicep'
 // import { tableType as cassandraTableType, viewType as cassandraViewType } from 'cassandra-keyspace/main.bicep'
 // @export()

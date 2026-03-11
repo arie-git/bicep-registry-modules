@@ -798,7 +798,6 @@ import {
   customerManagedKeyType
   diagnosticSettingType
   lockType
-  managedIdentitiesType
   privateEndpointType
   roleAssignmentType
 } from '../../../../bicep-shared/types.bicep'

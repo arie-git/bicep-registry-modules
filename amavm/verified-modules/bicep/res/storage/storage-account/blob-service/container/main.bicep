@@ -77,7 +77,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing 
 }
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.storage-storageaccount-container.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, storageAccountName, name), 0, 4)}',
     64

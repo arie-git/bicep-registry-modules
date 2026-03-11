@@ -290,7 +290,7 @@ var defaultLogCategories = [for category in defaultLogCategoryNames ?? []: {
 }]
 
 // Resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.cognitiveservices-account.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, name, location), 0, 4)}',
     64

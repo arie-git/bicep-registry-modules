@@ -156,8 +156,8 @@ output resourceGroupName string = resourceGroup().name
 
 @description('The location the resource was deployed into.')
 output location string = dataCollectionRuleProperties.kind == 'All'
-  ? dataCollectionRuleAll.location
-  : dataCollectionRule.location
+  ? dataCollectionRuleAll!.location
+  : dataCollectionRule!.location
 
 @description('The principal ID of the system assigned identity.')
 output systemAssignedMIPrincipalId string? = dataCollectionRuleProperties.kind == 'All'
@@ -166,13 +166,13 @@ output systemAssignedMIPrincipalId string? = dataCollectionRuleProperties.kind =
 
 @description('The endpoints of the dataCollectionRule, if created.')
 output endpoints object? = dataCollectionRuleProperties.kind == 'All'
-  ? dataCollectionRuleAll.properties.?endpoints
-  : dataCollectionRule.properties.?endpoints
+  ? dataCollectionRuleAll!.properties.?endpoints
+  : dataCollectionRule!.properties.?endpoints
 
 @description('The ImmutableId of the dataCollectionRule.')
 output immutableId string? = dataCollectionRuleProperties.kind == 'All'
-  ? dataCollectionRuleAll.properties.?immutableId
-  : dataCollectionRule.properties.?immutableId
+  ? dataCollectionRuleAll!.properties.?immutableId
+  : dataCollectionRule!.properties.?immutableId
 
 @description('Is there evidence of usage in non-compliance with policies?')
 output evidenceOfNonCompliance bool = false

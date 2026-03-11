@@ -18,7 +18,7 @@ var specificBuiltInRoleNames = {
 var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
 
 #disable-next-line no-deployments-resources
-resource fileShare_roleAssignments 'Microsoft.Resources/deployments@2024-03-01' = [
+resource fileShare_roleAssignments 'Microsoft.Resources/deployments@2024-07-01' = [
   for (roleAssignment, index) in (roleAssignments ?? []): {
     name: '${uniqueString(deployment().name)}-share-rbac-${index}'
     properties: {

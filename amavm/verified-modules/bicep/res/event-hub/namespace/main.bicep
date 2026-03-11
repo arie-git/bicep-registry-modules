@@ -175,7 +175,7 @@ resource cMKUserAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
 }
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.eventhub-namespace.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   properties: {
     mode: 'Incremental'

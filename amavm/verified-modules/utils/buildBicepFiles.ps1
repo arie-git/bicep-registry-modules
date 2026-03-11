@@ -76,7 +76,7 @@ foreach ($filename in $allBicepFiles) {
 $setModuleReadMePath = (Resolve-Path ".\utils\setModuleReadMe.ps1").Path
 
 if ($Sequential -or $parentModules.Count -le 1) {
-    # ── Serial execution (original behavior) ──
+    # --- Serial execution (original behavior) ---
     $build_errors = New-Object System.Collections.ArrayList
 
     foreach ($filename in $parentModules) {
@@ -86,19 +86,19 @@ if ($Sequential -or $parentModules.Count -le 1) {
         }
         Write-Host "=> $currentModuleName"
         try {
-            if ($buildReadme -eq "True") {
-                Set-ModuleReadMe -TemplateFilePath $filename
-                if ($LASTEXITCODE -gt 0) {
-                    throw "Code:$LASTEXITCODE"
-                }
-            }
             az bicep restore --file $filename --force
             if ($LASTEXITCODE -gt 0) {
-                throw "Code:$LASTEXITCODE"
+                throw "Code:$LASTEXITCODE (restore)"
             }
-            az bicep build --file $filename --stdout > $null
+            $buildJson = az bicep build --file $filename --stdout 2>$null
             if ($LASTEXITCODE -gt 0) {
-                throw "Code:$LASTEXITCODE"
+                throw "Code:$LASTEXITCODE (build)"
+            }
+            if ($buildReadme -eq "True") {
+                $templateContent = $buildJson | ConvertFrom-Json -AsHashtable
+                Set-ModuleReadMe -TemplateFilePath $filename -PreLoadedContent @{
+                    TemplateFileContent = $templateContent
+                }
             }
         }
         catch {
@@ -128,9 +128,13 @@ if ($Sequential -or $parentModules.Count -le 1) {
             }
             Write-Host "=> $currentModuleName (README only)"
             try {
-                Set-ModuleReadMe -TemplateFilePath $bicepFileName
+                $buildJson = az bicep build --file $bicepFileName --stdout 2>$null
                 if ($LASTEXITCODE -gt 0) {
-                    throw "Code:$LASTEXITCODE"
+                    throw "Code:$LASTEXITCODE (build)"
+                }
+                $templateContent = $buildJson | ConvertFrom-Json -AsHashtable
+                Set-ModuleReadMe -TemplateFilePath $bicepFileName -PreLoadedContent @{
+                    TemplateFileContent = $templateContent
                 }
             }
             catch {
@@ -139,13 +143,13 @@ if ($Sequential -or $parentModules.Count -le 1) {
         }
     }
 } else {
-    # ── Parallel execution (PowerShell 7+) ──
+    # --- Parallel execution (PowerShell 7+) ---
     Write-Host "Running parallel build with ThrottleLimit=$ThrottleLimit for $($parentModules.Count) parent modules"
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
     # Pre-populate Bicep module cache serially to avoid cache contention (BCP233).
     # Multiple parallel restores of the same ACR module (e.g. private-endpoint) race on
-    # the shared ~/.bicep/br/ cache — one deletes while another reads, causing failures.
+    # the shared ~/.bicep/br/ cache -- one deletes while another reads, causing failures.
     Write-Host "Pre-restoring module dependencies (serial)..."
     foreach ($filename in $parentModules) {
         az bicep restore --file $filename --force 2>&1 | Out-Null
@@ -172,17 +176,17 @@ if ($Sequential -or $parentModules.Count -le 1) {
         [void]$output.AppendLine("=> $currentModuleName")
 
         try {
+            $buildJson = az bicep build --file $filename --stdout 2>$null
+            if ($LASTEXITCODE -gt 0) {
+                throw "Code:$LASTEXITCODE (build)"
+            }
             if ($buildReadme -eq "True") {
                 # Re-import setModuleReadMe in this runspace
                 Import-Module $setModuleReadMePath -Force
-                Set-ModuleReadMe -TemplateFilePath $filename
-                if ($LASTEXITCODE -gt 0) {
-                    throw "Code:$LASTEXITCODE"
+                $templateContent = $buildJson | ConvertFrom-Json -AsHashtable
+                Set-ModuleReadMe -TemplateFilePath $filename -PreLoadedContent @{
+                    TemplateFileContent = $templateContent
                 }
-            }
-            az bicep build --file $filename --stdout 2>&1 > $null
-            if ($LASTEXITCODE -gt 0) {
-                throw "Code:$LASTEXITCODE (build)"
             }
             [void]$output.AppendLine("   OK")
         }
@@ -232,9 +236,13 @@ if ($Sequential -or $parentModules.Count -le 1) {
                 [void]$output.AppendLine("=> $($module.Name) (README only)")
 
                 try {
-                    Set-ModuleReadMe -TemplateFilePath $module.BicepFile
+                    $buildJson = az bicep build --file $module.BicepFile --stdout 2>$null
                     if ($LASTEXITCODE -gt 0) {
-                        throw "Code:$LASTEXITCODE"
+                        throw "Code:$LASTEXITCODE (build)"
+                    }
+                    $templateContent = $buildJson | ConvertFrom-Json -AsHashtable
+                    Set-ModuleReadMe -TemplateFilePath $module.BicepFile -PreLoadedContent @{
+                        TemplateFileContent = $templateContent
                     }
                     [void]$output.AppendLine("   OK")
                 }

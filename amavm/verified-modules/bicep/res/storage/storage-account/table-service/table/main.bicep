@@ -38,7 +38,7 @@ var builtInRoleNames = union(specificBuiltInRoleNames, minimalBuiltInRoleNames)
 // -------------------
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take(
     '${telemetryId}.res.storage-storageaccount-table.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, storageAccountName, name), 0, 4)}',
     64

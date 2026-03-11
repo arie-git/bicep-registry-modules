@@ -54,7 +54,7 @@ var versionInfo = loadJsonContent('version.json')
 var moduleVersion = versionInfo.version
 
 #disable-next-line no-deployments-resources
-resource avmTelemetry 'Microsoft.Resources/deployments@2024-03-01' = if (enableTelemetry) {
+resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableTelemetry) {
   name: take('${telemetryId}.res.insights-diagnosticsetting.${replace('-..--..-', '.', '-')}.${substring(uniqueString(deployment().name, location), 0, 4)}', 64)
   location: location
   properties: {
