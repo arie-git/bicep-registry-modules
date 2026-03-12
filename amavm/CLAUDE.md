@@ -114,10 +114,16 @@ Each test folder has:
 
 **Important:** The `br/amavm:` registry references point to a private ACR that is not accessible from all networks (codespace IPs are blocked). For local builds:
 
-1. **Swap** `br/amavm:res/network/private-endpoint:0.2.0` → `../../network/private-endpoint/main.bicep` (relative path) in the module's `main.bicep` and any child modules (e.g. `slot/main.bicep`)
+1. **Swap** ACR refs to local paths (automated):
+   ```powershell
+   ./utils/localBuildHelper.ps1 -Action Replace
+   ```
 2. **Build**: `az bicep build --file main.bicep`
 3. **Build tests**: `az bicep build --file tests/e2e/<test>/main.test.bicep`
-4. **Revert** the swap before committing
+4. **Revert** the swap before committing:
+   ```powershell
+   ./utils/localBuildHelper.ps1 -Action Restore
+   ```
 
 Or use the build script:
 ```powershell
