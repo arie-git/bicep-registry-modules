@@ -582,14 +582,8 @@ module webAppApiMod 'br/amavm:res/web/site:0.1.0' = {
     }
     authSettingApplicationId: entraApplicationId
     authSettingV2ConfigurationAdditional: {
-      enabled: true
-      platform: {
-        enabled: false // Not using Easy Auth
-        runtimeVersion: '~1'
-      }
       globalValidation: {
-        requireAuthentication: true
-        unauthenticatedClientAction: 'Return401' // For API
+        unauthenticatedClientAction: 'Return401' // API-style: reject unauthenticated requests
       }
       identityProviders: {
         azureActiveDirectory: {

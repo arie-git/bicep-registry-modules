@@ -85,7 +85,13 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 
 ### Open — Scenario 8 src/ cleanup
 
-- [ ] Update `src/` directory for new architecture (old frontend/backend code references APIM)
+- [ ] Rewrite `src/` for PostgreSQL + Service Bus architecture (currently has Cosmos DB triggers + Azure Files from old APIM design):
+  - [ ] `backend-dotnet/CosmosDbTrigger.cs` → Service Bus trigger + PostgreSQL write
+  - [ ] `backend-python/function_app.py` → Service Bus trigger + PostgreSQL write
+  - [ ] `frontend-dotnet/HttpTrigger1.cs` → HTTP trigger that sends to Service Bus queue
+  - [ ] Update .csproj files: remove CosmosDB packages, add ServiceBus + Npgsql
+  - [ ] Update `requirements.txt`: add azure-servicebus + psycopg2-binary
+  - [ ] Update local.settings.json files: remove Cosmos/Files config, add ServiceBus + PostgreSQL
 
 ---
 
@@ -212,11 +218,11 @@ All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump
 
 ## P4 — Cleanup
 
-- [ ] Remove `modules/infra/storage/cosmos-db/` (S2 migrated)
-- [ ] Remove `modules/infra/integration/event-hub/` (S4 migrated)
-- [ ] Remove `modules/infra/integration/data-factory/` (S10 migrated — keep `integrationRuntime.bicep` + `role-assignment.bicep` for linked IR)
-- [ ] Remove `modules/infra/network/private-endpoint/` (all PE refs migrated)
-- [ ] Remove `modules/infra/integration/api-management/` (S8 repurposed, no longer needed)
+- [x] Remove `modules/infra/storage/cosmos-db/` (S2 migrated)
+- [x] Remove `modules/infra/integration/event-hub/` (S4 migrated)
+- [x] Remove `modules/infra/integration/data-factory/` partial — removed main.bicep, linkedService.bicep, trigger.bicep; kept `integrationRuntime.bicep` + `role-assignment.bicep` for S10 linked IR
+- [x] Remove `modules/infra/network/private-endpoint/` (all PE refs migrated)
+- [x] Remove `modules/infra/integration/api-management/` (S8 repurposed)
 - [ ] Audit remaining `modules/infra/` for other removable modules
 - [ ] Keep: scenario-specific helpers, deployment scripts, `public-ip-address`
 
@@ -244,4 +250,4 @@ All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump
 Tracked in [`amavm/verified-modules/todo.md`](../amavm/verified-modules/todo.md). Scenario-side tasks remain here:
 
 - [ ] S5/S7: Create Entra ID app registrations with FIC (follow S16 pattern with `Microsoft.Graph/applications@v1.0`)
-- [ ] S11 API web app: check if `authSettingV2ConfigurationAdditional` with `platform.enabled: false` is drcp-aps-18 non-compliant
+- [x] S11 API web app: fixed `platform.enabled: false` → removed (drcp-aps-18 non-compliant). Also noted: both web apps still use MICROSOFT_PROVIDER_AUTHENTICATION_SECRET (KV ref) — should migrate to FIC
