@@ -1,182 +1,13 @@
 # Multi-Agent Instructions
 
-**RULE: Always use installed Azure skills (`/azure:*`) when performing Azure-related work.** See the Mandatory Skill Usage Policy in the Azure Skills section below. Do not perform Azure tasks manually when a skill covers it — skills provide up-to-date best practices, correct API patterns, and validated configurations that manual work may miss.
-
-## Scope
-
-Only the **22 whitelisted Azure components** (defined in `policy/knowledge_base/Azure-Components/`) are in scope. All other upstream AVM modules are ignored.
-
-### CI/CD
-
-AMAVM uses **Azure DevOps** for build and publishing pipelines (`amavm/pipelines/`). This is intentional and will NOT change. Do not plan any CI/CD migration. Microsoft AVM's GitHub Actions workflows are irrelevant to amavm.
-
-### File Scope
-
-- **Only work with:** `.bicep` files and their associated `README.md` files.
-- **Ignore:** JSON ARM templates (`main.json`), pipelines, GitHub workflows, PowerShell scripts, test infrastructure, and all other file types unless they are directly referenced by a `.bicep` file (e.g., `upstream.json`, `version.json`).
-- **Read-only sources:** `microsoft-avm/` and `policy/` — NEVER modify files outside `amavm/verified-modules/`.
-
-### Write Boundary
-
-**All file writes MUST be within `amavm/verified-modules/` only.** No exceptions.
-
-- `microsoft-avm/` — read-only reference. Never modify.
-- `policy/` — read-only compliance source. Never modify.
-- `amavm/pipelines/`, `amavm/utils/`, `amavm/samples/` — out of scope. Never modify.
-- `tasks/` — task tracking files only (todo.md, lessons.md, instructions.md).
-
-### Validation Toolchain
-
-All three tools are available in this environment:
-
-| Tool | Version | Path |
-|---|---|---|
-| Bicep CLI | 0.41.2 | `/usr/local/bin/bicep` |
-| Azure CLI | 2.84.0 | `/usr/bin/az` |
-| PowerShell | 7.5.4 | `/usr/bin/pwsh` |
-
-#### 1. Bicep Build (minimum acceptance gate)
-
-Validates that a module compiles without errors. **Every change must pass this.**
-
-```bash
-bicep build amavm/verified-modules/bicep/res/<category>/<module>/main.bicep
-```
-
-#### 2. Bicep Lint
-
-Shows warnings (API version drift, unused imports, etc.). Informational — warnings don't block.
-
-```bash
-bicep lint amavm/verified-modules/bicep/res/<category>/<module>/main.bicep
-```
-
-#### 3. Build Script (PowerShell) — full module build
-
-Runs code checking and optionally generates README.md. Run from `amavm/verified-modules/`.
-
-```bash
-cd /workspaces/bicep-registry-modules/amavm/verified-modules
-pwsh -Command "./utils/buildBicepFiles.ps1 -moduleName 'res/<category>/<module>'"
-```
-
-With README generation:
-
-```bash
-pwsh -Command "./utils/buildBicepFiles.ps1 -moduleName 'res/<category>/<module>' -buildReadme 'True'"
-```
-
-#### 4. README Generation (PowerShell)
-
-Generates `README.md` from `main.bicep` metadata and tests. Run from `amavm/verified-modules/`.
-
-```bash
-pwsh -Command "Import-Module ./utils/setModuleReadMe.ps1 -Force; Set-ModuleReadMe -TemplateFilePath 'bicep/res/<category>/<module>/main.bicep'"
-```
-
-#### 5. README Comparison (PowerShell)
-
-Checks if generated README matches the committed one. Used by CI to detect drift.
-
-```bash
-pwsh -Command "./utils/compareReadMe.ps1"
-```
-
-#### Validation Sequence for Karen (Validator Agent)
-
-1. `bicep build` — must exit 0 (hard gate)
-2. `bicep lint` — review warnings, flag anything critical
-3. `pwsh buildBicepFiles.ps1` — full build check
-4. `pwsh setModuleReadMe.ps1` + `compareReadMe.ps1` — README drift check
-5. `/azure:azure-validate` — pre-deployment readiness check (if `az login` available)
-6. `/azure:azure-compliance` — spot-check module against subscription policies (if `az login` available)
-
-### Azure Skills (Slash Commands)
-
-The following Azure skills are installed and available via `/skill-name` syntax. Use them to leverage Azure-specific capabilities without leaving the agent workflow.
-
-#### Resource & Infrastructure Skills
-
-| Skill | Trigger | Use For |
-|---|---|---|
-| `/azure:azure-prepare` | Creating or modernizing apps, generating Bicep/Terraform, Dockerfiles, `azure.yaml` | Scaffolding new Azure apps, adding infra for deployment |
-| `/azure:azure-validate` | Pre-deployment validation | Deep checks on Bicep/Terraform, config, permissions before deploying |
-| `/azure:azure-deploy` | Deploying already-prepared apps (`azd up`, `bicep deploy`, `terraform apply`) | Executing deployments — requires `.azure/plan.md` from `azure-prepare` |
-| `/azure:azure-resource-lookup` | Listing/finding Azure resources ("list my VMs", "show storage accounts") | Resource inventory and discovery via Azure Resource Graph |
-| `/azure:azure-resource-visualizer` | Architecture diagrams from resource groups | Generating Mermaid diagrams showing resource relationships |
-
-#### Security, Compliance & Identity Skills
-
-| Skill | Trigger | Use For |
-|---|---|---|
-| `/azure:azure-compliance` | Compliance scans, security audits, Key Vault expiration checks | Best-practices assessment, expired certs/secrets, orphaned resources |
-| `/azure:azure-rbac` | Finding the right RBAC role for least-privilege access | Role selection, CLI/Bicep role assignment generation |
-| `/azure:entra-app-registration` | App registration, OAuth, MSAL integration | Configuring Entra ID authentication and service principals |
-
-#### Diagnostics, Cost & Monitoring Skills
-
-| Skill | Trigger | Use For |
-|---|---|---|
-| `/azure:azure-diagnostics` | Debugging production issues (Container Apps, Function Apps, KQL) | Log analysis, health checks, cold start/image pull troubleshooting |
-| `/azure:azure-cost-optimization` | Reducing Azure spend | Utilization analysis, orphaned resources, rightsizing recommendations |
-| `/azure:appinsights-instrumentation` | Instrumenting apps with Application Insights | Telemetry patterns, SDK setup, APM best practices |
-| `/azure:azure-kusto` | KQL queries against Azure Data Explorer / ADX | Log analytics, time series, anomaly detection |
-
-#### Compute, Storage & Messaging Skills
-
-| Skill | Trigger | Use For |
-|---|---|---|
-| `/azure:azure-compute` | VM size recommendations, VMSS, autoscale | Workload-based VM selection, pricing estimates, scale-out guidance |
-| `/azure:azure-storage` | Blob, File Shares, Queue, Table, Data Lake | Upload/download, access tiers, lifecycle management |
-| `/azure:azure-messaging` | Event Hubs / Service Bus SDK issues | AMQP errors, message lock, checkpoint issues, SDK troubleshooting |
-
-#### AI & Agent Skills
-
-| Skill | Trigger | Use For |
-|---|---|---|
-| `/azure:azure-ai` | AI Search, Speech, OpenAI, Document Intelligence | Vector/hybrid search, speech-to-text, OCR |
-| `/azure:azure-aigateway` | API Management as AI Gateway | Semantic caching, token limits, content safety, load balancing |
-| `/azure:microsoft-foundry` | Foundry agents end-to-end | Deploy, evaluate, optimize agents; dataset curation, batch eval |
-| `/azure:azure-hosted-copilot-sdk` | Building GitHub Copilot SDK apps on Azure | Scaffold, deploy, and host Copilot-powered apps |
-
-#### Migration & Other Skills
-
-| Skill | Trigger | Use For |
-|---|---|---|
-| `/azure:azure-cloud-migrate` | Cross-cloud migration (AWS/GCP to Azure) | Assessment reports, code conversion to Azure services |
-
-#### Mandatory Skill Usage Policy
-
-**These skills MUST be used whenever their trigger conditions are met.** Do not perform Azure work manually when a skill covers it.
-
-| When you are... | You MUST use |
-|---|---|
-| Creating or modifying RBAC / role assignments in Bicep | `/azure:azure-rbac` to identify the correct least-privilege role |
-| Auditing a module for policy compliance | `/azure:azure-compliance` alongside the local `policy/Generic/` check |
-| Validating Bicep before marking a task done | `/azure:azure-validate` after `bicep build` passes |
-| Debugging a deployment failure or reading logs | `/azure:azure-diagnostics` |
-| Working with `diagnosticSettings`, log categories, or KQL | `/azure:azure-kusto` for query help |
-| Adding or modifying Application Insights telemetry | `/azure:appinsights-instrumentation` |
-| Working with storage (blob, queue, table, lifecycle) params | `/azure:azure-storage` for API patterns |
-| Working with Event Hub or Service Bus SDK/config issues | `/azure:azure-messaging` |
-| Generating Bicep/Terraform for a new module or feature | `/azure:azure-prepare` for scaffolding best practices |
-| Looking up deployed resources or checking subscription state | `/azure:azure-resource-lookup` |
-| Creating architecture diagrams for READMEs or docs | `/azure:azure-resource-visualizer` |
-| Setting up Entra ID auth, app registrations, or MSAL | `/azure:entra-app-registration` |
-| Evaluating cost impact of a module's SKU/tier defaults | `/azure:azure-cost-optimization` |
-
-**Invocation:** Skills are invoked as `/azure:<skill-name>` in conversation.
-
-**Prerequisites:** Skills that query live Azure resources (resource-lookup, diagnostics, cost-optimization, compliance) require an authenticated Azure CLI session (`az login`). If not authenticated, note the finding and flag it for later verification.
-
-**Sequencing:**
-- `azure-prepare` → `azure-validate` → `azure-deploy` (never skip validate)
-- `azure-compliance` + `azure-rbac` should run during policy audit phases
-- `azure-validate` should run as part of Karen's validation sequence (after `bicep build`)
+> For AMAVM module development: see [`amavm/CLAUDE.md`](../amavm/CLAUDE.md)
+> For DRCP test scenarios: see [`drcptestcases/CLAUDE.md`](../drcptestcases/CLAUDE.md)
 
 ---
 
 ## Whitelisted Components → Module Mapping
+
+Only the **22 whitelisted Azure components** (defined in `policy/knowledge_base/Azure-Components/`) are in scope. All other upstream AVM modules are ignored.
 
 | # | Whitelisted Component | AVM Resource Path | Upstream Version | amavm Synced To | amavm Status |
 |---|---|---|---|---|---|
@@ -203,7 +34,7 @@ The following Azure skills are installed and available via `/skill-name` syntax.
 | 21 | Storage-Account | storage/storage-account | 0.32 | 0.32 | Present |
 | 22 | Subscription | _(platform-level, not a res module)_ | N/A | N/A | N/A |
 
-**Note:** "amavm Synced To" reflects the upstream version whose API versions and key params were synced into the fork. However, 17 modules' `upstream.json` files still show the original fork-point version — see SYNC Phase 2 in `tasks/todo.md`.
+**Note:** "amavm Synced To" reflects the upstream version whose API versions and key params were synced into the fork.
 
 ### Supporting Modules (present in amavm, required by whitelisted modules)
 
@@ -217,47 +48,9 @@ The following Azure skills are installed and available via `/skill-name` syntax.
 
 ---
 
-## Projects Overview
-
-### Project 1: Microsoft AVM (Upstream) — Read-Only Reference
-
-- **Location:** `microsoft-avm/avm/res/` (only whitelisted modules)
-- **Role:** Source of truth for module structure. Never modify.
-
-### Project 2: Company AVM (amavm) — Active Development
-
-- **Location:** `amavm/verified-modules/bicep/res/`
-- **Shared code:** `amavm/verified-modules/bicep-shared/`
-  - `types.bicep` — shared type definitions (corsRuleType, customerManagedKeyType, diagnosticSettingType, lockType, managedIdentitiesType, networkAclsType, privateEndpointType, roleAssignmentType)
-  - `environments.bicep` — shared constants (telemetryId, builtInRoleNames, nvaIpAddress)
-- **Role:** Active development target. Only writable location.
-
-### Project 3: Company Policy & Knowledge Base — Read-Only Compliance Source
-
-- **Location:** `policy/`
-- **Policy definitions:** `policy/Generic/*.json` (315 JSON files)
-- **Knowledge base:** `policy/knowledge_base/Azure-Components/<Component>/`
-- **Role:** Source of truth for compliance. Never modify.
-
-### How Projects Relate
-
-```
-microsoft-avm/avm/res/  (upstream, read-only)
-         |
-         | fork + customize per checklist below
-         v
-amavm/verified-modules/bicep/res/  (company modules, writable)
-         |
-         | must comply with
-         v
-policy/Generic/ + policy/knowledge_base/  (company policy, read-only)
-```
-
----
-
 ## Module Customization Checklist
 
-When forking an upstream module into amavm, or auditing an existing module, every item below must be satisfied. This is derived from `amavm/verified-modules/README.md`.
+When forking an upstream module into amavm, or auditing an existing module, every item below must be satisfied. Derived from `amavm/verified-modules/README.md`.
 
 ### Metadata (in main.bicep)
 
@@ -395,8 +188,6 @@ When forking an upstream module into amavm, or auditing an existing module, ever
 
 ## Orchestration Model
 
-Follow `claude.md` at repo root.
-
 ### Main Agent (Orchestrator)
 
 - Plan mode for non-trivial tasks.
@@ -425,7 +216,7 @@ Follow `claude.md` at repo root.
 1. **Plan agent** — design migration/integration strategy
 2. `/azure:azure-rbac` — verify role assignments in scenario are least-privilege
 3. **General-purpose agent (worktree)** — implement changes
-4. `bicep build` — must pass (use `swapPeReferences.ps1` for local PE path swap if no ACR access)
+4. `bicep build` — must pass (use `localBuildHelper.ps1` for local PE path swap if no ACR access)
 5. `/azure:azure-validate` — pre-deployment readiness check
 6. `/azure:azure-resource-visualizer` — generate architecture diagram for README (requires deployed resources)
 7. `/azure:azure-diagnostics` — troubleshoot any deployment failures
@@ -443,16 +234,3 @@ Follow `claude.md` at repo root.
 2. `/azure:azure-validate` — check new API versions and params are valid
 3. Update `upstream.json`, verify `evidenceOfNonCompliance`, run `bicep build`
 4. **Karen (Validator)** — final acceptance gate
-
-### Self-Improvement
-
-- Update `tasks/lessons.md` after any user correction.
-- Review lessons at session start.
-
-## Core Principles (from claude.md)
-
-1. **Simplicity First** — minimal code impact.
-2. **No Laziness** — find root causes, no temporary fixes.
-3. **Minimal Impact** — only touch what's necessary.
-4. **Demand Elegance** — for non-trivial changes, pause and ask "is there a more elegant way?"
-5. **Use Skills** — always use Azure skills when their trigger conditions are met. Never do manually what a skill can do.
