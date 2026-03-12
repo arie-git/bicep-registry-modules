@@ -4,7 +4,13 @@ param kvName string
 
 param adlsName string
 
+@description('UC ADLS storage account name for bronze layer output')
+param adlsUcName string = ''
+
 param filename string = utcNow()
+
+// When adlsUcName is provided, write to UC bronze container instead of raw ADLS
+var useUcBronze = !empty(adlsUcName)
 
 resource adf 'Microsoft.DataFactory/factories@2018-06-01' existing = {
   name: adfName
@@ -30,6 +36,20 @@ module adlsLinkedService '../../modules/infra/integration/data-factory/linkedSer
     linkedServiceName: 'LS-ADLS-${adlsName}01'
     linkedServiceType: 'AzureBlobFS'
     adlsUri: 'https://${adlsName}.dfs${environment().suffixes.storage}/'
+  }
+}
+
+// UC ADLS linked service — only deployed when writing to bronze layer
+module adlsUcLinkedService '../../modules/infra/integration/data-factory/linkedService.bicep' = if (useUcBronze) {
+  name: '${deployment().name}ls${adlsUcName}'
+  dependsOn: [
+    kvLinkedService
+  ]
+  params: {
+    adfName: adfName
+    linkedServiceName: 'LS-ADLS-${adlsUcName}01'
+    linkedServiceType: 'AzureBlobFS'
+    adlsUri: 'https://${adlsUcName}.dfs${environment().suffixes.storage}/'
   }
 }
 
@@ -85,6 +105,7 @@ resource dsSql 'Microsoft.DataFactory/factories/datasets@2018-06-01' = {
   }
 }
 
+// Original ADLS dataset — raw landing zone
 resource dsAdls 'Microsoft.DataFactory/factories/datasets@2018-06-01' = {
   name: 'DS_ADLS_Employees'
   parent: adf
@@ -107,17 +128,45 @@ resource dsAdls 'Microsoft.DataFactory/factories/datasets@2018-06-01' = {
   }
 }
 
+// UC Bronze dataset — writes to Unity Catalog bronze container
+resource dsAdlsUcBronze 'Microsoft.DataFactory/factories/datasets@2018-06-01' = if (useUcBronze) {
+  name: 'DS_ADLS_UC_Bronze_Employees'
+  parent: adf
+  dependsOn: [
+    adlsUcLinkedService
+  ]
+  properties: {
+    linkedServiceName: {
+      referenceName: 'LS-ADLS-${adlsUcName}01'
+      type: 'LinkedServiceReference'
+    }
+    type: 'AzureBlobFSFile'
+    typeProperties: {
+      format: {
+        type: 'JsonFormat'
+      }
+      folderPath: 'bronze/employees'
+      fileName: '${filename}.json'
+    }
+  }
+}
+
+// Sink dataset name: UC bronze when available, otherwise raw ADLS
+var sinkDatasetName = useUcBronze ? 'DS_ADLS_UC_Bronze_Employees' : 'DS_ADLS_Employees'
+
 resource pipeline 'Microsoft.DataFactory/factories/pipelines@2018-06-01' = {
   name: 'PL-Datapipeline1'
   parent: adf
   dependsOn: [
     dsAdls
     dsSql
+    ...(useUcBronze ? [dsAdlsUcBronze] : [])
   ]
   properties: {
+    description: useUcBronze ? 'Copy SQL to UC bronze layer (ADLS)' : 'Copy SQL to raw ADLS landing zone'
     activities: [
       {
-        name: 'Copy Sql to ADLS'
+        name: useUcBronze ? 'Copy Sql to UC Bronze' : 'Copy Sql to ADLS'
         type: 'Copy'
         typeProperties: {
           sink: {
@@ -139,7 +188,7 @@ resource pipeline 'Microsoft.DataFactory/factories/pipelines@2018-06-01' = {
         ]
         outputs: [
           {
-            referenceName: 'DS_ADLS_Employees'
+            referenceName: sinkDatasetName
             type: 'DatasetReference'
           }
         ]

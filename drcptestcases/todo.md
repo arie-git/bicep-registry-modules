@@ -67,13 +67,15 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 
 ### Open — Scenario 10 Unity Catalog + Pipeline Expansion
 
-- [ ] Cluster policies to enforce `enableNoPublicIp: true` (drcp-adb-r04) — workspace-level, not Bicep
-- [ ] Create `scenario10/src/setup-unity-catalog.py` — post-deployment UC setup notebook
-- [ ] Add `src/DataPipeline4.bicep` — ADF → Databricks → UC validation
-- [ ] Add `src/DataPipeline5.bicep` — Medallion: bronze → silver → gold
-- [ ] Update DataPipeline1 to write to UC bronze table (not raw ADLS)
-- [ ] Validate: `bicep build`, `what-if`, deploy + run UC notebook, `/azure:azure-compliance`
-- [ ] Document medallion architecture pattern in README
+- [x] Cluster policies to enforce `enableNoPublicIp: true` (drcp-adb-r04) — added to `setup-unity-catalog.py` step 8 (Databricks API)
+- [x] Create `scenario10/src/setup-unity-catalog.py` — post-deployment UC setup notebook
+- [x] Add `src/DataPipeline4.bicep` — ADF → Databricks → UC validation
+- [x] Add `src/DataPipeline5.bicep` — Medallion: bronze → silver → gold
+- [x] Update DataPipeline1 to write to UC bronze table (optional via `adlsUcName` param)
+- [x] Validate: `bicep build` passes — DataPipeline1/4/5 clean; main.bicep blocked by ACR firewall (BCP192, expected from codespace)
+- [ ] Validate: `what-if` (requires DRCP subscription + ACR access), deploy + run UC notebook, `/azure:azure-compliance`
+- [x] Document medallion architecture pattern in README
+- [x] Update DataPipelines pipeline YAML with DataPipeline4 + 5 steps
 
 ### Open — Scenario 5 Public IP (blocked)
 

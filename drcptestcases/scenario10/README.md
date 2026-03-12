@@ -8,7 +8,8 @@ Two-tier deployment:
 
 - **`main.bicep`** -- Application-level infrastructure: Databricks workspace (VNet-injected), ADF with linked services, ADLS data lake, UC storage, Access Connector, Key Vault, networking, diagnostics.
 - **`central.bicep`** -- Central/shared infrastructure: ADF with Self-Hosted IR, Key Vault (SHIR auth keys), networking, Log Analytics. Deployed once per environment for shared IR access.
-- **`src/DataPipeline*.bicep`** -- 3 ADF pipelines deployed as resource-group-scoped templates after infrastructure is in place.
+- **`src/DataPipeline*.bicep`** -- 5 ADF pipelines deployed as resource-group-scoped templates after infrastructure is in place.
+- **`src/setup-unity-catalog.py`** -- Databricks notebook for post-deployment UC setup (storage credentials, external locations, catalog, schemas, sample tables).
 
 ## Components
 
@@ -56,9 +57,11 @@ Two-tier deployment:
 
 | Pipeline | Pattern |
 |---|---|
-| DataPipeline1 | SQL Server to ADLS (JSON format) |
+| DataPipeline1 | SQL Server to ADLS (JSON) -- optionally writes to UC bronze when `adlsUcName` is set |
 | DataPipeline2 | File Share to ADLS (binary copy) |
 | DataPipeline3 | SQL Server to ADLS with blob staging |
+| DataPipeline4 | ADF → Databricks notebook → Unity Catalog setup/validation |
+| DataPipeline5 | Medallion pipeline: bronze → silver → gold via Databricks notebooks |
 
 ## Unity Catalog Architecture
 
@@ -138,7 +141,7 @@ All linked services use managed identity authentication. No inline secrets or co
 | DatabricksPublicNetworkMustBeDisabled | drcp-adb-r01 | `publicNetworkAccess: 'Disabled'` | PASS (AMAVM default) |
 | DatabricksSupportedSKUs | drcp-adb-r02 | Only `premium` SKU allowed | PASS (AMAVM default) |
 | DatabricksVirtualNetworkInjection | drcp-adb-r03 | Must use VNet injection (custom VNet params) | PASS |
-| DatabricksPublicIPMustBeDisabled | drcp-adb-r04 | `enableNoPublicIp: true` on cluster configs | N/A (workspace-level cluster policy, not a Bicep param) |
+| DatabricksPublicIPMustBeDisabled | drcp-adb-r04 | `enableNoPublicIp: true` on cluster configs | PASS (enforced via cluster policy in `setup-unity-catalog.py` step 8) |
 | DatabricksPrivateDNSZones | drcp-adb-r05 | Automated private link DNS for UI API endpoint | PASS (PE configured) |
 | DatabricksInfrastructureEncryptionMustBeEnabled | drcp-adb-w10 | DBFS infrastructure encryption enabled | PASS (AMAVM default) |
 | DatabricksManagedResourceGroupName | drcp-adb-w22 | Managed RG name must end with `-adbmanaged-rg` | PASS |
@@ -199,9 +202,28 @@ az deployment group create \
   -resourceFilter drcpdev1002
 ```
 
+### Medallion Architecture (DataPipeline4 + DataPipeline5)
+
+DataPipeline4 and 5 validate end-to-end Unity Catalog integration via ADF-orchestrated Databricks notebooks:
+
+```
+DataPipeline4: Setup/validation
+  ADF → ls_databricks → setup-unity-catalog notebook
+    → Creates: storage credential, external locations, catalog, schemas, sample tables
+    → Validates: Access Connector MI RBAC, PE connectivity, UC wiring
+
+DataPipeline5: Medallion transformation chain
+  ADF → ls_databricks → 3 sequential notebooks:
+    01_bronze_ingest  → Raw data ingestion into drcp_data.bronze
+    02_silver_transform → Cleanse/conform into drcp_data.silver (depends on bronze)
+    03_gold_aggregate → Business aggregates into drcp_data.gold (depends on silver)
+```
+
+DataPipeline1 can optionally write to the UC bronze layer (set `adlsUcName` parameter) instead of raw ADLS, feeding the medallion pipeline.
+
 ### Notes
 
 - The Databricks workspace requires 3 subnets: PE, public (delegated), and private (delegated). Subnets are deployed sequentially due to Azure VNet locking.
-- Unity Catalog metastore creation and catalog/schema setup are post-deployment steps. See `todo.md` Step 4 for the `setup-unity-catalog.py` notebook reference.
-- The `drcp-adb-r04` policy (no public IP on clusters) is enforced via Databricks workspace cluster policies, not Bicep infrastructure params.
+- Unity Catalog setup is a post-deployment step. Run `src/setup-unity-catalog.py` as a Databricks notebook (or via DataPipeline4) after infrastructure deploys.
+- The `drcp-adb-r04` policy (no public IP on clusters) is enforced via a Databricks cluster policy created by `setup-unity-catalog.py` step 8 (Databricks API, not an ARM resource).
 - Central ADF (`central.bicep`) deploys shared SHIR infrastructure. Application ADF (`main.bicep`) links to it in non-dev environments via `linkedIntegrationRuntime` and `masterAdfIr` params.

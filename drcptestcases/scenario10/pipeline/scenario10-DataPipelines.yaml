@@ -26,11 +26,23 @@ parameters:
     displayName: 'Storage Account Name'
     type: string
     default: '01'
+  - name: 'adlsUcName'
+    displayName: 'UC ADLS Storage Account Name (for bronze output)'
+    type: string
+    default: ''
+  - name: 'ucStorageAccountName'
+    displayName: 'UC Storage Account Name (for Databricks pipelines)'
+    type: string
+    default: ''
+  - name: 'accessConnectorId'
+    displayName: 'Databricks Access Connector Resource ID'
+    type: string
+    default: ''
   - name: 'location'
     type: string
-    default: 'westeurope'
+    default: 'swedencentral'
     values:
-      - 'westeurope'
+      - 'swedencentral'
       - 'northeurope'
   - name: 'environmentId'
     displayName: 'ServiceNow environment Id'
@@ -59,6 +71,9 @@ variables:
   kvName: '${{parameters.kvName}}'
   adlsName: '${{parameters.adlsName}}'
   saName: '${{parameters.storageAccountName}}'
+  adlsUcName: '${{parameters.adlsUcName}}'
+  ucStorageAccountName: '${{parameters.ucStorageAccountName}}'
+  accessConnectorId: '${{parameters.accessConnectorId}}'
 
 pool: CPP-Ubuntu2204-Preview
 
@@ -112,6 +127,29 @@ extends:
                     adlsName: '${{variables.adlsName}}'
                     storageAccountName: '${{variables.saName}}'
 
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  taskName: '${{variables.folderName}}/src/DataPipeline4.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline4.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    ucStorageAccountName: '${{variables.ucStorageAccountName}}'
+                    accessConnectorId: '${{variables.accessConnectorId}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  taskName: '${{variables.folderName}}/src/DataPipeline5.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline5.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    ucStorageAccountName: '${{variables.ucStorageAccountName}}'
+
           - job: deployRun
             displayName: 'Run the deployment'
             dependsOn: deployWhatif
@@ -158,3 +196,28 @@ extends:
                     kvName: '${{variables.kvName}}'
                     adlsName: '${{variables.adlsName}}'
                     storageAccountName: '${{variables.saName}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  whatIf: ''
+                  taskName: '${{variables.folderName}}/src/DataPipeline4.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline4.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    ucStorageAccountName: '${{variables.ucStorageAccountName}}'
+                    accessConnectorId: '${{variables.accessConnectorId}}'
+
+              - template: /modules/pipelines/tpl/tasks/powershell/tpl_pw_bicep_sub_deploy_task.yaml@self
+                parameters:
+                  whatIf: ''
+                  taskName: '${{variables.folderName}}/src/DataPipeline5.bicep'
+                  bicepFilePath: '${{variables.folderName}}/src'
+                  bicepFileName: 'DataPipeline5.bicep'
+                  location: '${{parameters.location}}'
+                  serviceConnectionName: '${{variables.serviceConnectionName}}'
+                  bicepParameters:
+                    adfName: '${{variables.adfName}}'
+                    ucStorageAccountName: '${{variables.ucStorageAccountName}}'
