@@ -40,6 +40,12 @@ param networkAddressSpace string = ''
 @description('Object ID of the group that should have access to the environment in DEV. Leave empty for non-DEV environments.')
 param engineersGroupObjectId string = ''
 
+@description('Application (client) ID of the Entra ID app registration for web app authentication.')
+param authSettingApplicationId string = ''
+
+@description('Client ID of the managed identity used for FIC assertion (OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID). For system-assigned MI, use the app\'s own client ID after first deployment.')
+param authSettingMiClientId string = ''
+
 param tags object = {
   environmentId: environmentId
   applicationId: applicationId
@@ -445,24 +451,20 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
     kind: 'functionapp'
     serverFarmResourceId: appServicePlan.outputs.resourceId
     storageAccountResourceId: storageAccount.outputs.resourceId
+    authSettingApplicationId: authSettingApplicationId
     privateEndpoints: [
       {
         subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
       }
     ]
     virtualNetworkSubnetId: subnetEgress.outputs.resourceId
-    
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     diagnosticSettings: [
       {
-        name: 'customSetting'
-        logCategoriesAndGroups: [
-          {
-            category: 'FunctionAppLogs'
-          }
-          {
-            category: 'AppServiceAuthenticationLogs'
-          }
-        ]        
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
       }
     ]
@@ -472,6 +474,7 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
     appSettingsKeyValuePairs: {
       FUNCTIONS_EXTENSION_VERSION: '~4'
       FUNCTIONS_WORKER_RUNTIME: 'dotnet'
+      OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: authSettingMiClientId
     }
     tags: tags
     
@@ -486,7 +489,7 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
     location: vNet.location
     serverFarmResourceId: appServicePlan.outputs.resourceId
     kind: 'app'
-    authSettingV2Configuration:{}
+    authSettingApplicationId: authSettingApplicationId
     privateEndpoints: [
       {
         subnetResourceId: subnetPrivateEndpoints.outputs.resourceId
@@ -501,10 +504,13 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
     appInsightResourceId: applicationInsights.outputs.resourceId
     appSettingsKeyValuePairs: {
       WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
+      OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: authSettingMiClientId
     }
-    vnetRouteAllEnabled: true
-    vnetContentShareEnabled: true
-    vnetImagePullEnabled: true
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     tags: tags
   }
 }
@@ -661,6 +667,7 @@ module appGw 'br/amavm:res/network/application-gateway:0.1.0' = {
           match: {
             statusCodes: [
               '200-399'
+              '401'
             ]
           }
         }

@@ -460,17 +460,13 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
         }
       ]
       virtualNetworkSubnetId: subnetOut.outputs.resourceId
+      outboundVnetRouting: {
+        allTraffic: true
+        contentShareTraffic: true
+        imagePullTraffic: true
+      }
       diagnosticSettings: [
         {
-          name: 'customSetting'
-          logCategoriesAndGroups: [
-            {
-              category: 'FunctionAppLogs'
-            }
-            {
-              category: 'AppServiceAuthenticationLogs'
-            }
-          ]        
           workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
         }
       ]

@@ -532,6 +532,11 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = {
     serverFarmResourceId: appServicePlan.outputs.resourceId
     storageAccountResourceId: storageAccount.outputs.resourceId
     virtualNetworkSubnetId: subnetOut.outputs.resourceId
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
 
     privateEndpoints: [
       {
@@ -542,11 +547,6 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = {
 
     diagnosticSettings: [
       {
-        name: 'customSetting'
-        logCategoriesAndGroups: [
-          { category: 'FunctionAppLogs' }
-          { category: 'AppServiceAuthenticationLogs' }
-        ]
         workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
       }
     ]

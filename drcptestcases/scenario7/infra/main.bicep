@@ -46,6 +46,12 @@ param engineersContactEmail string = 'apg-am-ccc-enablement@apg-am.nl'
 
 param doDeployApp bool = false
 
+@description('Application (client) ID of the Entra ID app registration for web app authentication.')
+param authSettingApplicationId string = ''
+
+@description('Client ID of the managed identity used for FIC assertion (OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID). For system-assigned MI, use the app\'s own client ID after first deployment.')
+param authSettingMiClientId string = ''
+
 var mytags = union(tags, {
   environmentId: environmentId
   applicationId: applicationId
@@ -485,11 +491,12 @@ module webApp 'br/amavm:res/web/site:0.1.0' = {
       }
     ]
     appInsightResourceId: applicationInsights.outputs.resourceId
-    authSettingV2Configuration: {}
+    authSettingApplicationId: authSettingApplicationId
     appSettingsKeyValuePairs: {
       FUNCTIONS_EXTENSION_VERSION: '~4'
       WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
       WEBSITES_ENABLE_APP_SERVICE_STORAGE: false
+      OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: authSettingMiClientId
     }
     siteConfigurationAdditional: {
       linuxFxVersion: 'DOCKER|${acr.outputs.loginServer}/${dockerImage}'

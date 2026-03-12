@@ -220,9 +220,18 @@ param appInsightResourceId string?
 param appSettingsKeyValuePairs object?
 
 @description('''Optional. The auth settings V2 configuration.
-When using parameter defaults it configures Entra ID 'Easy Auth' using the application ID provided in the 'authSettingApplicationId' parameter.
+Three default profiles are selected based on `kind`:
 
-The default uses federated identity credentials (FIC) -- no client secret is stored. Instead, `clientSecretSettingName` points to the
+**Web Apps** (`kind` starts with `app`): Easy Auth with `RedirectToLoginPage`, token store, cookie expiration, nonce validation.
+Audience: `api://<appId>/user_impersonation`.
+
+**Function Apps** (`kind` contains `functionapp`): API-style auth with `Return401`, no token store, no cookie/nonce config.
+Audience: `api://<appId>`. Platform auth is enabled so the runtime enforces authentication.
+
+**Other** (API apps: `api`, `linux,api`): API-style auth with `Return401`, same as function apps.
+Note: Logic App Standard kinds contain `functionapp` and hit the Function App branch automatically.
+
+All profiles use federated identity credentials (FIC) -- no client secret is stored. Instead, `clientSecretSettingName` points to the
 app setting `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID`, whose value must be the client ID of the app's managed identity. Easy Auth V2
 reads this app setting and uses the managed identity to obtain tokens via federated credential assertion.
 
@@ -240,15 +249,16 @@ See: https://github.com/Azure-Samples/appservice-builtinauth-bicep for a complet
 ''')
 param authSettingV2Configuration object = startsWith(kind, 'app')
   ? {
+      // Web App defaults: Easy Auth with browser redirect, token store, cookies
       enabled: true
       platform: {
-        enabled: true // when Easy Auth
+        enabled: true
         runtimeVersion: '~1'
       }
       globalValidation: {
         requireAuthentication: true
-        unauthenticatedClientAction: 'RedirectToLoginPage' // 'Return401' when not Easy Auth
-        redirectToProvider: 'azureactivedirectory' // absent when not Easy Auth
+        unauthenticatedClientAction: 'RedirectToLoginPage'
+        redirectToProvider: 'azureactivedirectory'
       }
       identityProviders: {
         azureActiveDirectory: empty(authSettingApplicationId)
@@ -271,7 +281,7 @@ param authSettingV2Configuration object = startsWith(kind, 'app')
                 defaultAuthorizationPolicy: {
                   allowedPrincipals: {}
                   allowedApplications: [
-                    authSettingApplicationId // when Easy Auth
+                    authSettingApplicationId
                   ]
                 }
               }
@@ -306,40 +316,113 @@ param authSettingV2Configuration object = startsWith(kind, 'app')
       }
       clearInboundClaimsMapping: 'false'
     }
-  : {
-      enabled: true
-      platform: {
-        enabled: false
-        runtimeVersion: '~1'
-      }
-      globalValidation: {
-        requireAuthentication: true
-        unauthenticatedClientAction: 'Return401' // When not Easy Auth
-      }
-      identityProviders: {
-        azureActiveDirectory: empty(authSettingApplicationId)
-          ? null
-          : {
-              enabled: true
-              registration: {
-                openIdIssuer: 'https://sts.windows.net/${tenant().tenantId}/v2.0'
-                clientId: authSettingApplicationId
-                clientSecretSettingName: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
-              }
-              login: {
-                disableWWWAuthenticate: false
-              }
-              validation: {
-                jwtClaimChecks: {}
-                allowedAudiences: []
-                defaultAuthorizationPolicy: {
-                  allowedPrincipals: {}
-                  allowedApplications: []
+  : contains(kind, 'functionapp')
+    ? {
+        // Function App defaults: API-style auth with 401 response, no token store/cookies
+        enabled: true
+        platform: {
+          enabled: true
+          runtimeVersion: '~1'
+        }
+        globalValidation: {
+          requireAuthentication: true
+          unauthenticatedClientAction: 'Return401'
+        }
+        identityProviders: {
+          azureActiveDirectory: empty(authSettingApplicationId)
+            ? null
+            : {
+                enabled: true
+                registration: {
+                  openIdIssuer: 'https://sts.windows.net/${tenant().tenantId}/v2.0'
+                  clientId: authSettingApplicationId
+                  clientSecretSettingName: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
+                }
+                login: {
+                  disableWWWAuthenticate: false
+                }
+                validation: {
+                  jwtClaimChecks: {}
+                  allowedAudiences: [
+                    'api://${authSettingApplicationId}'
+                  ]
+                  defaultAuthorizationPolicy: {
+                    allowedPrincipals: {}
+                    allowedApplications: [
+                      authSettingApplicationId
+                    ]
+                  }
                 }
               }
-            }
+        }
+        login: {
+          tokenStore: {
+            enabled: false
+          }
+        }
+        httpSettings: {
+          requireHttps: true
+          routes: {
+            apiPrefix: '/.auth'
+          }
+          forwardProxy: {
+            convention: 'NoProxy'
+          }
+        }
       }
-    }
+    : {
+        // Other (api apps): API-style auth, same as function apps (drcp-aps-18 requires platform.enabled: true)
+        enabled: true
+        platform: {
+          enabled: true
+          runtimeVersion: '~1'
+        }
+        globalValidation: {
+          requireAuthentication: true
+          unauthenticatedClientAction: 'Return401'
+        }
+        identityProviders: {
+          azureActiveDirectory: empty(authSettingApplicationId)
+            ? null
+            : {
+                enabled: true
+                registration: {
+                  openIdIssuer: 'https://sts.windows.net/${tenant().tenantId}/v2.0'
+                  clientId: authSettingApplicationId
+                  clientSecretSettingName: 'OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID'
+                }
+                login: {
+                  disableWWWAuthenticate: false
+                }
+                validation: {
+                  jwtClaimChecks: {}
+                  allowedAudiences: [
+                    'api://${authSettingApplicationId}'
+                  ]
+                  defaultAuthorizationPolicy: {
+                    allowedPrincipals: {}
+                    allowedApplications: [
+                      authSettingApplicationId
+                    ]
+                  }
+                }
+              }
+        }
+        login: {
+          tokenStore: {
+            enabled: false
+          }
+        }
+        httpSettings: {
+          requireHttps: true
+          routes: {
+            apiPrefix: '/.auth'
+          }
+          forwardProxy: {
+            convention: 'NoProxy'
+          }
+        }
+      }
 
 @description('''Optional. Additional auth settings V2 configuration to the values in siteConfiguration parameter.
 
@@ -589,6 +672,7 @@ var defaultLogCategoryNamesWebApp = [
 ]
 var defaultLogCategoryNamesFunctionApp = [
   'FunctionAppLogs'
+  'AppServiceAuthenticationLogs'
 ]
 
 // Container-based function apps expose AppService* platform logs, not FunctionAppLogs

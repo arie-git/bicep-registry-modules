@@ -312,17 +312,13 @@ module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/comp
         }
       ]
       virtualNetworkSubnetId: subnetsMod[1].outputs.resourceId
+      outboundVnetRouting: {
+        allTraffic: true
+        contentShareTraffic: true
+        imagePullTraffic: true
+      }
       diagnosticSettings: [
         {
-          name: 'customSetting'
-          logCategoriesAndGroups: [
-            {
-              category: 'FunctionAppLogs'
-            }
-            {
-              category: 'AppServiceAuthenticationLogs'
-            }
-          ]
           workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
         }
       ]
@@ -485,8 +481,11 @@ module logicApp 'br/amavm:res/web/site:0.1.0' = {
       location: vNet.location
       kind: 'functionapp,workflowapp'
       serverFarmResourceId: aspLogic.outputs.resourceId
-      vnetRouteAllEnabled: true
-      vnetContentShareEnabled: true
+      outboundVnetRouting: {
+        allTraffic: true
+        contentShareTraffic: true
+        imagePullTraffic: true
+      }
       enabled: true
       storageAccountResourceId: storageAccountMod.outputs.resourceId
       storageAccountUseIdentityAuthentication: false
@@ -505,10 +504,12 @@ module logicApp 'br/amavm:res/web/site:0.1.0' = {
       virtualNetworkSubnetId: subnetsMod[2].outputs.resourceId
       diagnosticSettings: [
         {
-          name: 'customSetting'
           logCategoriesAndGroups: [
             {
               category: 'FunctionAppLogs'
+            }
+            {
+              category: 'AppServiceAuthenticationLogs'
             }
             {
               category: 'WorkflowRuntime'

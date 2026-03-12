@@ -481,6 +481,11 @@ module webAppUiMod 'br/amavm:res/web/site:0.1.0' = {
       }
     ]
     virtualNetworkSubnetId: subnetsMod[1].outputs.resourceId
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     diagnosticSettings: [
       {
         workspaceResourceId: logAnalyticsWorkspaceMod.outputs.resourceId
@@ -555,6 +560,11 @@ module webAppApiMod 'br/amavm:res/web/site:0.1.0' = {
       }
     ]
     virtualNetworkSubnetId: subnetsMod[2].outputs.resourceId
+    outboundVnetRouting: {
+      allTraffic: true
+      contentShareTraffic: true
+      imagePullTraffic: true
+    }
     diagnosticSettings: [
       {
         workspaceResourceId: logAnalyticsWorkspaceMod.outputs.resourceId

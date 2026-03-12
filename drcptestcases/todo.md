@@ -247,3 +247,21 @@ The AMAVM `res/web/site` module defaults diagnostic log categories to `AppServic
 - [ ] Validate with `bicep build` on DRCP tenant (codespace blocked by ACR firewall — BCP192)
 - [ ] Test: deploy a function app scenario (e.g., S2) without custom `diagnosticSettings` and verify `FunctionAppLogs` category is auto-configured
 - [ ] Submit PR to AMAVM upstream once validated
+
+### Function App Entra ID Auth Defaults (FIC)
+
+The AMAVM `res/web/site` module only configured Entra ID auth defaults for web apps (`startsWith(kind, 'app')`). Function apps fell into the "else" branch with `platform.enabled: false` and empty audiences — effectively no auth enforcement.
+
+Now three profiles: Web App (Easy Auth + redirect), Function App (API-style + Return401), API apps (same as function app).
+All use FIC (federated identity credentials) — same `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID` pattern, no client secrets.
+"Other" branch (api apps) also fixed: `platform.enabled: true` to comply with drcp-aps-18.
+
+- [x] Implement three-branch auth config in `amavm/verified-modules/bicep/res/web/site/main.bicep`
+- [x] Fix "other" branch: `platform.enabled: true`, full FIC + audiences (drcp-aps-18 compliance for `api`/`linux,api` kinds)
+- [x] S5: Remove `authSettingV2Configuration: {}`, add `authSettingApplicationId` + FIC app setting, update AppGW health probe to accept 401
+- [x] S7: Remove `authSettingV2Configuration: {}`, add `authSettingApplicationId` + FIC app setting
+- [ ] Validate with `bicep build` on DRCP tenant (codespace blocked by ACR firewall — BCP192)
+- [ ] Test: deploy a function app scenario with `authSettingApplicationId` set and verify Entra ID auth is enforced (Return401, correct audience)
+- [ ] S5/S7: Create Entra ID app registrations with FIC (follow S16 pattern with `Microsoft.Graph/applications@v1.0`)
+- [ ] Update `functionApp.max/main.test.bicep` e2e test to use defaults + `authSettingApplicationId` instead of full manual override
+- [ ] Submit PR to AMAVM upstream once validated
