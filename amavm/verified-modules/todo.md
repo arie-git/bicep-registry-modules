@@ -26,6 +26,27 @@
 
 ---
 
+## Audit Findings (2026-03-12)
+
+### HIGH — Must fix
+
+- [x] **H1**: `data-factory/factory/main.bicep:436` — PE tags use `tags` not `finalTags` (fixed)
+- [x] **H2**: `container-registry/registry/tests/e2e/defaults/` + `scope/` — `sku: 'Standard'` → `'Premium'` (fixed)
+- [x] **H3**: `service-bus/namespace/tests/e2e/defaults/` — added dependencies.bicep with VNet, wired subnetResourceId (fixed)
+
+### MEDIUM — Typos
+
+- [ ] **M1**: `web/site/tests/e2e/6logsConfig/dependencies.bicep:101` + `main.test.bicep:59` — `applicationInsigtsResourceId` (missing 'h')
+- [ ] **M2**: `network/private-endpoint/private-dns-zone-group/main.bicep:4` — `'There are nio special compliance requirements.'`
+- [ ] **M3**: 37 files — comment typo `condtion` → `condition`
+
+### LOW — Inconsistencies
+
+- [ ] **L1**: `network/application-gateway/tests/e2e/` uses `utils/e2e-template-assets/` while other network tests use `bicep-shared/e2e-template-assets/`
+- [ ] **L2**: `event-hub/namespace/tests/e2e/defaults/main.test.bicep` missing `namePrefix` param (works but inconsistent with other defaults tests)
+
+---
+
 ## General — Module Maintenance
 
 - [ ] Version bumps: inventory current vs latest versions across all modules

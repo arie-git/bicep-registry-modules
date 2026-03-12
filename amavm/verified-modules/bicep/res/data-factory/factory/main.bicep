@@ -433,7 +433,7 @@ module dataFactory_privateEndpoints 'br/amavm:res/network/private-endpoint:0.2.0
       lock: privateEndpoint.?lock ?? lock
       privateDnsZoneGroup: privateEndpoint.?privateDnsZoneGroup
       roleAssignments: privateEndpoint.?roleAssignments
-      tags: privateEndpoint.?tags ?? tags
+      tags: privateEndpoint.?tags ?? finalTags
       customDnsConfigs: privateEndpoint.?customDnsConfigs
       ipConfigurations: privateEndpoint.?ipConfigurations
       applicationSecurityGroupResourceIds: privateEndpoint.?applicationSecurityGroupResourceIds

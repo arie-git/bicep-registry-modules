@@ -55,7 +55,7 @@ module testDeployment '../../../main.bicep' = [
     params: {
       name: '${namePrefix}${serviceShort}001'
       location: resourceLocation
-      sku: 'Standard'
+      sku: 'Premium'
       scopeMaps: [
         {
           name: 'testscopemap'

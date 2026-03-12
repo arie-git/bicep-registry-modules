@@ -31,6 +31,15 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-11-01' = {
   location: resourceLocation
 }
 
+module nestedDependencies 'dependencies.bicep' = {
+  scope: resourceGroup
+  name: '${uniqueString(deployment().name, resourceLocation)}-nestedDependencies'
+  params: {
+    location: resourceLocation
+    virtualNetworkName: 'dep-${namePrefix}-vnet-${serviceShort}'
+  }
+}
+
 // ============== //
 // Test Execution //
 // ============== //
@@ -49,7 +58,7 @@ module testDeployment '../../../main.bicep' = [
       }
       privateEndpoints: [
         {
-          subnetResourceId: ''
+          subnetResourceId: nestedDependencies.outputs.subnetResourceId
         }
       ]
     }
