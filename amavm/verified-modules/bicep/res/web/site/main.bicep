@@ -434,7 +434,9 @@ param roleAssignments roleAssignmentType
 
 @description('''Optional. The diagnostic settings of the service.
 
-Currently known available log categories that are enabled by default:
+Default log categories are selected based on the `kind` parameter:
+
+**Web Apps** (kind: 'app', 'app,linux', 'api', etc.):
   'AppServiceHTTPLogs'
   'AppServiceConsoleLogs'
   'AppServiceAppLogs'
@@ -443,10 +445,18 @@ Currently known available log categories that are enabled by default:
   'AppServicePlatformLogs'
   'AppServiceAuthenticationLogs'
 
-Additionally available in Premiums sku that can be used :
+**Function Apps** (kind: 'functionapp', 'functionapp,linux', etc.):
+  'FunctionAppLogs'
+  'AppServiceAuthenticationLogs'
+
+**Container-based Function Apps** (kind: 'functionapp,linux,container', etc.):
+  Uses the same categories as web apps (AppService* logs).
+
+Additionally available in Premium SKU:
   'AppServiceAntivirusScanAuditLogs'
   'AppServiceFileAuditLogs'
 
+To override defaults, specify `logCategoriesAndGroups` in the diagnosticSettings parameter.
 ''')
 param diagnosticSettings diagnosticSettingType
 
@@ -562,8 +572,11 @@ var versionInfo = loadJsonContent('version.json')
 var moduleVersion = versionInfo.version
 var finalTags = union(tags ?? {}, {telemetryAVM: telemetryId, telemetryType: 'res', telemetryAVMversion: moduleVersion})
 
-// When no log categories specified, use this list as default
-var defaultLogCategoryNames = [
+// When no log categories specified, use defaults based on app type.
+// Web apps and container-based function apps use AppService* platform logs.
+// Code-based function apps use FunctionAppLogs (the only resource log category available).
+// See: https://learn.microsoft.com/azure/azure-monitor/reference/supported-logs/microsoft-web-sites-logs
+var defaultLogCategoryNamesWebApp = [
   // 'AppServiceAntivirusScanAuditLogs' // Not available in Standard SKU
   // 'AppServiceFileAuditLogs' // Not available in Standard SKU
   'AppServiceHTTPLogs'
@@ -574,8 +587,19 @@ var defaultLogCategoryNames = [
   'AppServicePlatformLogs'
   'AppServiceAuthenticationLogs'
 ]
+var defaultLogCategoryNamesFunctionApp = [
+  'FunctionAppLogs'
+]
+
+// Container-based function apps expose AppService* platform logs, not FunctionAppLogs
+var isFunctionApp = contains(kind, 'functionapp')
+var isContainerApp = contains(kind, 'container')
+var effectiveDefaultLogCategoryNames = (isFunctionApp && !isContainerApp)
+  ? defaultLogCategoryNamesFunctionApp
+  : defaultLogCategoryNamesWebApp
+
 var defaultLogCategories = [
-  for category in defaultLogCategoryNames: {
+  for category in effectiveDefaultLogCategoryNames: {
     category: category
   }
 ]

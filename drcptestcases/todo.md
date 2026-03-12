@@ -234,3 +234,16 @@ All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump
 - [ ] Prototype helper module in S18 or integrate into S14
 - [ ] Validate `WEBSITE_RUN_FROM_PACKAGE_BLOB_MI_RESOURCE_ID` works with system-assigned MI on DRCP
 - [ ] Test blob container creation via storage account module's `blobServices.containers` param
+
+---
+
+## AMAVM Module Improvements
+
+### Function App Diagnostic Settings Defaults
+
+The AMAVM `res/web/site` module defaults diagnostic log categories to `AppService*` (web app categories). Function apps need `FunctionAppLogs` instead. Container-based function apps still use `AppService*` categories.
+
+- [x] Implement conditional default log categories in `amavm/verified-modules/bicep/res/web/site/main.bicep` — splits by `kind` param (functionapp vs web app vs container)
+- [ ] Validate with `bicep build` on DRCP tenant (codespace blocked by ACR firewall — BCP192)
+- [ ] Test: deploy a function app scenario (e.g., S2) without custom `diagnosticSettings` and verify `FunctionAppLogs` category is auto-configured
+- [ ] Submit PR to AMAVM upstream once validated
