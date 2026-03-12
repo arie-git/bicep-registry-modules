@@ -77,72 +77,15 @@ module testDeployment '../../../main.bicep' = [
       appInsightResourceId: nestedDependencies.outputs.applicationInsightsResourceId
       appSettingsKeyValuePairs: {
         AzureFunctionsJobHost__logging__logLevel__default: 'Trace'
-        EASYAUTH_SECRET: 'https://${namePrefix}-KeyVault${environment().suffixes.keyvaultDns}/secrets/Modules-Test-SP-Password'
         FUNCTIONS_EXTENSION_VERSION: '~4'
         FUNCTIONS_WORKER_RUNTIME: 'dotnet'
+        OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: nestedDependencies.outputs.managedIdentityClientId
       }
-      authSettingV2Configuration: {
-        globalValidation: {
-          requireAuthentication: true
-          unauthenticatedClientAction: 'Return401'
-        }
-        httpSettings: {
-          forwardProxy: {
-            convention: 'NoProxy'
-          }
-          requireHttps: true
-          routes: {
-            apiPrefix: '/.auth'
-          }
-        }
-        identityProviders: {
-          azureActiveDirectory: {
-            enabled: true
-            login: {
-              disableWWWAuthenticate: false
-            }
-            registration: {
-              clientId: 'd874dd2f-2032-4db1-a053-f0ec243685aa'
-              clientSecretSettingName: 'EASYAUTH_SECRET'
-              openIdIssuer: 'https://sts.windows.net/${tenant().tenantId}/v2.0/'
-            }
-            validation: {
-              allowedAudiences: [
-                'api://d874dd2f-2032-4db1-a053-f0ec243685aa'
-              ]
-              defaultAuthorizationPolicy: {
-                allowedPrincipals: {}
-              }
-              jwtClaimChecks: {}
-            }
-          }
-        }
-        login: {
-          allowedExternalRedirectUrls: [
-            'string'
-          ]
-          cookieExpiration: {
-            convention: 'FixedTime'
-            timeToExpiration: '08:00:00'
-          }
-          nonce: {
-            nonceExpirationInterval: '00:05:00'
-            validateNonce: true
-          }
-          preserveUrlFragmentsForLogins: false
-          routes: {}
-          tokenStore: {
-            azureBlobStorage: {}
-            enabled: true
-            fileSystem: {}
-            tokenRefreshExtensionHours: 72
-          }
-        }
-        platform: {
-          enabled: true
-          runtimeVersion: '~1'
-        }
-      }
+      // Uses module default authSettingV2Configuration for function apps:
+      // - Return401 for unauthenticated requests (API-style)
+      // - FIC (federated identity credentials) — no client secrets
+      // - Entra ID identity provider with audience api://<appId>
+      authSettingApplicationId: 'd874dd2f-2032-4db1-a053-f0ec243685aa'
       basicPublishingCredentialsPolicies: [
         {
           name: 'ftp'

@@ -229,12 +229,12 @@ module testDeployment '../../../main.bicep' = [
         }
       }
       appSettingsKeyValuePairs: {
+        OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: nestedDependencies.outputs.managedIdentityClientId
         WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
         WEBSITE_AUTH_AAD_ALLOWED_TENANTS: tenant().tenantId
         WEBSITE_RUN_FROM_PACKAGE: '1'
         ASPNETCORE_ENVIRONMENT: 'Development'
         DetailedErrors: 'true'
-        MICROSOFT_PROVIDER_AUTHENTICATION_SECRET: '@Microsoft.KeyVault(VaultName=keyvaultName;SecretName=secretName)'
         // Linux format with double underscore as config structure level separator
         AzureAd__ClientId: 'ClientId-guid-value-from-EntraID'
         // Overrides appsettings.json parameter DownstreamApis:MyApi:BaseUrl

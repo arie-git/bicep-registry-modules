@@ -1,5 +1,7 @@
 # DRCP Test Cases — Task Tracker
 
+> Part of [tasks/todo.md](../tasks/todo.md)
+
 ## Purpose
 
 These test cases validate that AMAVM Bicep modules deploy correctly to the hardened DRCP platform. Each scenario combines multiple modules into a realistic architecture, deploys via scheduled pipeline, and tears down afterwards to save costs. They serve as integration tests — catching issues that per-module e2e tests miss (cross-module wiring, private endpoint connectivity, identity/RBAC chains, naming conventions).
@@ -239,29 +241,7 @@ All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump
 
 ## AMAVM Module Improvements
 
-### Function App Diagnostic Settings Defaults
+Tracked in [`amavm/verified-modules/todo.md`](../amavm/verified-modules/todo.md). Scenario-side tasks remain here:
 
-The AMAVM `res/web/site` module defaults diagnostic log categories to `AppService*` (web app categories). Function apps need `FunctionAppLogs` instead. Container-based function apps still use `AppService*` categories.
-
-- [x] Implement conditional default log categories in `amavm/verified-modules/bicep/res/web/site/main.bicep` — splits by `kind` param (functionapp vs web app vs container)
-- [ ] Validate with `bicep build` on DRCP tenant (codespace blocked by ACR firewall — BCP192)
-- [ ] Test: deploy a function app scenario (e.g., S2) without custom `diagnosticSettings` and verify `FunctionAppLogs` category is auto-configured
-- [ ] Submit PR to AMAVM upstream once validated
-
-### Function App Entra ID Auth Defaults (FIC)
-
-The AMAVM `res/web/site` module only configured Entra ID auth defaults for web apps (`startsWith(kind, 'app')`). Function apps fell into the "else" branch with `platform.enabled: false` and empty audiences — effectively no auth enforcement.
-
-Now three profiles: Web App (Easy Auth + redirect), Function App (API-style + Return401), API apps (same as function app).
-All use FIC (federated identity credentials) — same `OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID` pattern, no client secrets.
-"Other" branch (api apps) also fixed: `platform.enabled: true` to comply with drcp-aps-18.
-
-- [x] Implement three-branch auth config in `amavm/verified-modules/bicep/res/web/site/main.bicep`
-- [x] Fix "other" branch: `platform.enabled: true`, full FIC + audiences (drcp-aps-18 compliance for `api`/`linux,api` kinds)
-- [x] S5: Remove `authSettingV2Configuration: {}`, add `authSettingApplicationId` + FIC app setting, update AppGW health probe to accept 401
-- [x] S7: Remove `authSettingV2Configuration: {}`, add `authSettingApplicationId` + FIC app setting
-- [ ] Validate with `bicep build` on DRCP tenant (codespace blocked by ACR firewall — BCP192)
-- [ ] Test: deploy a function app scenario with `authSettingApplicationId` set and verify Entra ID auth is enforced (Return401, correct audience)
 - [ ] S5/S7: Create Entra ID app registrations with FIC (follow S16 pattern with `Microsoft.Graph/applications@v1.0`)
-- [ ] Update `functionApp.max/main.test.bicep` e2e test to use defaults + `authSettingApplicationId` instead of full manual override
-- [ ] Submit PR to AMAVM upstream once validated
+- [ ] S11 API web app: check if `authSettingV2ConfigurationAdditional` with `platform.enabled: false` is drcp-aps-18 non-compliant

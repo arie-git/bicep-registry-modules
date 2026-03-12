@@ -222,7 +222,7 @@ module testDeployment '../../../main.bicep' = [
       netFrameworkVersion: 'v9.0'
       appInsightResourceId: nestedDependencies.outputs.applicationInsightsResourceId
       appSettingsKeyValuePairs: {
-        MICROSOFT_PROVIDER_AUTHENTICATION_SECRET: '@Microsoft.KeyVault(VaultName=keyvaultName;SecretName=secretName)'
+        OVERRIDE_USE_MI_FIC_ASSERTION_CLIENTID: nestedDependencies.outputs.managedIdentityClientId
         WEBSITE_AUTH_AAD_ALLOWED_TENANTS: tenant().tenantId
         WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
         WEBSITE_RUN_FROM_PACKAGE: '1'
@@ -231,17 +231,9 @@ module testDeployment '../../../main.bicep' = [
         'AzureAd:ClientId': 'ClientId-guid-value-from-EntraID'
       }
       authSettingApplicationId: 'ClientId-guid-value-from-EntraID'
-      // Auth Setting overrides for API application
+      // Auth Setting overrides for API-style web app (Return401 instead of default RedirectToLoginPage)
       authSettingV2ConfigurationAdditional: {
-        enabled: true
-        platform: {
-          // Not using Easy Auth
-          enabled: false
-          runtimeVersion: '~1'
-        }
         globalValidation: {
-          requireAuthentication: true
-          // For API
           unauthenticatedClientAction: 'Return401'
         }
         identityProviders: {
