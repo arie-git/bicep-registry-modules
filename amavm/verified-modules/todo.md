@@ -36,9 +36,9 @@
 
 ### MEDIUM — Typos
 
-- [ ] **M1**: `web/site/tests/e2e/6logsConfig/dependencies.bicep:101` + `main.test.bicep:59` — `applicationInsigtsResourceId` (missing 'h')
-- [ ] **M2**: `network/private-endpoint/private-dns-zone-group/main.bicep:4` — `'There are nio special compliance requirements.'`
-- [ ] **M3**: 37 files — comment typo `condtion` → `condition`
+- [x] **M1**: `web/site/tests/e2e/6logsConfig/` — `applicationInsigtsResourceId` → `applicationInsightsResourceId` (fixed)
+- [x] **M2**: `network/private-endpoint/private-dns-zone-group/main.bicep:4` — `nio` → `no` (fixed)
+- [x] **M3**: 37 files — `condtion` → `condition` (fixed)
 
 ### LOW — Inconsistencies
 

@@ -56,7 +56,7 @@ module testDeployment '../../../main.bicep' = [
       location: resourceLocation
       kind: 'app'
       serverFarmResourceId: nestedDependencies.outputs.serverFarmResourceId
-      appInsightResourceId: nestedDependencies.outputs.applicationInsigtsResourceId
+      appInsightResourceId: nestedDependencies.outputs.applicationInsightsResourceId
       logsConfiguration: {
         applicationLogs: { fileSystem: { level: 'Verbose' } }
         detailedErrorMessages: { enabled: true }

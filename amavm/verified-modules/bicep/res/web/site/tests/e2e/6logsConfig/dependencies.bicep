@@ -98,4 +98,4 @@ output subnet2ResourceId string = virtualNetwork.properties.subnets[1].id
 output privateDNSZoneResourceId string = privateDNSZone.id
 
 @description('The resource ID of the created application insights.')
-output applicationInsigtsResourceId string = applicationInsights.id
+output applicationInsightsResourceId string = applicationInsights.id

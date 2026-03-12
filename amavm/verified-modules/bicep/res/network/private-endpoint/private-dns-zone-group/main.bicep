@@ -1,7 +1,7 @@
 metadata name = 'Private Endpoint Private DNS Zone Groups'
 metadata description = 'This module deploys a Private Endpoint Private DNS Zone Group.'
 metadata owner = 'AMCCC'
-metadata compliance = 'There are nio special compliance requirements.'
+metadata compliance = 'There are no special compliance requirements.'
 metadata complianceVersion = '20260309'
 
 @description('Conditional. The name of the parent private endpoint. Required if the template is used in a standalone deployment.')

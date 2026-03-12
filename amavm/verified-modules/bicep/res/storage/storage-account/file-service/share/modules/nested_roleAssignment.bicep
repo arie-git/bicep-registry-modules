@@ -58,7 +58,7 @@ resource fileShare_roleAssignments 'Microsoft.Resources/deployments@2024-07-01' 
           value: roleAssignment.?condition
         }
         conditionVersion: {
-          value: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condtion is set
+          value: !empty(roleAssignment.?condition) ? (roleAssignment.?conditionVersion ?? '2.0') : null // Must only be set if condition is set
         }
         delegatedManagedIdentityResourceId: {
           value: roleAssignment.?delegatedManagedIdentityResourceId
