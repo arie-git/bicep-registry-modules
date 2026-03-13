@@ -164,7 +164,7 @@ extends:
           networkAddressSpace: '10.238.18.0/26'
 
       # ──────────────────────────────────────────────
-      # S9 — ENV23968, /26
+      # S9 — ENV23968, /24
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -183,7 +183,7 @@ extends:
           location: 'swedencentral'
           environmentSnowId: 'ENV23968'
           engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
-          networkAddressSpace: '10.238.18.0/26'
+          networkAddressSpace: '10.238.18.0/24'
 
       # ════════════════════════════════════════════════
       # LANE B — ENV23969 (10.238.19.0/24)

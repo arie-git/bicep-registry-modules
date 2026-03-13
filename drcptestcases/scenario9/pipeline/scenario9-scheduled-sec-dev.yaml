@@ -16,7 +16,7 @@ variables:
   location: 'swedencentral'
   environmentSnowId: 'ENV23968'
   applicationInstanceCode: '0995'
-  networkAddressSpace: '10.238.19.128/26' #TODO: verify — TST uses same CIDR, may need separate /26
+  networkAddressSpace: '10.238.19.0/24'
   engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
 
 resources:

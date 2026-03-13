@@ -16,7 +16,7 @@ variables:
   location: 'swedencentral'
   environmentSnowId: 'ENV23969'
   applicationInstanceCode: '0995'
-  networkAddressSpace: '10.238.19.128/26'
+  networkAddressSpace: '10.238.19.0/24'
   engineersGroupObjectId: '227f4bee-de48-4a7a-9df3-05cd32fa722e'
 
 resources:
