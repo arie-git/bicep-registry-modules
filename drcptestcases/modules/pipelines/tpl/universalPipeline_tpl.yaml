@@ -46,11 +46,23 @@ parameters:
 - name: removalNotifyUsers
   type: string
   default: '[S02-App-AM-CCC]/APG Engineers'
+- name: stageNamePrefix
+  type: string
+  default: ''
+- name: dependsOnStage
+  type: string
+  default: ''
+- name: stageDisplayNamePrefix
+  type: string
+  default: ''
 
 stages:
   - ${{ if parameters.isDeployment }}:
-    - stage: deployInfra
-      displayName: 'Deploying infrastructure'
+    - stage: ${{parameters.stageNamePrefix}}deployInfra
+      displayName: '${{parameters.stageDisplayNamePrefix}}Deploying infrastructure'
+      ${{ if ne(parameters.dependsOnStage, '') }}:
+        dependsOn: ${{parameters.dependsOnStage}}
+        condition: not(canceled())
       variables:
         - template: /modules/pipelines/tpl/variables/commonVariables.yaml@self
           parameters:
@@ -126,11 +138,11 @@ stages:
                           engineersGroupObjectId: '${{parameters.engineersGroupObjectId}}'
 
   - ${{ if parameters.isRemoval }}:
-      - stage: removeInfra
-        displayName: 'Remove infrastructure'
+      - stage: ${{parameters.stageNamePrefix}}removeInfra
+        displayName: '${{parameters.stageDisplayNamePrefix}}Remove infrastructure'
         condition: always()
         ${{ if parameters.isDeployment }}:
-          dependsOn: deployInfra
+          dependsOn: ${{parameters.stageNamePrefix}}deployInfra
         variables:
           - template: /modules/pipelines/tpl/variables/commonVariables.yaml@self
             parameters:

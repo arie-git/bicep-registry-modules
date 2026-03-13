@@ -14,9 +14,9 @@ variables:
   folderName: 'scenario16'
   environmentType: 'dev'
   location: 'swedencentral'
-  environmentSnowId: 'ENV24083'
+  environmentSnowId: 'ENV23969'
   applicationInstanceCode: '1695'
-  networkAddressSpace: '10.238.0.0/26' #TODO: replace with actual /26 address space (S16 needs 3 subnets)
+  networkAddressSpace: '10.238.19.0/26'
   engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
 
 resources:

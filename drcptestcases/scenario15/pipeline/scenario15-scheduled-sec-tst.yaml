@@ -14,9 +14,9 @@ variables:
   folderName: 'scenario15'
   environmentType: 'tst'
   location: 'swedencentral'
-  environmentSnowId: 'ENV_TODO' #TODO: replace with actual TST environment ServiceNow ID
+  environmentSnowId: 'ENV23979'
   applicationInstanceCode: '1594'
-  networkAddressSpace: '10.238.0.0/27' #TODO: replace with actual /27 address space
+  networkAddressSpace: '10.238.65.0/27'
   engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
 
 resources:

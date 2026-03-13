@@ -1,0 +1,321 @@
+# Run all TST scenarios in two parallel lanes (manually triggered)
+# Lane A: ENV23978 (S1→S2→S3→S4→S5→S7)
+# Lane B: ENV23979 (S8→S10→S11→S12→S13→S14→S15)
+# Within each lane: deploy → remove → next scenario (sequential).
+# The two lanes run in parallel on separate environments.
+# If a scenario fails, subsequent scenarios still run (condition: not(canceled())).
+name: $(BuildDefinitionName)_AllScenarios_TST_$(Date:yyyyMMdd)$(Rev:.r)_$(Build.BuildId)
+
+trigger: none
+pr: none
+
+parameters:
+- name: skipWhatif
+  displayName: 'Skip What-If validation?'
+  type: boolean
+  default: true
+
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: DRCP-Templates/templates
+    ref: 'refs/heads/main'
+
+pool: CPP-Ubuntu2204-Preview
+
+extends:
+  template: mandatory-template.yml@templates
+  parameters:
+    pipelineStages:
+      # ════════════════════════════════════════════════
+      # LANE A — ENV23978 (10.238.64.0/24)
+      # ════════════════════════════════════════════════
+
+      # ──────────────────────────────────────────────
+      # S1 — ENV23978, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S1_'
+          stageDisplayNamePrefix: '[S1] '
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario1'
+          fileNames:
+            - main
+          applicationInstanceCode: '0194'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23978'
+          engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+          networkAddressSpace: '10.238.64.0/27'
+
+      # ──────────────────────────────────────────────
+      # S2 — ENV23978, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S2_'
+          stageDisplayNamePrefix: '[S2] '
+          dependsOnStage: 'S1_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario2'
+          fileNames:
+            - main
+          applicationInstanceCode: '0294'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23978'
+          engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+          networkAddressSpace: '10.238.64.0/27'
+
+      # ──────────────────────────────────────────────
+      # S3 — ENV23978, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S3_'
+          stageDisplayNamePrefix: '[S3] '
+          dependsOnStage: 'S2_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario3'
+          fileNames:
+            - main
+          applicationInstanceCode: '0394'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23978'
+          engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+          networkAddressSpace: '10.238.64.0/27'
+
+      # ──────────────────────────────────────────────
+      # S4 — ENV23978, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S4_'
+          stageDisplayNamePrefix: '[S4] '
+          dependsOnStage: 'S3_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario4'
+          fileNames:
+            - main
+          applicationInstanceCode: '0494'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23978'
+          engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+          networkAddressSpace: '10.238.64.0/27'
+
+      # ──────────────────────────────────────────────
+      # S5 — ENV23978, /26
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S5_'
+          stageDisplayNamePrefix: '[S5] '
+          dependsOnStage: 'S4_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario5'
+          fileNames:
+            - main
+          applicationInstanceCode: '0594'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23978'
+          engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+          networkAddressSpace: '10.238.64.0/26'
+
+      # ──────────────────────────────────────────────
+      # S7 — ENV23978, /26
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S7_'
+          stageDisplayNamePrefix: '[S7] '
+          dependsOnStage: 'S5_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario7'
+          fileNames:
+            - main
+          applicationInstanceCode: '0794'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23978'
+          engineersGroupObjectId: 'c27ffdba-5abc-422c-b56d-45d5fb490f85'
+          networkAddressSpace: '10.238.64.0/26'
+
+      # ════════════════════════════════════════════════
+      # LANE B — ENV23979 (10.238.65.0/24)
+      # ════════════════════════════════════════════════
+
+      # ──────────────────────────────────────────────
+      # S8 — ENV23979, /26
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S8_'
+          stageDisplayNamePrefix: '[S8] '
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario8'
+          fileNames:
+            - main
+          applicationInstanceCode: '0894'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+          networkAddressSpace: '10.238.65.0/26'
+
+      # ──────────────────────────────────────────────
+      # S10 — ENV23979, /26
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S10_'
+          stageDisplayNamePrefix: '[S10] '
+          dependsOnStage: 'S8_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario10'
+          fileNames:
+            - main
+          applicationInstanceCode: '1093'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+          networkAddressSpace: '10.238.65.0/26'
+
+      # ──────────────────────────────────────────────
+      # S11 — ENV23979, /26
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S11_'
+          stageDisplayNamePrefix: '[S11] '
+          dependsOnStage: 'S10_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario11'
+          fileNames:
+            - main
+          applicationInstanceCode: '1193'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+          networkAddressSpace: '10.238.65.0/26'
+
+      # ──────────────────────────────────────────────
+      # S12 — ENV23979, /26
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S12_'
+          stageDisplayNamePrefix: '[S12] '
+          dependsOnStage: 'S11_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario12'
+          fileNames:
+            - main
+          applicationInstanceCode: '1293'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: '49be2183-fcb9-4640-839e-65d52922d454'
+          networkAddressSpace: '10.238.65.0/26'
+
+      # ──────────────────────────────────────────────
+      # S13 — ENV23979, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S13_'
+          stageDisplayNamePrefix: '[S13] '
+          dependsOnStage: 'S12_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario13'
+          fileNames:
+            - main
+          applicationInstanceCode: '1394'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+          networkAddressSpace: '10.238.65.0/27'
+
+      # ──────────────────────────────────────────────
+      # S14 — ENV23979, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S14_'
+          stageDisplayNamePrefix: '[S14] '
+          dependsOnStage: 'S13_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario14'
+          fileNames:
+            - main
+          applicationInstanceCode: '1494'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+          networkAddressSpace: '10.238.65.0/27'
+
+      # ──────────────────────────────────────────────
+      # S15 — ENV23979, /27
+      # ──────────────────────────────────────────────
+      - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
+        parameters:
+          stageNamePrefix: 'S15_'
+          stageDisplayNamePrefix: '[S15] '
+          dependsOnStage: 'S14_removeInfra'
+          isDeployment: true
+          isRemoval: true
+          askForRemovalApproval: false
+          skipWhatif: ${{parameters.skipWhatif}}
+          folderName: 'scenario15'
+          fileNames:
+            - main
+          applicationInstanceCode: '1594'
+          environmentType: 'tst'
+          location: 'swedencentral'
+          environmentSnowId: 'ENV23979'
+          engineersGroupObjectId: 'b9646e8d-0859-4e85-a10f-b5475e093ebd'
+          networkAddressSpace: '10.238.65.0/27'
