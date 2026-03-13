@@ -42,6 +42,12 @@ param networkAddressSpace string = ''
 param engineersGroupObjectId string = '4ac8afa1-dfbc-4096-967c-4b0fba1f37f6'
 param engineersContactEmail string = 'apg-am-ccc-enablement@apg-am.nl'
 
+@description('Deploy Azure AI Search service (requires manual approval for shared private links)')
+param deploySearchService bool = false
+
+@description('Deploy Entra ID app registrations (requires extra manual steps)')
+param deployAppRegistration bool = false
+
 @description('Object IDs of app registration owners (Entra ID users)')
 param appOwnerObjectIds array = []
 
@@ -291,7 +297,7 @@ module accountMod 'br/amavm:res/cognitive-services/account:0.1.0' = {
 }
 
 var searchName = namesMod.outputs.namingConvention['Microsoft.Search/searchServices']
-module searchMod 'br/amavm:res/search/search-service:0.1.0' = {
+module searchMod 'br/amavm:res/search/search-service:0.1.0' = if (deploySearchService) {
   scope: resourceGroup
   name: '${deployment().name}-srch'
   params: {
@@ -411,7 +417,7 @@ module storageAccountMod 'br/amavm:res/storage/storage-account:0.2.0' = {
   }
 }
 
-module storageBlobBySearch 'modules/rbac.bicep' = {
+module storageBlobBySearch 'modules/rbac.bicep' = if (deploySearchService) {
   scope: resourceGroup
   name: '${deployment().name}-sta-search-rbac'
   params: {
@@ -430,7 +436,7 @@ module storageBlobBySearch 'modules/rbac.bicep' = {
   }
 }
 
-module storageTableBySearch 'modules/rbac.bicep' = {
+module storageTableBySearch 'modules/rbac.bicep' = if (deploySearchService) {
   scope: resourceGroup
   name: '${deployment().name}-sta-search-table-rbac'
   params: {
@@ -512,7 +518,7 @@ module appServicePlanBack 'br/amavm:res/web/serverfarm:0.1.0' = {
 
 var issuer = '${environment().authentication.loginEndpoint}${tenant().tenantId}/v2.0'
 
-module appRegistrationFront 'modules/appregistration.bicep' = {
+module appRegistrationFront 'modules/appregistration.bicep' = if (deployAppRegistration) {
   name: '${deployment().name}-appreg-front'
   scope: resourceGroup
   params: {
@@ -548,7 +554,7 @@ module appRegistrationFront 'modules/appregistration.bicep' = {
   }
 }
 
-module appRegistrationBack 'modules/appregistration.bicep' = {
+module appRegistrationBack 'modules/appregistration.bicep' = if (deployAppRegistration) {
   name: '${deployment().name}-appreg-back'
   scope: resourceGroup
   params: {
@@ -612,7 +618,7 @@ module webAppFront 'br/amavm:res/web/site:0.1.0' = {
       }
     ]
     appInsightResourceId: applicationInsightsMod.outputs.resourceId
-   authSettingV2ConfigurationAdditional: {
+   authSettingV2ConfigurationAdditional: deployAppRegistration ? {
       globalValidation: {
       requireAuthentication: true
       unauthenticatedClientAction: 'RedirectToLoginPage'
@@ -646,7 +652,7 @@ module webAppFront 'br/amavm:res/web/site:0.1.0' = {
         enabled: true
       }
     }
-    }
+    } : {}
     appSettingsKeyValuePairs: {
       FUNCTIONS_EXTENSION_VERSION: '~4'
       WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
@@ -699,7 +705,7 @@ module webAppBack 'br/amavm:res/web/site:0.1.0' = {
       }
     ]
     appInsightResourceId: applicationInsightsMod.outputs.resourceId
-    authSettingV2Configuration: {
+    authSettingV2Configuration: deployAppRegistration ? {
       globalValidation: {
       requireAuthentication: true
       unauthenticatedClientAction: 'Return401'
@@ -731,7 +737,7 @@ module webAppBack 'br/amavm:res/web/site:0.1.0' = {
         enabled: true
       }
     }
-  }
+  } : {}
     appSettingsKeyValuePairs: {
       FUNCTIONS_EXTENSION_VERSION: '~4'
       WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
