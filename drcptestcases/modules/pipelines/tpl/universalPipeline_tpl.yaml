@@ -60,7 +60,9 @@ stages:
   - ${{ if parameters.isDeployment }}:
     - stage: ${{parameters.stageNamePrefix}}deployInfra
       displayName: '${{parameters.stageDisplayNamePrefix}}Deploying infrastructure'
-      ${{ if ne(parameters.dependsOnStage, '') }}:
+      ${{ if eq(parameters.dependsOnStage, 'none') }}:
+        dependsOn: []
+      ${{ elseif ne(parameters.dependsOnStage, '') }}:
         dependsOn: ${{parameters.dependsOnStage}}
         condition: not(canceled())
       variables:

@@ -196,6 +196,7 @@ extends:
         parameters:
           stageNamePrefix: 'S8_'
           stageDisplayNamePrefix: '[S8] '
+          dependsOnStage: 'none'
           isDeployment: true
           isRemoval: true
           askForRemovalApproval: false
