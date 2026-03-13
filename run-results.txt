@@ -1,48 +1,59 @@
-[13/03/2026 10:01:20] Running pipeline id 352878.
-[13/03/2026 10:01:20] Running bicep build of scenario1/infra/main.bicep
-[13/03/2026 10:01:40] Starting the deployment '352878main'.
-[13/03/2026 10:01:40] Running command:    az deployment sub create      --location swedencentral     --name '352878main'     --template-file scenario1/infra/main.bicep     --parameters whatIf=''     --parameters location='swedencentral'     --parameters deploymentId='352878'   --parameters engineersGroupObjectId='b9646e8d-0859-4e85-a10f-b5475e093ebd'  --parameters networkAddressSpace='10.238.18.0/27'  --parameters applicationInstanceCode='0195'  --parameters applicationCode='drcptst'  --parameters departmentCode='c3'  --parameters organizationCode='s2'  --parameters namePrefix=''  --parameters environmentType='dev'  --parameters environmentId='ENV23968'  --parameters applicationId='AM-CCC'  --parameters @scenario1/infra/parameters.json
-ERROR: {"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/providers/Microsoft.Resources/deployments/352878main","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"ResourceDeploymentFailure","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-functionapp","message":"The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.","details":[{"code":"DeploymentFailed","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-functionapp","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"BadRequest","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Web/sites/s2c3drcptst0195devsecapp/providers/Microsoft.Insights/diagnosticSettings/s2c3drcptst0195devsecapp-diagnosticSettings","message":"{\r\n  \"code\": \"BadRequest\",\r\n  \"message\": \"Category 'AppServiceHTTPLogs' is not supported.\"\r\n}"}]}]}]}}
+Scenario 8
 
-##[error]Script failed with exit code: 1
+{
+  "code": "DeploymentFailed",
+  "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352993main-servicebus",
+  "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
+  "details": [
+    {
+      "code": "ResourceDeploymentFailure",
+      "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Topic-0",
+      "message": "The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.",
+      "details": [
+        {
+          "code": "DeploymentFailed",
+          "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Topic-0",
+          "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
+          "details": [
+            {
+              "code": "MessagingGatewayBadRequest",
+              "message": "SubCode=40000. The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. ExceptionDescription: The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. TrackingId:3e76db38-2596-4da2-85a4-44e53b6fcc82_G0, SystemTracker:s2c3drcptst0895devsecsbns.servicebus.windows.net:events, Timestamp:2026-03-13T11:44:47"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "code": "ResourceDeploymentFailure",
+      "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Queue-0",
+      "message": "The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.",
+      "details": [
+        {
+          "code": "DeploymentFailed",
+          "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Queue-0",
+          "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
+          "details": [
+            {
+              "code": "MessagingGatewayBadRequest",
+              "message": "SubCode=40000. The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. ExceptionDescription: The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. TrackingId:e1e790bb-35c4-4f26-a979-f57de7a74122_G2, SystemTracker:s2c3drcptst0895devsecsbns.servicebus.windows.net:orders, Timestamp:2026-03-13T11:44:47"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
 
-
-[13/03/2026 10:00:52] Running pipeline id 352878.
-[13/03/2026 10:00:52] Running bicep build of scenario8/infra/main.bicep
-[13/03/2026 10:01:13] Starting the deployment '352878main'.
-[13/03/2026 10:01:13] Running command:    az deployment sub create      --location swedencentral     --name '352878main'     --template-file scenario8/infra/main.bicep     --parameters whatIf=''     --parameters location='swedencentral'     --parameters deploymentId='352878'   --parameters engineersGroupObjectId='227f4bee-de48-4a7a-9df3-05cd32fa722e'  --parameters networkAddressSpace='10.238.19.0/26'  --parameters applicationInstanceCode='0895'  --parameters applicationCode='drcptst'  --parameters departmentCode='c3'  --parameters organizationCode='s2'  --parameters namePrefix=''  --parameters environmentType='dev'  --parameters environmentId='ENV23969'  --parameters applicationId='AM-CCC'  --parameters @scenario8/infra/parameters.json
-ERROR: {"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/providers/Microsoft.Resources/deployments/352878main","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"InvalidTemplate","message":"Unable to process template language expressions for resource '/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-func' at line '1' and column '842851'. 'The language expression property 'Microsoft.DBforPostgreSQL/flexibleServers' doesn't exist, available properties are 'Microsoft.CognitiveServices/accounts, Microsoft.Search/searchServices, Microsoft.Databricks/workspaces, Microsoft.Web/hostingEnvironments, Microsoft.Web/serverfarms, Microsoft.Web/sites, Microsoft.Web/staticSites, Microsoft.ContainerService/managedClusters, Microsoft.App/containerApps, Microsoft.App/managedEnvironments, Microsoft.ContainerRegistry/registries, Microsoft.ContainerRegistry/registries/cacheRules, Microsoft.ContainerRegistry/registries/tasks, Microsoft.ContainerInstance/containerGroups, Microsoft.Sql/servers, Microsoft.Sql/servers/databases, Microsoft.DocumentDb/databaseAccounts, Microsoft.DocumentDB/databaseAccounts/sqlDatabases, Microsoft.DBforPostgreSQL/servers, Microsoft.AppConfiguration/configurationStores, Microsoft.SignalRService/SignalR, Microsoft.SignalRService/webPubSub, Microsoft.DataFactory/factories, Microsoft.ApiManagement/service, Microsoft.Logic/workflows, Microsoft.ServiceBus/namespaces, Microsoft.ServiceBus/namespaces/queues, Microsoft.ServiceBus/namespaces/topics, Microsoft.ServiceBus/namespaces/topics/subscriptions, Microsoft.EventHub/namespaces, Microsoft.EventHub/namespaces/eventHubs, Microsoft.OperationalInsights/workspaces, Microsoft.Insights/components, Microsoft.Insights/actionGroups, Microsoft.Insights/dataCollectionRules, Microsoft.Resources/resourceGroups, Microsoft.Resources/templateSpecs, Microsoft.Network/networkSecurityGroups, Microsoft.Network/virtualNetworks/subnets, Microsoft.Network/privateEndpoints, Microsoft.Network/applicationGateways, Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies, Microsoft.Network/routeTables, Microsoft.Network/publicIPAddresses, Microsoft.KeyVault/vaults, Microsoft.ManagedIdentity/userAssignedIdentities, Microsoft.Network/firewallPolicies, Microsoft.Network/firewallPolicies/ruleGroups, Microsoft.Storage/storageAccounts, Microsoft.Storage/storageAccounts/blobServices/containers, Microsoft.Storage/storageAccounts/fileServices/shares'.'","additionalInfo":[{"type":"TemplateViolation","info":{"lineNumber":1,"linePosition":842851,"path":""}}]}]}}
-
-##[error]Script failed with exit code: 1
-/usr/bin/az account clear
-Finishing: scenario8/infra/main.bicep
-
-Bicep CLI version 0.41.2 (3e403ea7c1)
-
-[13/03/2026 10:20:06] Running pipeline id 352878.
-[13/03/2026 10:20:06] Running bicep build of scenario2/infra/main.bicep
-[13/03/2026 10:20:25] Starting the deployment '352878main'.
-[13/03/2026 10:20:25] Running command:    az deployment sub create      --location swedencentral     --name '352878main'     --template-file scenario2/infra/main.bicep     --parameters whatIf=''     --parameters location='swedencentral'     --parameters deploymentId='352878'   --parameters engineersGroupObjectId='b9646e8d-0859-4e85-a10f-b5475e093ebd'  --parameters networkAddressSpace='10.238.18.0/27'  --parameters applicationInstanceCode='0295'  --parameters applicationCode='drcptst'  --parameters departmentCode='c3'  --parameters organizationCode='s2'  --parameters namePrefix=''  --parameters environmentType='dev'  --parameters environmentId='ENV23968'  --parameters applicationId='AM-CCC'  --parameters @scenario2/infra/parameters.json
-WARNING: /agent/_work/1/s/scenario2/infra/main.bicep(302,5) : Warning no-unnecessary-dependson: Remove unnecessary dependsOn entry 'subnetOut'. [https://aka.ms/bicep/linter-diagnostics#no-unnecessary-dependson]
-
-ERROR: {"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/providers/Microsoft.Resources/deployments/352878main","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"ResourceDeploymentFailure","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0295-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-fa","message":"The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.","details":[{"code":"DeploymentFailed","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0295-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-fa","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"BadRequest","target":"/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0295-dev-swedencentral-rg/providers/Microsoft.Web/sites/s2c3drcptst0295devsecapp/providers/Microsoft.Insights/diagnosticSettings/s2c3drcptst0295devsecapp-diagnosticSettings","message":"{\r\n  \"code\": \"BadRequest\",\r\n  \"message\": \"Category 'AppServiceHTTPLogs' is not supported.\"\r\n}"}]}]}]}}
-
-##[error]Script failed with exit code: 1
-/usr/bin/az account clear
-Finishing: scenario2/infra/main.bicep
-
-
-
-[13/03/2026 10:19:54] Running pipeline id 352878.
-[13/03/2026 10:19:54] Running bicep build of scenario10/infra/main.bicep
-[13/03/2026 10:20:15] Starting the deployment '352878main'.
-[13/03/2026 10:20:15] Running command:    az deployment sub create      --location swedencentral     --name '352878main'     --template-file scenario10/infra/main.bicep     --parameters whatIf=''     --parameters location='swedencentral'     --parameters deploymentId='352878'   --parameters engineersGroupObjectId='227f4bee-de48-4a7a-9df3-05cd32fa722e'  --parameters networkAddressSpace='10.238.19.0/26'  --parameters applicationInstanceCode='1094'  --parameters applicationCode='drcptst'  --parameters departmentCode='c3'  --parameters organizationCode='s2'  --parameters namePrefix=''  --parameters environmentType='dev'  --parameters environmentId='ENV23969'  --parameters applicationId='AM-CCC'  --parameters @scenario10/infra/parameters.json
-WARNING: /agent/_work/1/s/modules/infra/integration/data-factory/modules/role-assignment.bicep(57,23) : Warning use-safe-access: Use the safe access (.?) operator. [https://aka.ms/bicep/linter-diagnostics#use-safe-access]
-/agent/_work/1/s/scenario10/infra/main.bicep(367,31) : Warning use-safe-access: Use the safe access (.?) operator. [https://aka.ms/bicep/linter-diagnostics#use-safe-access]
-/agent/_work/1/s/scenario10/infra/main.bicep(368,22) : Warning use-safe-access: Use the safe access (.?) operator. [https://aka.ms/bicep/linter-diagnostics#use-safe-access]
-
-ERROR: {"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/providers/Microsoft.Resources/deployments/352878main","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"ResourceDeploymentFailure","target":"/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-adf","message":"The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.","details":[{"code":"DeploymentFailed","target":"/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352878main-adf","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"Conflict","target":"/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.DataFactory/factories/s2c3drcptst1094devsecadf/providers/Microsoft.Insights/diagnosticSettings/qls4kbdrv7t7k-diagnosticsettings","message":"{\r\n  \"code\": \"Conflict\",\r\n  \"message\": \"Data sink '/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.OperationalInsights/workspaces/s2c3drcptst1094devseclog' is already used in diagnostic setting 's2c3drcptst1094devsecadf_diagnostic' for category 'ActivityRuns'. Data sinks can't be reused in different settings on the same category for the same resource.\"\r\n}"}]}]}]}}
-
-##[error]Script failed with exit code: 1
-/usr/bin/az account clear
-Finishing: scenario10/infra/main.bicep
+Scenario 1 
+{
+  "code": "DeploymentFailed",
+  "target": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352993main-functionapp",
+  "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
+  "details": [
+    {
+      "code": "Conflict",
+      "target": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Web/sites/s2c3drcptst0195devsecapp/providers/Microsoft.Insights/diagnosticSettings/s2c3drcptst0195devsecapp-diagnosticSettings",
+      "message": "{\r\n  \"code\": \"Conflict\",\r\n  \"message\": \"Data sink '/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.OperationalInsights/workspaces/s2c3drcptst0195devseclog' is already used in diagnostic setting 'customSetting' for category 'FunctionAppLogs'. Data sinks can't be reused in different settings on the same category for the same resource.\"\r\n}"
+    }
+  ]
+}
