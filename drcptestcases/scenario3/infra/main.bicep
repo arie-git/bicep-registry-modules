@@ -296,7 +296,7 @@ module aspFunction 'br/amavm:res/web/serverfarm:0.1.0' = {
 
 // Function app
 var functionAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/compute/function-app/main.bicep'
+module functionApp 'br/amavm:res/web/site:0.2.0' = { //'../../modules/infra/compute/function-app/main.bicep'
   scope: resourceGroup
   name: '${deployment().name}-fa'
   params: {
@@ -473,7 +473,7 @@ module aspLogic 'br/amavm:res/web/serverfarm:0.1.0' = {
 
 var logicAppName = names.outputs.namingConvention['Microsoft.Logic/workflows']
 //Logic App
-module logicApp 'br/amavm:res/web/site:0.1.0' = {
+module logicApp 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-logicapp'
   params: {

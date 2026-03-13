@@ -445,7 +445,7 @@ module appServicePlan 'br/amavm:res/web/serverfarm:0.1.0' = {
 
 // create function app
 var functionAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module functionApp 'br/amavm:res/web/site:0.1.0' = { //'../../modules/infra/compute/function-app/main.bicep'
+module functionApp 'br/amavm:res/web/site:0.2.0' = { //'../../modules/infra/compute/function-app/main.bicep'
   scope: resourceGroup
   name: '${deployment().name}-fa'
   params: {

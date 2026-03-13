@@ -295,7 +295,7 @@ module storageAccount 'br/amavm:res/storage/storage-account:0.2.0' = {
 // --------------------------------------------------
 
 var keyVaultName = names.outputs.namingConvention['Microsoft.KeyVault/vaults']
-module keyVault 'br/amavm:res/key-vault/vault:0.1.0' = {
+module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
   scope: resourceGroup
   name: '${deployment().name}-keyvault'
   params: {
@@ -372,7 +372,7 @@ module appServicePlan 'br/amavm:res/web/serverfarm:0.1.0' = {
 }
 
 var functionAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module functionApp 'br/amavm:res/web/site:0.1.0' = {
+module functionApp 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-funcapp'
   params: {

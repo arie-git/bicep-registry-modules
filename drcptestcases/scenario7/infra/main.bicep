@@ -471,7 +471,7 @@ var dockerImage = 'samples:aspnetapp'
 
 // create docker app on app service
 var webAppName = names.outputs.namingConvention['Microsoft.Web/sites']
-module webApp 'br/amavm:res/web/site:0.1.0' = {
+module webApp 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-wa'
   params: {

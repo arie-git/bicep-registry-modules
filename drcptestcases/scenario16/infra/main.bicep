@@ -297,7 +297,7 @@ module accountMod 'br/amavm:res/cognitive-services/account:0.1.0' = {
 }
 
 var searchName = namesMod.outputs.namingConvention['Microsoft.Search/searchServices']
-module searchMod 'br/amavm:res/search/search-service:0.1.0' = if (deploySearchService) {
+module searchMod 'br/amavm:res/search/search-service:0.2.0' = if (deploySearchService) {
   scope: resourceGroup
   name: '${deployment().name}-srch'
   params: {
@@ -593,7 +593,7 @@ var webAppName = namesMod.outputs.namingConvention['Microsoft.Web/sites']
 var webAppFrontName = '${webAppName}01'
 var webAppBackName = '${webAppName}02'
 
-module webAppFront 'br/amavm:res/web/site:0.1.0' = {
+module webAppFront 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-wa-front'
   params: {
@@ -680,7 +680,7 @@ module webAppFront 'br/amavm:res/web/site:0.1.0' = {
     }
 }
 
-module webAppBack 'br/amavm:res/web/site:0.1.0' = {
+module webAppBack 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-wa-back'
   params: {

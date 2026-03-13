@@ -601,7 +601,7 @@ module userAssignedManagedIdentityAksMod 'br/amavm:res/managed-identity/user-ass
 
 //Create AKS Cluster
 var aksName = names.outputs.namingConvention['Microsoft.ContainerService/managedClusters']
-module aksMod 'br/amavm:res/container-service/managed-cluster:0.2.0' = {
+module aksMod 'br/amavm:res/container-service/managed-cluster:0.3.0' = {
   name: '${deployment().name}-aks'
   scope: resourceGroup
   params: {

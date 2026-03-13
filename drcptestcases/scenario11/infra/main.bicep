@@ -466,7 +466,7 @@ module appService1Mod 'br/amavm:res/web/serverfarm:0.1.0' = {
 
 // create function app
 var webAppName = namesMod.outputs.namingConvention['Microsoft.Web/sites']
-module webAppUiMod 'br/amavm:res/web/site:0.1.0' = {
+module webAppUiMod 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-webapp'
   params: {
@@ -545,7 +545,7 @@ module appService2Mod 'br/amavm:res/web/serverfarm:0.1.0' = {
     tags: mytags
   }
 }
-module webAppApiMod 'br/amavm:res/web/site:0.1.0' = {
+module webAppApiMod 'br/amavm:res/web/site:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-webapp2'
   params: {
