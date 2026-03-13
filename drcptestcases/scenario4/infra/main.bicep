@@ -361,7 +361,7 @@ module fileShare 'br/amavm:res/storage/storage-account/file-service/share:0.1.0'
 // Event Hub
 // ----------------------------------------------
 
-// Event Hub (AMAVM module -- replaces local namespace, eventhub, consumer-group, PE, and RBAC modules)
+// Event Hub (AMAVM module — replaces local namespace, eventhub, consumer-group, PE, and RBAC modules)
 var eventHubNamespaceName = names.outputs.namingConvention['Microsoft.EventHub/namespaces']
 var eventHubName = 'dest'
 module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.2.0' = {

@@ -1,4 +1,4 @@
-# Scenario 5 -- Application Gateway (WAF)
+# Scenario 5 — Application Gateway (WAF)
 
 Application Gateway as a Web Application Firewall with App Service and Function App backends. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 

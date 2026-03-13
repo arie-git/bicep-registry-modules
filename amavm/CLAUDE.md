@@ -1,4 +1,4 @@
-# AMAVM -- Azure Module Verified Modules
+# AMAVM — Azure Module Verified Modules
 
 AMAVM is a fork of Microsoft's Azure Verified Modules (AVM) with DRCP platform-specific hardening. Modules are published to a private Azure Container Registry and consumed as `br/amavm:res/<namespace>/<resource>:<version>`.
 
@@ -6,10 +6,10 @@ AMAVM is a fork of Microsoft's Azure Verified Modules (AVM) with DRCP platform-s
 
 ## Workflow Discipline (READ FIRST)
 
-1. **Read `amavm/verified-modules/todo.md`** before starting work -- check what's done, what's in progress
-2. **Always call Azure MCP tools first** -- run `mcp__plugin_azure_azure__get_azure_bestpractices` (resource: "general", action: "code-generation") BEFORE writing or modifying any Bicep code. Use `mcp__plugin_azure_azure__documentation` for service-specific details. This is non-negotiable.
+1. **Read `amavm/verified-modules/todo.md`** before starting work — check what's done, what's in progress
+2. **Always call Azure MCP tools first** — run `mcp__plugin_azure_azure__get_azure_bestpractices` (resource: "general", action: "code-generation") BEFORE writing or modifying any Bicep code. Use `mcp__plugin_azure_azure__documentation` for service-specific details. This is non-negotiable.
 3. **Consult DRCP policy definitions** in `/policy/Generic/` for the resource type being configured
-4. **Update `todo.md`** as you go -- mark items `[x]` when complete, add blockers
+4. **Update `todo.md`** as you go — mark items `[x]` when complete, add blockers
 
 ---
 
@@ -53,7 +53,7 @@ amavm/verified-modules/
 
 ---
 
-## AMAVM vs Upstream AVM -- Key Differences
+## AMAVM vs Upstream AVM — Key Differences
 
 AMAVM modules are derived from Microsoft AVM but differ in these ways:
 
@@ -72,7 +72,7 @@ AMAVM modules are derived from Microsoft AVM but differ in these ways:
 
 ### Shared Types Warning
 
-AMAVM shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType`) already include the array suffix (`[]` or `[]?`) in their definitions. **Do not add `[]?`** when using them -- e.g. use `param diagnosticSettings diagnosticSettingType`, NOT `diagnosticSettingType[]?` (which would create array-of-arrays).
+AMAVM shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType`) already include the array suffix (`[]` or `[]?`) in their definitions. **Do not add `[]?`** when using them — e.g. use `param diagnosticSettings diagnosticSettingType`, NOT `diagnosticSettingType[]?` (which would create array-of-arrays).
 
 ---
 
@@ -102,13 +102,13 @@ When creating or modifying an AMAVM module:
 ### E2E Tests
 
 Every module must have at minimum:
-- `tests/e2e/<kind>.defaults/` -- minimal deployment with required params only
-- `tests/e2e/<kind>.max/` -- full-featured deployment exercising most params
-- `tests/e2e/waf-aligned/` -- WAF best-practices deployment
+- `tests/e2e/<kind>.defaults/` — minimal deployment with required params only
+- `tests/e2e/<kind>.max/` — full-featured deployment exercising most params
+- `tests/e2e/waf-aligned/` — WAF best-practices deployment
 
 Each test folder has:
-- `main.test.bicep` -- test deployment (subscription-scoped, `@batchSize(1)` loop over `['init', 'idem']`)
-- `dependencies.bicep` -- prerequisite resources (VNet, MI, storage, etc.)
+- `main.test.bicep` — test deployment (subscription-scoped, `@batchSize(1)` loop over `['init', 'idem']`)
+- `dependencies.bicep` — prerequisite resources (VNet, MI, storage, etc.)
 
 ### Building Locally
 
@@ -155,7 +155,7 @@ Modules are published to ACR as `br:<acrName>.azurecr.io/<module>:<major>.<minor
 
 ## DRCP Platform Compliance (MANDATORY)
 
-All AMAVM modules must enforce these -- no exceptions:
+All AMAVM modules must enforce these — no exceptions:
 
 | Rule | Requirement |
 |------|-------------|
@@ -170,9 +170,9 @@ All AMAVM modules must enforce these -- no exceptions:
 ### Policy Reference
 
 DRCP policy definitions are in `/policy/Generic/`. Always check:
-- `then.details.field` -- the ARM property being enforced
-- `then.details.value` -- the required value
-- `then.effect` -- deny, audit, or modify
+- `then.details.field` — the ARM property being enforced
+- `then.details.value` — the required value
+- `then.effect` — deny, audit, or modify
 
 ---
 

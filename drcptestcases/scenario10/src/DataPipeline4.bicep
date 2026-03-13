@@ -1,4 +1,4 @@
-// DataPipeline4 -- ADF → Databricks → Unity Catalog validation
+// DataPipeline4 — ADF → Databricks → Unity Catalog validation
 // Runs the setup-unity-catalog notebook via ADF Databricks notebook activity.
 // Validates end-to-end: ADF MI → Databricks linked service → UC → ADLS (Access Connector MI)
 //

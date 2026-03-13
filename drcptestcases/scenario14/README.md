@@ -1,4 +1,4 @@
-# Scenario 14 -- Event Hub + App Configuration + Function App (Event-Driven)
+# Scenario 14 — Event Hub + App Configuration + Function App (Event-Driven)
 
 Event Hub namespace with inline hub and consumer group, consumed by a Function App via managed identity. App Configuration provides feature flags for toggling event processing without redeployment. Full DRCP compliance with private endpoints, Entra-only auth, and VNet integration.
 

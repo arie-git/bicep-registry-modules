@@ -1,4 +1,4 @@
-// bicep code to create infra for scenario 13 -- Azure Cache for Redis
+// bicep code to create infra for scenario 13 — Azure Cache for Redis
 // Demonstrates: Redis Premium with PE, Entra ID auth, zone redundancy, diagnostics
 
 targetScope = 'subscription'
@@ -90,7 +90,7 @@ module names 'br/amavm:utl/amavm/naming:0.1.0' = {
 // --------------------------------------------------
 //
 // Networking
-//  - NSG, Route Table, Subnet (PE only -- no app egress needed)
+//  - NSG, Route Table, Subnet (PE only — no app egress needed)
 //
 // --------------------------------------------------
 

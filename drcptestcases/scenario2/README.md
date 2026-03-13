@@ -1,4 +1,4 @@
-# Scenario 2 -- Function App + Cosmos DB (NoSQL)
+# Scenario 2 — Function App + Cosmos DB (NoSQL)
 
 Function App + Key Vault + Cosmos DB (Core/NoSQL API) + Storage Account, deployed with VNet integration and private endpoints.
 

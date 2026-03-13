@@ -1,4 +1,4 @@
-# Scenario 17 -- Static Web App + Function API
+# Scenario 17 — Static Web App + Function API
 
 SPA frontend on Azure Static Web Apps (Standard SKU) with a linked Function App API backend. Validates the AMAVM `web/static-site` module's private endpoint, linked backend, and DRCP compliance.
 
@@ -38,7 +38,7 @@ SPA frontend on Azure Static Web Apps (Standard SKU) with a linked Function App 
 
 ### Prerequisites
 - Azure subscription with DRCP guardrails
-- VNet with available address space (`/27` minimum -- 2 x /28 subnets)
+- VNet with available address space (`/27` minimum — 2 x /28 subnets)
 - ServiceNow environment ID
 
 ### Deploy

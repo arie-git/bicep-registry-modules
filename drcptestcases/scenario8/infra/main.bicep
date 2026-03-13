@@ -1,4 +1,4 @@
-// Scenario 8 -- PostgreSQL + Service Bus (message-driven processing)
+// Scenario 8 — PostgreSQL + Service Bus (message-driven processing)
 // Demonstrates: PostgreSQL Flexible Server (Entra-only, VNet-integrated), Service Bus (Premium, PE),
 //               Function App with Service Bus trigger writing to PostgreSQL via managed identity.
 // DRCP policies: 11 PostgreSQL + 5 Service Bus = 16 total
@@ -172,7 +172,7 @@ module subnetOut 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   dependsOn: [ subnetIn ]
 }
 
-// Subnet for PostgreSQL Flexible Server (VNet-delegated -- DRCP requires VNet integration, not PE)
+// Subnet for PostgreSQL Flexible Server (VNet-delegated — DRCP requires VNet integration, not PE)
 module subnetPg 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
   name: '${deployment().name}-subnet-pg'
@@ -359,22 +359,22 @@ module postgresqlServer 'br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0' 
     availabilityZone: 1
     storageSizeGB: 32
 
-    // Auth -- Entra-only (drcp-pgsql-auth: passwordAuth=Disabled, activeDirectoryAuth=Enabled)
+    // Auth — Entra-only (drcp-pgsql-auth: passwordAuth=Disabled, activeDirectoryAuth=Enabled)
     // AMAVM defaults: { activeDirectoryAuth: 'Enabled', passwordAuth: 'Disabled' }
 
-    // Version -- v17 (drcp-pgsql-version: >= 16)
+    // Version — v17 (drcp-pgsql-version: >= 16)
     // AMAVM default: '17'
 
-    // HA -- zone redundant (drcp-pgsql-ha)
+    // HA — zone redundant (drcp-pgsql-ha)
     // AMAVM default: 'ZoneRedundant'
     highAvailabilityZone: 2
 
-    // Network -- VNet-delegated (drcp-pgsql-network: delegatedSubnetResourceId + privateDnsZone required)
+    // Network — VNet-delegated (drcp-pgsql-network: delegatedSubnetResourceId + privateDnsZone required)
     delegatedSubnetResourceId: subnetPg.outputs.resourceId
     // privateDnsZoneArmResourceId uses AMAVM default (Azure public DNS)
     publicNetworkAccess: 'Disabled'
 
-    // Encryption -- service-managed (drcp-pgsql-encryption: NOT AzureKeyVault)
+    // Encryption — service-managed (drcp-pgsql-encryption: NOT AzureKeyVault)
     // No CMK = service-managed by default
 
     // Backup
@@ -405,7 +405,7 @@ module postgresqlServer 'br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0' 
       }
     ]
 
-    // RBAC -- Engineers group as Entra admin (must be in drcp-psql-03 allowedPrincipalNames)
+    // RBAC — Engineers group as Entra admin (must be in drcp-psql-03 allowedPrincipalNames)
     administrators: [
       {
         objectId: engineersGroupObjectId
@@ -418,7 +418,7 @@ module postgresqlServer 'br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0' 
 
 // --------------------------------------------------
 //
-// Service Bus Namespace (Premium -- required for PE)
+// Service Bus Namespace (Premium — required for PE)
 //  DRCP policies: disableLocalAuth, publicNetworkAccess=Disabled,
 //  TLS 1.2, same-sub PE, auto DNS zone
 //
@@ -433,10 +433,10 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
     location: location
     tags: mytags
 
-    // SKU -- Premium required for PE and zone redundancy
+    // SKU — Premium required for PE and zone redundancy
     // AMAVM defaults: { name: 'Premium', capacity: 2 }, zoneRedundant: true
 
-    // Auth -- Entra-only (drcp-sb-auth: disableLocalAuth=true)
+    // Auth — Entra-only (drcp-sb-auth: disableLocalAuth=true)
     // AMAVM default: disableLocalAuth = true
 
     // Network (drcp-sb-network: publicNetworkAccess=Disabled)
@@ -455,7 +455,7 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
       }
     ]
 
-    // Queues -- order processing
+    // Queues — order processing
     queues: [
       {
         name: 'orders'
@@ -466,7 +466,7 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
       }
     ]
 
-    // Topics -- event broadcasting
+    // Topics — event broadcasting
     topics: [
       {
         name: 'events'
@@ -483,7 +483,7 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
       }
     ]
 
-    // RBAC -- Function App MI gets Data Receiver for queue trigger
+    // RBAC — Function App MI gets Data Receiver for queue trigger
     roleAssignments: [
       {
         principalId: functionApp.outputs.systemAssignedMIPrincipalId
@@ -559,10 +559,10 @@ module functionApp 'br/amavm:res/web/site:0.2.0' = {
       FUNCTIONS_EXTENSION_VERSION: '~4'
       FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
 
-      // Service Bus -- identity-based connection (no SAS keys)
+      // Service Bus — identity-based connection (no SAS keys)
       ServiceBusConnection__fullyQualifiedNamespace: '${serviceBusName}.servicebus.windows.net'
 
-      // PostgreSQL -- Entra token auth (constructed FQDN to avoid circular dependency)
+      // PostgreSQL — Entra token auth (constructed FQDN to avoid circular dependency)
       PostgreSqlHost: '${postgresqlName}.postgres.database.azure.com'
       PostgreSqlDatabase: postgresqlDatabaseName
     }

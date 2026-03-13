@@ -1,4 +1,4 @@
-# Scenario 3 -- Event-Driven Function App + Logic App
+# Scenario 3 — Event-Driven Function App + Logic App
 
 Function App + Logic App (Standard) + Storage Account + Key Vault, deployed with VNet integration and private endpoints.
 

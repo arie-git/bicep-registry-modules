@@ -4,7 +4,7 @@ metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
 metadata compliance = '''This module has been validated against DRCP policies: drcp-srch-01, drcp-srch-02, drcp-srch-03, drcp-srch-04.
 Compliant usage of Azure AI Search requires:
-- disableLocalAuth: true -- Entra ID auth enforced (drcp-srch-01)
+- disableLocalAuth: true — Entra ID auth enforced (drcp-srch-01)
 - publicNetworkAccess: 'Disabled', privateEndpoints configured (drcp-srch-02)
 - disabledDataExfiltrationOptions: ['All'] (drcp-srch-03)
 - API version must be in approved list (drcp-srch-04)

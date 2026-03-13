@@ -1,4 +1,4 @@
-# Scenario 4 -- Event Hub Broker
+# Scenario 4 — Event Hub Broker
 
 Function App with two functions: one writes events to Event Hub, the other reads from Event Hub and writes to a Storage Account blob container. Deployed with VNet integration and private endpoints.
 

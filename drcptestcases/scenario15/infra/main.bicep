@@ -1,4 +1,4 @@
-// bicep code to create infra for scenario 15 -- Cosmos DB (NoSQL) standalone
+// bicep code to create infra for scenario 15 — Cosmos DB (NoSQL) standalone
 // Demonstrates: Cosmos DB with inline databases/containers, Entra ID auth, PE, diagnostics
 
 targetScope = 'subscription'

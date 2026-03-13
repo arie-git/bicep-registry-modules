@@ -1,4 +1,4 @@
-# Scenario 7 -- App Service (Docker) + ACR
+# Scenario 7 — App Service (Docker) + ACR
 
 App Service running a Docker container from Azure Container Registry, with ACR Build Task for CI. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 
@@ -31,7 +31,7 @@ App Service running a Docker container from Azure Container Registry, with ACR B
 
 ### Prerequisites
 - Azure subscription with DRCP guardrails
-- VNet with available address space (`/27` minimum -- 2 x /28 subnets)
+- VNet with available address space (`/27` minimum — 2 x /28 subnets)
 - ServiceNow environment ID
 
 ### Deploy

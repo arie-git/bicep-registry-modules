@@ -39,7 +39,7 @@ module adlsLinkedService '../../modules/infra/integration/data-factory/linkedSer
   }
 }
 
-// UC ADLS linked service -- only deployed when writing to bronze layer
+// UC ADLS linked service — only deployed when writing to bronze layer
 module adlsUcLinkedService '../../modules/infra/integration/data-factory/linkedService.bicep' = if (useUcBronze) {
   name: '${deployment().name}ls${adlsUcName}'
   dependsOn: [
@@ -105,7 +105,7 @@ resource dsSql 'Microsoft.DataFactory/factories/datasets@2018-06-01' = {
   }
 }
 
-// Original ADLS dataset -- raw landing zone
+// Original ADLS dataset — raw landing zone
 resource dsAdls 'Microsoft.DataFactory/factories/datasets@2018-06-01' = {
   name: 'DS_ADLS_Employees'
   parent: adf
@@ -128,7 +128,7 @@ resource dsAdls 'Microsoft.DataFactory/factories/datasets@2018-06-01' = {
   }
 }
 
-// UC Bronze dataset -- writes to Unity Catalog bronze container
+// UC Bronze dataset — writes to Unity Catalog bronze container
 resource dsAdlsUcBronze 'Microsoft.DataFactory/factories/datasets@2018-06-01' = if (useUcBronze) {
   name: 'DS_ADLS_UC_Bronze_Employees'
   parent: adf
