@@ -21,8 +21,8 @@ param publicNetworkAccess string = 'Enabled'
 @description('Optional. Default Action for Network Rule Set. Default is "Allow". It will not be set if publicNetworkAccess is "Disabled". Otherwise, it will be set to "Deny" if ipRules or virtualNetworkRules are being used.')
 param defaultAction string = 'Allow'
 
-@description('Optional. Value that indicates whether Trusted Service Access is enabled or not.')
-param trustedServiceAccessEnabled bool = true
+@description('Optional. Value that indicates whether Trusted Service Access is enabled or not. Default is "false" (DRCP-evh-04).')
+param trustedServiceAccessEnabled bool = false
 
 @description('Optional. An array of subnet resource ID objects that this Event Hub Namespace is exposed to via Service Endpoints. You can enable the `ignoreMissingVnetServiceEndpoint` if you wish to add this virtual network to Event Hub Namespace but do not have an existing service endpoint. It will not be set if publicNetworkAccess is "Disabled". Otherwise, when used, defaultAction will be set to "Deny".')
 param virtualNetworkRules networkRuleType[] = []
