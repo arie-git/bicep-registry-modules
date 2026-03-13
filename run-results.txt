@@ -1,59 +1,76 @@
-Scenario 8
+drcptst0495-dev-swedencentral-rg
 
 {
-  "code": "DeploymentFailed",
-  "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352993main-servicebus",
-  "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
+  "code": "InvalidTemplateDeployment",
+  "message": "The template deployment failed because of policy violation. Please see details for more information.",
   "details": [
     {
-      "code": "ResourceDeploymentFailure",
-      "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Topic-0",
-      "message": "The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.",
-      "details": [
+      "code": "RequestDisallowedByPolicy",
+      "target": "default",
+      "message": "Resource 'default' was disallowed by policy. Reasons: 'DRCP control 'drcp-evh-04 - Trusted Services'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-04 .'. See error details for policy resource IDs.",
+      "additionalInfo": [
         {
-          "code": "DeploymentFailed",
-          "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Topic-0",
-          "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
-          "details": [
-            {
-              "code": "MessagingGatewayBadRequest",
-              "message": "SubCode=40000. The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. ExceptionDescription: The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. TrackingId:3e76db38-2596-4da2-85a4-44e53b6fcc82_G0, SystemTracker:s2c3drcptst0895devsecsbns.servicebus.windows.net:events, Timestamp:2026-03-13T11:44:47"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "code": "ResourceDeploymentFailure",
-      "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Queue-0",
-      "message": "The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.",
-      "details": [
-        {
-          "code": "DeploymentFailed",
-          "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst0895-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/xnnyrhug4u7qi-Queue-0",
-          "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
-          "details": [
-            {
-              "code": "MessagingGatewayBadRequest",
-              "message": "SubCode=40000. The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. ExceptionDescription: The property value for 'MaxMessageSizeInKilobytes' must be between 1024 and 102400 when the namespace 's2c3drcptst0895devsecsbns' is using 'Premium' tier.\r\nParameter name: MaxMessageSizeInKilobytes\r\nActual value was 256. TrackingId:e1e790bb-35c4-4f26-a979-f57de7a74122_G2, SystemTracker:s2c3drcptst0895devsecsbns.servicebus.windows.net:orders, Timestamp:2026-03-13T11:44:47"
-            }
-          ]
+          "type": "PolicyViolation",
+          "info": {
+            "evaluationDetails": {
+              "evaluatedExpressions": [
+                {
+                  "result": "True",
+                  "expressionKind": "Field",
+                  "expression": "type",
+                  "path": "type",
+                  "expressionValue": "Microsoft.EventHub/namespaces/networkRuleSets",
+                  "targetValue": "Microsoft.EventHub/namespaces/networkRuleSets",
+                  "operator": "Equals"
+                },
+                {
+                  "result": "True",
+                  "expressionKind": "Field",
+                  "expression": "Microsoft.EventHub/namespaces/networkRuleSets/trustedServiceAccessEnabled",
+                  "path": "properties.trustedServiceAccessEnabled",
+                  "expressionValue": true,
+                  "targetValue": "false",
+                  "operator": "NotEquals"
+                }
+              ],
+              "reason": "DRCP control 'drcp-evh-04 - Trusted Services'. For remediation, see https://confluence.office01.internalcorp.net:8453/display/DRCPKB/Incident+remediation+Event+Hubs#IncidentremediationEventHubs#drcp-evh-04 ."
+            },
+            "policyDefinitionId": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/providers/Microsoft.Authorization/policyDefinitions/DRCP-Generic-EventHubBypassAzureServices",
+            "policySetDefinitionId": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/providers/Microsoft.Authorization/policySetDefinitions/DRCP-Generic-AM-CCC-ENV23968",
+            "policyDefinitionReferenceId": "EventHubBypassAzureServices",
+            "policySetDefinitionName": "DRCP-Generic-AM-CCC-ENV23968",
+            "policySetDefinitionDisplayName": "APG DRCP Policy",
+            "policySetDefinitionVersion": "1.0.0",
+            "policyDefinitionName": "DRCP-Generic-EventHubBypassAzureServices",
+            "policyDefinitionDisplayName": "APG DRCP EventHub Bypass Azure services",
+            "policyDefinitionVersion": "1.0.0",
+            "policyDefinitionEffect": "Deny",
+            "policyAssignmentId": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/providers/Microsoft.Authorization/policyAssignments/DRCP-Generic-AM-CCC-ENV23968",
+            "policyAssignmentName": "DRCP-Generic-AM-CCC-ENV23968",
+            "policyAssignmentDisplayName": "APG DRCP Policy",
+            "policyAssignmentScope": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723",
+            "policyAssignmentParameters": {},
+            "policyExemptionIds": [],
+            "policyEnrollmentIds": []
+          }
         }
       ]
     }
   ]
 }
 
-Scenario 1 
+
+drcptst1094-dev-swedencentral-rg
+
 {
   "code": "DeploymentFailed",
-  "target": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352993main-functionapp",
+  "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.Resources/deployments/352993main-adf",
   "message": "At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.",
   "details": [
     {
       "code": "Conflict",
-      "target": "/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.Web/sites/s2c3drcptst0195devsecapp/providers/Microsoft.Insights/diagnosticSettings/s2c3drcptst0195devsecapp-diagnosticSettings",
-      "message": "{\r\n  \"code\": \"Conflict\",\r\n  \"message\": \"Data sink '/subscriptions/80daf061-5012-4d2d-8a16-207f9e9ea723/resourceGroups/drcptst0195-dev-swedencentral-rg/providers/Microsoft.OperationalInsights/workspaces/s2c3drcptst0195devseclog' is already used in diagnostic setting 'customSetting' for category 'FunctionAppLogs'. Data sinks can't be reused in different settings on the same category for the same resource.\"\r\n}"
+      "target": "/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.DataFactory/factories/s2c3drcptst1094devsecadf/providers/Microsoft.Insights/diagnosticSettings/76uw6jjgcg4jm-diagnosticsettings",
+      "message": "{\r\n  \"code\": \"Conflict\",\r\n  \"message\": \"Data sink '/subscriptions/aa7b8d0c-5a38-4e51-ac77-b1d72e9f39c7/resourceGroups/drcptst1094-dev-swedencentral-rg/providers/Microsoft.OperationalInsights/workspaces/s2c3drcptst1094devseclog' is already used in diagnostic setting 's2c3drcptst1094devsecadf_diagnostic' for category 'ActivityRuns'. Data sinks can't be reused in different settings on the same category for the same resource.\"\r\n}"
     }
   ]
 }
