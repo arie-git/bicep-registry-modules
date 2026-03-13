@@ -405,12 +405,12 @@ module postgresqlServer 'br/amavm:res/db-for-postgre-sql/flexible-server:0.1.0' 
       }
     ]
 
-    // RBAC — Function App MI needs data-plane access via Entra admin
+    // RBAC — Engineers group as Entra admin (must be in drcp-psql-03 allowedPrincipalNames)
     administrators: [
       {
-        objectId: functionApp.outputs.systemAssignedMIPrincipalId
-        principalName: functionAppName
-        principalType: 'ServicePrincipal'
+        objectId: engineersGroupObjectId
+        principalName: 'F-DRCP-${applicationId}-${environmentId}-Engineer-001-ASG'
+        principalType: 'Group'
       }
     ]
   }
@@ -459,7 +459,7 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
     queues: [
       {
         name: 'orders'
-        maxMessageSizeInKilobytes: 256
+        maxMessageSizeInKilobytes: 1024
         maxSizeInMegabytes: 1024
         deadLetteringOnMessageExpiration: true
         maxDeliveryCount: 5
@@ -470,7 +470,7 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
     topics: [
       {
         name: 'events'
-        maxMessageSizeInKilobytes: 256
+        maxMessageSizeInKilobytes: 1024
         maxSizeInMegabytes: 1024
       }
     ]

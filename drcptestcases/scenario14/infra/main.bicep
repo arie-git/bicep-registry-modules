@@ -280,7 +280,7 @@ module storageAccount 'br/amavm:res/storage/storage-account:0.2.0' = {
 
 var eventHubNamespaceName = names.outputs.namingConvention['Microsoft.EventHub/namespaces']
 var eventHubName = 'telemetry'
-module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.1.0' = {
+module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-evhns'
   params: {
@@ -288,6 +288,9 @@ module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.1.0' = {
     location: vNet.location
     tags: mytags
     skuName: 'Standard'
+    networkRuleSets: {
+      trustedServiceAccessEnabled: false
+    }
     skuCapacity: 1
     isAutoInflateEnabled: true
     maximumThroughputUnits: 10

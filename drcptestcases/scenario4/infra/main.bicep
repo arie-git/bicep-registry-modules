@@ -364,7 +364,7 @@ module fileShare 'br/amavm:res/storage/storage-account/file-service/share:0.1.0'
 // Event Hub (AMAVM module — replaces local namespace, eventhub, consumer-group, PE, and RBAC modules)
 var eventHubNamespaceName = names.outputs.namingConvention['Microsoft.EventHub/namespaces']
 var eventHubName = 'dest'
-module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.1.0' = {
+module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.2.0' = {
   scope: resourceGroup
   name: '${deployment().name}-evhns'
   params: {
@@ -372,6 +372,9 @@ module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.1.0' = {
     location: vNet.location
     tags: mytags
     skuName: 'Standard'
+    networkRuleSets: {
+      trustedServiceAccessEnabled: false
+    }
     skuCapacity: 1
     isAutoInflateEnabled: true
     maximumThroughputUnits: 10
