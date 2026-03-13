@@ -3,11 +3,15 @@ metadata description = 'This module deploys an Event Hub Namespace.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20250308'
 metadata compliance = '''Compliant usage of Azure Event Hubs requires:
-- disableLocalAuth: true
-- publicNetworkAccess: 'Disabled'
-- minimumTlsVersion: '1.2'
+- publicNetworkAccess: 'Disabled' (drcp-evh-01)
+- privateEndpoints with private DNS zones (drcp-evh-02)
+- networkRuleSets.virtualNetworkRules configured (drcp-evh-03)
+- networkRuleSets.trustedServiceAccessEnabled: false (drcp-evh-04)
+- disableLocalAuth: true (drcp-evh-05)
+- authorizationRules: only RootManageSharedAccessKey (drcp-evh-06)
+- minimumTlsVersion: '1.2' (drcp-evh-07)
+- requireInfrastructureEncryption: true when using CMK (drcp-evh-08)
 - zoneRedundant: true
-- networkRuleSets.trustedServiceAccessEnabled: false
 '''
 
 import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'
@@ -65,7 +69,7 @@ param minimumTlsVersion resourceInput<'Microsoft.EventHub/namespaces@2024-01-01'
 @description('Optional. Whether or not public network access is allowed for this resource. For security reasons it should be disabled. If not specified, it will be disabled by default if private endpoints are set. [Policy: drcp-evh-01]')
 param publicNetworkAccess resourceInput<'Microsoft.EventHub/namespaces@2024-01-01'>.properties.publicNetworkAccess?
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07]')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-evh-02]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. Configure networking options. This object contains IPs/Subnets to allow or restrict access to private endpoints only. For security reasons, it is recommended to configure this object on the Namespace. [Policy: drcp-evh-03, drcp-evh-04]')

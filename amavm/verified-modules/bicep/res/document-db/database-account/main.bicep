@@ -3,12 +3,15 @@ metadata description = 'This module deploys an Azure Cosmos DB account. Only the
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20250308'
 metadata compliance = '''Compliant usage of Azure Cosmos DB requires:
-- disableLocalAuth: true
-- disableKeyBasedMetadataWriteAccess: true
-- publicNetworkAccess: 'Disabled'
-- minimumTlsVersion: 'Tls12'
-- locations[*].isZoneRedundant: true (production)
-- Only NoSQL capability (Mongo, Cassandra, Table, Gremlin disabled)
+- publicNetworkAccess: 'Disabled' (drcp-cosmos-01)
+- disableLocalAuth: true (drcp-cosmos-02)
+- disableKeyBasedMetadataWriteAccess: true (drcp-cosmos-03)
+- Advanced Threat Protection enabled (drcp-cosmos-04) — subscription-level
+- minimumTlsVersion: 'Tls12' (drcp-cosmos-05)
+- Only NoSQL capability — Mongo, Cassandra, Table, Gremlin disabled (drcp-cosmos-06)
+- privateEndpoints with private DNS zones (drcp-cosmos-07)
+- Microsoft Defender for Cloud enabled (drcp-cosmos-09) — subscription-level
+- locations[*].isZoneRedundant: true for production (drcp-cosmos-10)
 '''
 
 // ================ //
@@ -186,7 +189,7 @@ param backupRetentionIntervalInHours int = 8
 @description('Optional. Setting that indicates the type of backup residency. This setting only applies to the periodic backup type. Defaults to "Local".')
 param backupStorageRedundancy string = 'Local'
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is advised to use private endpoints whenever possible. [Policy: drcp-sub-07]')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is advised to use private endpoints whenever possible. [Policy: drcp-cosmos-07]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. The network configuration of this module. Defaults to `{ ipRules: [], virtualNetworkRules: [], publicNetworkAccess: \'Disabled\' }`. [Policy: drcp-cosmos-01]')
