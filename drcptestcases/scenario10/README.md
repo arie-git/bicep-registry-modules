@@ -38,12 +38,12 @@ Two-tier deployment:
 
 | Component | AMAVM Module | Purpose |
 |---|---|---|
-| NSG | `br/amavm:res/network/network-security-group:0.1.0` | Network security rules |
-| Route Table | `br/amavm:res/network/route-table:0.1.0` | Custom routing |
-| Subnet | `br/amavm:res/network/virtual-network/subnet:0.2.0` | PE subnet |
-| Log Analytics | `br/amavm:res/operational-insights/workspace:0.1.0` | Centralized logging |
-| Key Vault | `br/amavm:res/key-vault/vault:0.3.0` | SHIR auth keys, inline PE/RBAC/diagnostics |
-| Data Factory | `br/amavm:res/data-factory/factory:0.2.0` | Central ADF with SHIR, inline PE/diagnostics |
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Subnet | `br/amavm:res/network/virtual-network/subnet` | PE subnet |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Key Vault | `br/amavm:res/key-vault/vault` | SHIR auth keys, inline PE/RBAC/diagnostics |
+| Data Factory | `br/amavm:res/data-factory/factory` | Central ADF with SHIR, inline PE/diagnostics |
 
 ### Central local modules
 

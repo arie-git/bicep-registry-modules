@@ -1,4 +1,4 @@
-# Scenario 12 — Data Factory + Databricks + SQL
+# Scenario 12 -- Data Factory + Databricks + SQL
 
 Azure Data Factory with Databricks compute and SQL backend. Uses the `ptn/ntier/sql` pattern module. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 

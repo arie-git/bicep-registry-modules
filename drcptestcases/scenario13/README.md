@@ -1,4 +1,4 @@
-# Scenario 13 — Azure Cache for Redis (Premium)
+# Scenario 13 -- Azure Cache for Redis (Premium)
 
 Redis Premium cache with Entra ID authentication, private endpoint, zone redundancy, and diagnostics. Minimal scenario focused on the `cache/redis` AMAVM module with full DRCP compliance.
 

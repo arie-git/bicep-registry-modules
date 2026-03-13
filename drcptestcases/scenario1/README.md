@@ -1,4 +1,4 @@
-# Scenario 1 — Function App + Key Vault + SQL Database
+# Scenario 1 -- Function App + Key Vault + SQL Database
 
 Function App with Key Vault secret management and Azure SQL backend. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 

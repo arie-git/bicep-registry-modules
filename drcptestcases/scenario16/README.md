@@ -1,4 +1,4 @@
-# Scenario 16 — AI Chatbot: Azure OpenAI + AI Search
+# Scenario 16 -- AI Chatbot: Azure OpenAI + AI Search
 
 RAG (Retrieval-Augmented Generation) chatbot with Streamlit frontend and Flask backend API. Uses Azure OpenAI (GPT-4o) for chat completions and AI Search for knowledge base retrieval. Entra ID Easy Auth with federated identity credentials (FIC) and On-Behalf-Of (OBO) token exchange. Full DRCP compliance with private endpoints, UAMI auth, VNet integration, and diagnostics.
 
@@ -50,4 +50,4 @@ az deployment sub create --location swedencentral \
 ### Notes
 
 - AI Search shared private links (to Storage + OpenAI) require manual approval in the DRCP portal after deployment.
-- App registrations use the `microsoftGraphV1` Bicep extension — may require special bicepconfig settings.
+- App registrations use the `microsoftGraphV1` Bicep extension -- may require special bicepconfig settings.

@@ -1,4 +1,4 @@
-# Scenario 17 — Static Web App + Function API
+# Scenario 17 -- Static Web App + Function API
 
 SPA frontend on Azure Static Web Apps (Standard SKU) with a linked Function App API backend. Validates the AMAVM `web/static-site` module's private endpoint, linked backend, and DRCP compliance.
 
@@ -6,16 +6,16 @@ SPA frontend on Azure Static Web Apps (Standard SKU) with a linked Function App 
 
 | Component | AMAVM Module | Purpose |
 |---|---|---|
-| Static Web App | `br/amavm:res/web/static-site:0.2.0` | Standard SKU, PE, linked backend, no source control |
-| Function App (API) | `br/amavm:res/web/site:0.1.0` | Linux Node.js API backend, MI, VNet integration |
-| App Service Plan | `br/amavm:res/web/serverfarm:0.1.0` | Linux, S1 |
-| Storage Account | `br/amavm:res/storage/storage-account:0.2.0` | Function backing storage (shared key disabled) |
-| Key Vault | `br/amavm:res/key-vault/vault:0.3.0` | API config secrets |
-| NSG | `br/amavm:res/network/network-security-group:0.1.0` | Network security rules |
-| Route Table | `br/amavm:res/network/route-table:0.1.0` | Custom routing |
-| Subnet (x2) | `br/amavm:res/network/virtual-network/subnet:0.2.0` | PE subnet + app egress subnet |
-| Log Analytics | `br/amavm:res/operational-insights/workspace:0.1.0` | Centralized logging |
-| Application Insights | `br/amavm:res/insights/component:0.1.0` | APM telemetry |
+| Static Web App | `br/amavm:res/web/static-site` | Standard SKU, PE, linked backend, no source control |
+| Function App (API) | `br/amavm:res/web/site` | Linux Node.js API backend, MI, VNet integration |
+| App Service Plan | `br/amavm:res/web/serverfarm` | Linux, S1 |
+| Storage Account | `br/amavm:res/storage/storage-account` | Function backing storage (shared key disabled) |
+| Key Vault | `br/amavm:res/key-vault/vault` | API config secrets |
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Subnet (x2) | `br/amavm:res/network/virtual-network/subnet` | PE subnet + app egress subnet |
+| Log Analytics | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Application Insights | `br/amavm:res/insights/component` | APM telemetry |
 
 ## Architecture
 
@@ -38,7 +38,7 @@ SPA frontend on Azure Static Web Apps (Standard SKU) with a linked Function App 
 
 ### Prerequisites
 - Azure subscription with DRCP guardrails
-- VNet with available address space (`/27` minimum — 2 x /28 subnets)
+- VNet with available address space (`/27` minimum -- 2 x /28 subnets)
 - ServiceNow environment ID
 
 ### Deploy

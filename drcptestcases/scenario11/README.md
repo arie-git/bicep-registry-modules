@@ -1,31 +1,42 @@
-# Scenario 11 — Multi-Tier Web Application
+# Scenario 11 -- Multi-Tier Web Application
 
-Web App (ASP.NET UI) + Web App (ASP.NET API) + KeyVault + SQL db
+Web App (ASP.NET UI) + Web App (ASP.NET API) + Key Vault + SQL Database. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 
-## How to deploy manually
+## Components
 
-`az login`
+| Component | AMAVM Module | Purpose |
+|---|---|---|
+| Naming | `br/amavm:utl/amavm/naming` | DRCP naming conventions |
+| NSG | `br/amavm:res/network/network-security-group` | Network security rules |
+| Route Table | `br/amavm:res/network/route-table` | Custom routing |
+| Subnet | `br/amavm:res/network/virtual-network/subnet` | PE + egress subnets |
+| Log Analytics (x2) | `br/amavm:res/operational-insights/workspace` | Centralized logging |
+| Application Insights | `br/amavm:res/insights/component` | Application telemetry |
+| Key Vault | `br/amavm:res/key-vault/vault` | Secret management |
+| Key Vault Secret | `br/amavm:res/key-vault/vault/secret` | SQL connection string |
+| Storage Account | `br/amavm:res/storage/storage-account` | Backing storage |
+| User-Assigned MI | `br/amavm:res/managed-identity/user-assigned-identity` | Managed identity for SQL |
+| SQL Server | `br/amavm:res/sql/server` | Azure SQL with PE + Entra auth |
+| App Service Plan (x2) | `br/amavm:res/web/serverfarm` | Hosting for UI + API web apps |
+| Web App (UI) | `br/amavm:res/web/site` | ASP.NET frontend |
+| Web App (API) | `br/amavm:res/web/site` | ASP.NET backend API |
 
-`az account set -s AM-CCC-ENVxxxxx-DEV`
+## Deployment
 
-`az deployment sub create --location swedencentral -f scenario11/infra/main.bicep --name=drcptst1101`
+### Deploy
 
-OR if not default values
-`az deployment sub create --location swedencentral -f scenario11/infra/main.bicep --name=drcptst1101 --parameters applicationInstanceCode=1101 environmentId=ENVxxxxx engineersGroupObjectId='623a26f3-3341-4911-bfe2-0e9da839c26e'`
+```
+az deployment sub create --location swedencentral \
+  -f scenario11/infra/main.bicep \
+  --name=drcptst1101 \
+  --parameters environmentId=<ENV_ID> \
+  engineersGroupObjectId='<GROUP_OID>'
+```
 
-where:
-name - is the name of the deployment
-applicationSystemCode - is the code for the combination of 'system+instance' within the application
-environmentId - is the DRCP environment id as received from service now, used in naming subscriptions and VNets
-vnetPrefix - is not a real network prefix, but a string used to compose subnet addresses
-engineersGroupObjectId - is the objectId for the Engineers group that will receive RBAC assignments to deployed resources
+### Remove
 
-## How to remove manually
-
-`.\modules\scripts\removeApplicationInfra.ps1 -snowEnvironmentId ENVxxxxx -resourceFilter drcptst1101`
-
-where:
-groupName - is the name of the resource group where infra is deployed
-vnetGroupName - is the name of the Virtual Network resource group
-vnetName - is the name of the Virtual Network
-resourceFilter - is the string used in part of the resource names to be removed in Virtual Network resource group
+```
+.\modules\scripts\removeApplicationInfra.ps1 \
+  -snowEnvironmentId <ENV_ID> \
+  -resourceFilter drcptst1101
+```
