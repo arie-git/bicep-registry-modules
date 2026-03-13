@@ -3,12 +3,12 @@ metadata description = 'This module deploys a Cognitive Service.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Cognitive Services requires:
-- disableLocalAuth: true — Entra ID auth enforced (drcp-ai-01)
+- disableLocalAuth: true -- Entra ID auth enforced (drcp-ai-01)
 - managedIdentities: not empty (drcp-ai-02)
 - publicNetworkAccess: 'Disabled' (drcp-ai-03)
 - kind: 'AIServices', 'OpenAI', or 'TextAnalytics' (drcp-ai-04)
 - deployments: approved models only, no global deployment types (drcp-ai-o01)
-- networkAcls.bypass: 'None' — trusted services disabled (drcp-ai-o02)
+- networkAcls.bypass: 'None' -- trusted services disabled (drcp-ai-o02)
 - deployments: no custom content filters (drcp-ai-o03)
 - deployments: approved model versions only (drcp-ai-o04)
 '''

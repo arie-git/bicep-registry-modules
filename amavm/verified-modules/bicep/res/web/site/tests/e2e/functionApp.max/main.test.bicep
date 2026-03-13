@@ -83,7 +83,7 @@ module testDeployment '../../../main.bicep' = [
       }
       // Uses module default authSettingV2Configuration for function apps:
       // - Return401 for unauthenticated requests (API-style)
-      // - FIC (federated identity credentials) — no client secrets
+      // - FIC (federated identity credentials) -- no client secrets
       // - Entra ID identity provider with audience api://<appId>
       authSettingApplicationId: 'd874dd2f-2032-4db1-a053-f0ec243685aa'
       basicPublishingCredentialsPolicies: [

@@ -29,11 +29,11 @@ extends:
   parameters:
     pipelineStages:
       # ════════════════════════════════════════════════
-      # LANE A — ENV23978 (10.238.64.0/24)
+      # LANE A -- ENV23978 (10.238.64.0/24)
       # ════════════════════════════════════════════════
 
       # ──────────────────────────────────────────────
-      # S1 — ENV23978, /27
+      # S1 -- ENV23978, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -54,7 +54,7 @@ extends:
           networkAddressSpace: '10.238.64.0/27'
 
       # ──────────────────────────────────────────────
-      # S2 — ENV23978, /27
+      # S2 -- ENV23978, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -76,7 +76,7 @@ extends:
           networkAddressSpace: '10.238.64.0/27'
 
       # ──────────────────────────────────────────────
-      # S3 — ENV23978, /27
+      # S3 -- ENV23978, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -98,7 +98,7 @@ extends:
           networkAddressSpace: '10.238.64.0/27'
 
       # ──────────────────────────────────────────────
-      # S4 — ENV23978, /27
+      # S4 -- ENV23978, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -120,7 +120,7 @@ extends:
           networkAddressSpace: '10.238.64.0/27'
 
       # ──────────────────────────────────────────────
-      # S5 — ENV23978, /26
+      # S5 -- ENV23978, /26
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -142,7 +142,7 @@ extends:
           networkAddressSpace: '10.238.64.0/26'
 
       # ──────────────────────────────────────────────
-      # S7 — ENV23978, /26
+      # S7 -- ENV23978, /26
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -164,11 +164,11 @@ extends:
           networkAddressSpace: '10.238.64.0/26'
 
       # ════════════════════════════════════════════════
-      # LANE B — ENV23979 (10.238.65.0/24)
+      # LANE B -- ENV23979 (10.238.65.0/24)
       # ════════════════════════════════════════════════
 
       # ──────────────────────────────────────────────
-      # S8 — ENV23979, /26
+      # S8 -- ENV23979, /26
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -190,7 +190,7 @@ extends:
           networkAddressSpace: '10.238.65.0/26'
 
       # ──────────────────────────────────────────────
-      # S10 — ENV23979, /26
+      # S10 -- ENV23979, /26
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -212,7 +212,7 @@ extends:
           networkAddressSpace: '10.238.65.0/26'
 
       # ──────────────────────────────────────────────
-      # S11 — ENV23979, /26
+      # S11 -- ENV23979, /26
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -234,7 +234,7 @@ extends:
           networkAddressSpace: '10.238.65.0/26'
 
       # ──────────────────────────────────────────────
-      # S12 — ENV23979, /26
+      # S12 -- ENV23979, /26
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -256,7 +256,7 @@ extends:
           networkAddressSpace: '10.238.65.0/26'
 
       # ──────────────────────────────────────────────
-      # S13 — ENV23979, /27
+      # S13 -- ENV23979, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -278,7 +278,7 @@ extends:
           networkAddressSpace: '10.238.65.0/27'
 
       # ──────────────────────────────────────────────
-      # S14 — ENV23979, /27
+      # S14 -- ENV23979, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -300,7 +300,7 @@ extends:
           networkAddressSpace: '10.238.65.0/27'
 
       # ──────────────────────────────────────────────
-      # S15 — ENV23979, /27
+      # S15 -- ENV23979, /27
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:

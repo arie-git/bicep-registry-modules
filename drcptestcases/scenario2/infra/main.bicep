@@ -243,7 +243,7 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
   ]
 }
 
-// Cosmos DB (AMAVM module — replaces local cosmos-db, secureKeys, sqldatabase, container, and PE modules)
+// Cosmos DB (AMAVM module -- replaces local cosmos-db, secureKeys, sqldatabase, container, and PE modules)
 var cosmosDbName = names.outputs.namingConvention['Microsoft.DocumentDB/databaseAccounts']
 module cosmosDb 'br/amavm:res/document-db/database-account:0.1.0' = {
   scope: resourceGroup
@@ -252,8 +252,8 @@ module cosmosDb 'br/amavm:res/document-db/database-account:0.1.0' = {
     name: cosmosDbName
     location: location
     tags: tags
-    disableLocalAuthentication: true                // DRCP: drcp-cosmos-01 — Entra ID only, no access keys
-    disableKeyBasedMetadataWriteAccess: true       // DRCP: drcp-cosmos-02 — prevent key-based metadata writes
+    disableLocalAuthentication: true                // DRCP: drcp-cosmos-01 -- Entra ID only, no access keys
+    disableKeyBasedMetadataWriteAccess: true       // DRCP: drcp-cosmos-02 -- prevent key-based metadata writes
     backupStorageRedundancy: 'Local'
     sqlDatabases: [
       {

@@ -1,10 +1,10 @@
-# DRCP Test Cases — Task Tracker
+# DRCP Test Cases -- Task Tracker
 
 > Part of [tasks/todo.md](../tasks/todo.md)
 
 ## Purpose
 
-These test cases validate that AMAVM Bicep modules deploy correctly to the hardened DRCP platform. Each scenario combines multiple modules into a realistic architecture, deploys via scheduled pipeline, and tears down afterwards to save costs. They serve as integration tests — catching issues that per-module e2e tests miss (cross-module wiring, private endpoint connectivity, identity/RBAC chains, naming conventions).
+These test cases validate that AMAVM Bicep modules deploy correctly to the hardened DRCP platform. Each scenario combines multiple modules into a realistic architecture, deploys via scheduled pipeline, and tears down afterwards to save costs. They serve as integration tests -- catching issues that per-module e2e tests miss (cross-module wiring, private endpoint connectivity, identity/RBAC chains, naming conventions).
 
 > **Historical details** (completed migration plans, component tables, design docs) are in [`todo-archive.md`](todo-archive.md).
 
@@ -35,7 +35,7 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 
 ---
 
-## P0 — AMAVM Module Migration
+## P0 -- AMAVM Module Migration
 
 ### Completed ✅
 
@@ -47,7 +47,7 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 | S8 | Repurposed from APIM → PostgreSQL + Service Bus. All AMAVM, 16 DRCP policies validated. |
 | S7 | Simplified: removed Logic App (covered by S3). ACR + Docker only. `task.bicep` kept local. |
 
-### Open — Cross-Scenario Role Assignment (blocked on GAP-6)
+### Open -- Cross-Scenario Role Assignment (blocked on GAP-6)
 
 5 scenarios use local role-assignment helpers for circular dependency breaking. Once AMAVM `authorization/role-assignment/rg-scope` is available:
 
@@ -67,23 +67,23 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 - [ ] Remove replaced local modules
 - [ ] Validate `bicep build` on all affected scenarios
 
-### Open — Scenario 10 Unity Catalog + Pipeline Expansion
+### Open -- Scenario 10 Unity Catalog + Pipeline Expansion
 
-- [x] Cluster policies to enforce `enableNoPublicIp: true` (drcp-adb-r04) — added to `setup-unity-catalog.py` step 8 (Databricks API)
-- [x] Create `scenario10/src/setup-unity-catalog.py` — post-deployment UC setup notebook
-- [x] Add `src/DataPipeline4.bicep` — ADF → Databricks → UC validation
-- [x] Add `src/DataPipeline5.bicep` — Medallion: bronze → silver → gold
+- [x] Cluster policies to enforce `enableNoPublicIp: true` (drcp-adb-r04) -- added to `setup-unity-catalog.py` step 8 (Databricks API)
+- [x] Create `scenario10/src/setup-unity-catalog.py` -- post-deployment UC setup notebook
+- [x] Add `src/DataPipeline4.bicep` -- ADF → Databricks → UC validation
+- [x] Add `src/DataPipeline5.bicep` -- Medallion: bronze → silver → gold
 - [x] Update DataPipeline1 to write to UC bronze table (optional via `adlsUcName` param)
-- [x] Validate: `bicep build` passes — DataPipeline1/4/5 clean; main.bicep blocked by ACR firewall (BCP192, expected from codespace)
+- [x] Validate: `bicep build` passes -- DataPipeline1/4/5 clean; main.bicep blocked by ACR firewall (BCP192, expected from codespace)
 - [ ] Validate: `what-if` (requires DRCP subscription + ACR access), deploy + run UC notebook, `/azure:azure-compliance`
 - [x] Document medallion architecture pattern in README
 - [x] Update DataPipelines pipeline YAML with DataPipeline4 + 5 steps
 
-### Open — Scenario 5 Public IP (blocked)
+### Open -- Scenario 5 Public IP (blocked)
 
 - [ ] Blocked until AMAVM `network/public-ip-address` module is created (GAP-5)
 
-### Open — Scenario 8 src/ cleanup
+### Open -- Scenario 8 src/ cleanup
 
 - [ ] Rewrite `src/` for PostgreSQL + Service Bus architecture (currently has Cosmos DB triggers + Azure Files from old APIM design):
   - [ ] `backend-dotnet/CosmosDbTrigger.cs` → Service Bus trigger + PostgreSQL write
@@ -95,7 +95,7 @@ These test cases validate that AMAVM Bicep modules deploy correctly to the harde
 
 ---
 
-## P1 — README Standardization ✅
+## P1 -- README Standardization ✅
 
 All 12 scenario READMEs standardized to template format with components table, deploy/remove commands.
 
@@ -103,13 +103,13 @@ All 12 scenario READMEs standardized to template format with components table, d
 
 ---
 
-## P1.5 — New Test Scenarios
+## P1.5 -- New Test Scenarios
 
 ### Completed ✅
 
 All 5 new scenarios (13-17) created with full Bicep, READMEs, and pipeline YAMLs. See [archive](todo-archive.md) for component tables and DRCP config details.
 
-### Open — Pre-deployment validation
+### Open -- Pre-deployment validation
 
 - [ ] S13: Use `/azure:azure-validate` for pre-deployment readiness check
 - [ ] S14: Use `/azure:azure-validate` for pre-deployment readiness check
@@ -122,13 +122,13 @@ All 5 new scenarios (13-17) created with full Bicep, READMEs, and pipeline YAMLs
 
 ---
 
-## P2 — AMAVM Module Coverage ✅
+## P2 -- AMAVM Module Coverage ✅
 
 **Full coverage achieved.** All 36 AMAVM `res/` modules covered by at least one scenario. See [archive](todo-archive.md) for the full coverage matrix.
 
 ---
 
-## P2.5 — RBAC Enforcement
+## P2.5 -- RBAC Enforcement
 
 13 of 14 scenarios audited and compliant. Logic App (S3) exception documented.
 
@@ -137,16 +137,16 @@ All 5 new scenarios (13-17) created with full Bicep, READMEs, and pipeline YAMLs
 
 ---
 
-## P2.7 — Region Cleanup + Environment Mapping
+## P2.7 -- Region Cleanup + Environment Mapping
 
 ### West Europe Deprecation
 
 - [x] Remove West Europe from top-level README (network space + environments)
 - [ ] Update files that reference `westeurope`:
-  - [ ] `scenario5/infra/main.bicep` — line 94: location mapping (keep — used as abbreviation lookup)
-  - [ ] `scenario7/README.md` — deploy command
-  - [ ] `scenario8/README.md` — deploy command
-  - [ ] `scenario10/README.md` — deploy command
+  - [ ] `scenario5/infra/main.bicep` -- line 94: location mapping (keep -- used as abbreviation lookup)
+  - [ ] `scenario7/README.md` -- deploy command
+  - [ ] `scenario8/README.md` -- deploy command
+  - [ ] `scenario10/README.md` -- deploy command
   - [ ] `scenario10/pipeline/scenario10-DataPipelines.yaml`
   - [ ] `scenario16/pipelines/main.yaml`
   - [ ] `scenario16/pipelines/deploy-app.yaml`
@@ -165,9 +165,9 @@ Address space solved by ADO exclusive locks + teardown (see P2.9). All scenarios
 
 ---
 
-## P2.9 — Test Concurrency & Scheduling
+## P2.9 -- Test Concurrency & Scheduling
 
-**Problem:** 17 scenarios share 4 VNets. ARM serializes subnet operations — concurrent deploys cause conflicts. Current 1-hour stagger doesn't scale.
+**Problem:** 17 scenarios share 4 VNets. ARM serializes subnet operations -- concurrent deploys cause conflicts. Current 1-hour stagger doesn't scale.
 
 **Solution:** ADO exclusive lock environments + parallel groups. See [archive](todo-archive.md) for full design.
 
@@ -206,27 +206,27 @@ Address space solved by ADO exclusive locks + teardown (see P2.9). All scenarios
 
 ---
 
-## P3 — Version Bumps
+## P3 -- Version Bumps
 
 All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump to latest published versions.
 
 - [ ] Inventory current vs latest versions
 - [ ] Bump all scenarios
-- [ ] Validate builds — use `bicep build` then `/azure:azure-validate`
+- [ ] Validate builds -- use `bicep build` then `/azure:azure-validate`
 
 ---
 
-## P4 — Cleanup
+## P4 -- Cleanup
 
 - [x] Remove `modules/infra/storage/cosmos-db/` (S2 migrated)
 - [x] Remove `modules/infra/integration/event-hub/` (S4 migrated)
-- [x] Remove `modules/infra/integration/data-factory/` partial — removed main.bicep, linkedService.bicep, trigger.bicep; kept `integrationRuntime.bicep` + `role-assignment.bicep` for S10 linked IR
+- [x] Remove `modules/infra/integration/data-factory/` partial -- removed main.bicep, linkedService.bicep, trigger.bicep; kept `integrationRuntime.bicep` + `role-assignment.bicep` for S10 linked IR
 - [x] Remove `modules/infra/network/private-endpoint/` (all PE refs migrated)
 - [x] Remove `modules/infra/integration/api-management/` (S8 repurposed)
 - [ ] Audit remaining `modules/infra/` for other removable modules
 - [ ] Keep: scenario-specific helpers, deployment scripts, `public-ip-address`
 
-### Scenario 7 — ACR Task Module Update (LOW PRIORITY)
+### Scenario 7 -- ACR Task Module Update (LOW PRIORITY)
 
 - [ ] Update ACR task API from `2019-06-01-preview` to latest GA
 - [ ] Check if `taskRuns` resource type has a GA API version
@@ -250,4 +250,4 @@ All scenarios use AMAVM module versions 0.1.0–0.3.0. After P0 migrations, bump
 Tracked in [`amavm/verified-modules/todo.md`](../amavm/verified-modules/todo.md). Scenario-side tasks remain here:
 
 - [ ] S5/S7: Create Entra ID app registrations with FIC (follow S16 pattern with `Microsoft.Graph/applications@v1.0`)
-- [x] S11 API web app: fixed `platform.enabled: false` → removed (drcp-aps-18 non-compliant). Also noted: both web apps still use MICROSOFT_PROVIDER_AUTHENTICATION_SECRET (KV ref) — should migrate to FIC
+- [x] S11 API web app: fixed `platform.enabled: false` → removed (drcp-aps-18 non-compliant). Also noted: both web apps still use MICROSOFT_PROVIDER_AUTHENTICATION_SECRET (KV ref) -- should migrate to FIC

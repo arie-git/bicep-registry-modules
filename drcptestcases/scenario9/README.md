@@ -1,4 +1,4 @@
-# Scenario 9 — AKS + ACR + Application Gateway + Cosmos DB
+# Scenario 9 -- AKS + ACR + Application Gateway + Cosmos DB
 
 Azure Kubernetes Service with Container Registry, Application Gateway ingress, and Cosmos DB backend. Full DRCP compliance with private endpoints, managed identity, VNet integration, and diagnostics.
 

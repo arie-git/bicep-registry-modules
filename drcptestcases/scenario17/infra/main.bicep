@@ -1,4 +1,4 @@
-// bicep code to create infra for scenario 17 — Static Web App + Function API
+// bicep code to create infra for scenario 17 -- Static Web App + Function API
 // Demonstrates: Static Web App (Standard) with linked Function App API backend,
 // private endpoints, managed identity, VNet integration, diagnostics
 

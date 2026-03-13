@@ -43,7 +43,7 @@ In main.bicep:
 * add 'evidenceOfNonCompliance' output parameter
 * add two variables 'versionInfo' and 'moduleVersion'
 * replace in-file definitions of shared bicep types with imports from '/bicep-shared/types.bicep'
-  * **Important:** AMAVM shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType`) already include the array suffix (`[]` or `[]?`) in their type definitions. This differs from upstream AVM, where types are singular objects and modules append `[]?` themselves. When using AMAVM shared types, do **not** add `[]?` — use the type name directly (e.g. `param diagnosticSettings diagnosticSettingType`, not `diagnosticSettingType[]?`, which would create an array-of-arrays).
+  * **Important:** AMAVM shared types (`diagnosticSettingType`, `privateEndpointType`, `roleAssignmentType`) already include the array suffix (`[]` or `[]?`) in their type definitions. This differs from upstream AVM, where types are singular objects and modules append `[]?` themselves. When using AMAVM shared types, do **not** add `[]?` -- use the type name directly (e.g. `param diagnosticSettings diagnosticSettingType`, not `diagnosticSettingType[]?`, which would create an array-of-arrays).
 * in resource avmTelemetry replace '46d3xbcp' with '${telemetryId}$' in name field. Also make sure the name field is truncated to 64 chars.
 * modify role definitions
   * add `import { builtInRoleNames as minimalBuiltInRoleNames, telemetryId } from '../../../../bicep-shared/environments.bicep'`
@@ -147,10 +147,10 @@ Building the modules happens on following occasions:
 
 Parameters:
 
-* `modulesRootPath` — filesystem path to AMAVM bicep modules. Default: `"./bicep/"`.
-* `modulesSubpath` — filters modules to a sub-directory under the modulesRootPath. Default: empty (all modules).
-* `moduleName` — filters to a single module. Default: empty.
-* `buildReadme` — when `'True'` it generates README.md from the sources before building. Default: `'False'`.
+* `modulesRootPath` -- filesystem path to AMAVM bicep modules. Default: `"./bicep/"`.
+* `modulesSubpath` -- filters modules to a sub-directory under the modulesRootPath. Default: empty (all modules).
+* `moduleName` -- filters to a single module. Default: empty.
+* `buildReadme` -- when `'True'` it generates README.md from the sources before building. Default: `'False'`.
 
 Examples:
 
@@ -172,10 +172,10 @@ Examples:
 
 ADO pipeline `pipelines/buildBicepFiles.yaml` is triggered on every push to non-main branches. It performs the following steps:
 
-1. **Set BCR configuration** — configures the linter to point to the correct ACR via `utils/setBCRinLinter.ps1`
-2. **Build modules** — runs `utils/buildBicepFiles.ps1` to compile all Bicep modules
-3. **Compare README files** — runs `utils/compareReadMe.ps1` to verify that committed README files match the auto-generated output. If they differ, the build fails — this ensures developers regenerate the README after code changes
-4. **Generate HTML** — converts README.md files to HTML via `utils/readmePublisher/convertreadmetohtml.py` and publishes them as a build artifact
+1. **Set BCR configuration** -- configures the linter to point to the correct ACR via `utils/setBCRinLinter.ps1`
+2. **Build modules** -- runs `utils/buildBicepFiles.ps1` to compile all Bicep modules
+3. **Compare README files** -- runs `utils/compareReadMe.ps1` to verify that committed README files match the auto-generated output. If they differ, the build fails -- this ensures developers regenerate the README after code changes
+4. **Generate HTML** -- converts README.md files to HTML via `utils/readmePublisher/convertreadmetohtml.py` and publishes them as a build artifact
 
 The pipeline does not build the MD documentation; it expects that the developer already ran the README generation during development.
 
@@ -185,11 +185,11 @@ Publishing the modules is a multi-step process that involves building, documenta
 
 The end-to-end publishing workflow:
 
-1. **Build modules** — compile and validate all Bicep modules (see [Building](#building))
-2. **Merge Table of Contents** — merge the local ToC with the previously published ToC from the documentation website, so that older module versions are preserved
-3. **Generate HTML documentation** — convert README.md files to HTML pages and update the ToC
-4. **Publish modules to ACR** — push compiled modules to the Azure Container Registry as `br:<acrName>.azurecr.io/<module>:<version>.0`
-5. **Publish documentation** — upload HTML files to an Azure Storage static website
+1. **Build modules** -- compile and validate all Bicep modules (see [Building](#building))
+2. **Merge Table of Contents** -- merge the local ToC with the previously published ToC from the documentation website, so that older module versions are preserved
+3. **Generate HTML documentation** -- convert README.md files to HTML pages and update the ToC
+4. **Publish modules to ACR** -- push compiled modules to the Azure Container Registry as `br:<acrName>.azurecr.io/<module>:<version>.0`
+5. **Publish documentation** -- upload HTML files to an Azure Storage static website
 
 #### Dependency Handling
 
@@ -203,11 +203,11 @@ Publishes Bicep modules to the Azure Container Registry.
 
 Parameters:
 
-* `acrName` — the name of the ACR to publish to. Default: reads from `AMAVM_ACR_NAME` environment variable. Required.
-* `modulesRootPath` — filesystem path to AMAVM bicep modules. Default: `"./bicep/"`.
-* `modulesSubpath` — filters modules to a sub-directory under the modulesRootPath. Default: empty (all modules).
-* `moduleName` — filters to a single module. Default: empty.
-* `documentationUri` — base URI for the documentation website. Default: reads from `AMAVM_DOCUMENTATION_URI` environment variable, or falls back to the ADO repo path.
+* `acrName` -- the name of the ACR to publish to. Default: reads from `AMAVM_ACR_NAME` environment variable. Required.
+* `modulesRootPath` -- filesystem path to AMAVM bicep modules. Default: `"./bicep/"`.
+* `modulesSubpath` -- filters modules to a sub-directory under the modulesRootPath. Default: empty (all modules).
+* `moduleName` -- filters to a single module. Default: empty.
+* `documentationUri` -- base URI for the documentation website. Default: reads from `AMAVM_DOCUMENTATION_URI` environment variable, or falls back to the ADO repo path.
 
 The script performs `az bicep restore` and `az bicep publish` for each module. The published version is `<major>.<minor>.0`, derived from the module's `version.json`. The documentation URI is constructed as `<documentationUri>/<module-web-path>/<version-page>.html`.
 
@@ -240,9 +240,9 @@ Merges the local Table of Contents with a previously published ToC, preserving v
 
 Parameters:
 
-* `sourcesTocPath` — path to the local ToC file. Default: `"utils/html-assets/readmePublisher/menu/toc.json"`.
-* `additionalTocPath` — path or URL to the ToC to merge in (e.g. the currently published website's ToC). Default: reads from `AMAVM_DOCUMENTATION_STORAGE_URL` environment variable.
-* `resultsPath` — output path for the merged ToC. Default: `"newtoc.json"`.
+* `sourcesTocPath` -- path to the local ToC file. Default: `"utils/html-assets/readmePublisher/menu/toc.json"`.
+* `additionalTocPath` -- path or URL to the ToC to merge in (e.g. the currently published website's ToC). Default: reads from `AMAVM_DOCUMENTATION_STORAGE_URL` environment variable.
+* `resultsPath` -- output path for the merged ToC. Default: `"newtoc.json"`.
 
 Example:
 

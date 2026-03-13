@@ -337,8 +337,8 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {  //'../../modules/infra
 }
 
 //----------------------------------------------------------------------------
-//  Create ADF (AMAVM module — replaces local data-factory, PE, diagnostics)
-//  Supports pure Bicep deployment (no Git) — set adfRepoConfig = {} or omit
+//  Create ADF (AMAVM module -- replaces local data-factory, PE, diagnostics)
+//  Supports pure Bicep deployment (no Git) -- set adfRepoConfig = {} or omit
 //----------------------------------------------------------------------------
 var adfName = names.outputs.namingConvention['Microsoft.DataFactory/factories']
 var enableGitConfig = isDevEnvironment && !empty(adfRepoConfig) && contains(adfRepoConfig, 'repoEnabled') && bool(adfRepoConfig.repoEnabled)
@@ -357,7 +357,7 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
     tags: tags
     publicNetworkAccess: 'Disabled'
 
-    // Git — only in dev with explicit opt-in; otherwise pure Bicep deployment
+    // Git -- only in dev with explicit opt-in; otherwise pure Bicep deployment
     gitConfigureLater: !enableGitConfig
     gitconfiguration: enableGitConfig ? {
       gitRepoType: 'FactoryVSTSConfiguration'
@@ -396,11 +396,11 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
     ] : []
 
     //--------------------------------------------------------------------------
-    //  Linked Services — pre-configured for pure Bicep pipeline deployment
+    //  Linked Services -- pre-configured for pure Bicep pipeline deployment
     //  All use Managed Identity auth (DRCP: no keys, no secrets in config)
     //--------------------------------------------------------------------------
     linkedServices: [
-      // Key Vault — secret store for pipeline credentials
+      // Key Vault -- secret store for pipeline credentials
       {
         name: 'ls_keyvault'
         type: 'AzureKeyVault'
@@ -411,7 +411,7 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
         }
         description: 'Key Vault for pipeline secret references'
       }
-      // ADLS Gen2 — primary data lake (landing/staging)
+      // ADLS Gen2 -- primary data lake (landing/staging)
       {
         name: 'ls_adls'
         type: 'AzureBlobFS'
@@ -422,7 +422,7 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
         }
         description: 'ADLS Gen2 data lake'
       }
-      // Blob Storage — file share & container backend
+      // Blob Storage -- file share & container backend
       {
         name: 'ls_blob'
         type: 'AzureBlobStorage'
@@ -434,7 +434,7 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
         }
         description: 'Blob storage for ADF staging and file operations'
       }
-      // ADLS Gen2 Unity Catalog — medallion architecture
+      // ADLS Gen2 Unity Catalog -- medallion architecture
       {
         name: 'ls_adls_uc'
         type: 'AzureBlobFS'
@@ -443,9 +443,9 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
             url: 'https://${adlsUcName}.dfs.${environment().suffixes.storage}/'
           }
         }
-        description: 'Unity Catalog ADLS — bronze/silver/gold medallion layers'
+        description: 'Unity Catalog ADLS -- bronze/silver/gold medallion layers'
       }
-      // Databricks — compute for data transformations
+      // Databricks -- compute for data transformations
       {
         name: 'ls_databricks'
         type: 'AzureDatabricks'
@@ -472,7 +472,7 @@ var masterAdfResourceGroupName = split(masterAdfIrId, '/')[4]
 var masterAdfName = split(masterAdfIrId, '/')[8]
 var masterAdfIrName = split(masterAdfIrId, '/')[10]
 
-// Cross-subscription RBAC for shared IR access (non-dev only — linked IR pattern)
+// Cross-subscription RBAC for shared IR access (non-dev only -- linked IR pattern)
 module roleAssignment '../../modules/infra/integration/data-factory/modules/role-assignment.bicep' = if (!isDevEnvironment) {
   name: '${deployment().name}-shir-rbac'
   scope: az.resourceGroup(masterAdfSubscriptionId, masterAdfResourceGroupName)
@@ -642,7 +642,7 @@ module accessConnectorMod 'br/amavm:res/databricks/access-connector:0.2.0' = {
 }
 
 //----------------------------------------------------------------------------
-//  Unity Catalog — ADLS Gen2 storage for managed tables + external locations
+//  Unity Catalog -- ADLS Gen2 storage for managed tables + external locations
 //  Access Connector MI gets Storage Blob Data Contributor for UC data access
 //  ADF MI also gets access for pipeline writes to medallion containers
 //----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-# Scenario 8 — PostgreSQL + Service Bus (message-driven processing)
+# Scenario 8 -- PostgreSQL + Service Bus (message-driven processing)
 
 Function App with Service Bus trigger writing to PostgreSQL via managed identity. Demonstrates VNet-delegated PostgreSQL (not PE), Premium Service Bus with private endpoint, and identity-based connections throughout.
 
@@ -50,7 +50,7 @@ Function App (VNet-integrated)
 PostgreSQL Flexible Server (VNet-delegated)
 ```
 
-- **No shared keys or SAS tokens** — all connections use managed identity
+- **No shared keys or SAS tokens** -- all connections use managed identity
 - **Service Bus trigger**: `ServiceBusConnection__fullyQualifiedNamespace` (identity-based)
 - **PostgreSQL**: Entra AD administrator with token-based authentication
 

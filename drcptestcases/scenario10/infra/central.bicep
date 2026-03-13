@@ -150,7 +150,7 @@ module logWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0' = {
   }
 }
 
-// Key-vault (AMAVM — inline PE, RBAC, diagnostics)
+// Key-vault (AMAVM -- inline PE, RBAC, diagnostics)
 var keyVaultName = names.outputs.namingConvention['Microsoft.KeyVault/vaults']
 module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
   scope: resourceGroup
@@ -223,7 +223,7 @@ module keyVault 'br/amavm:res/key-vault/vault:0.3.0' = {
 }
 
 //----------------------------------------------------------------------------
-//  Create ADF (AMAVM — inline PE, diagnostics, self-hosted IR)
+//  Create ADF (AMAVM -- inline PE, diagnostics, self-hosted IR)
 //----------------------------------------------------------------------------
 
 var adfName = names.outputs.namingConvention['Microsoft.DataFactory/factories']
@@ -239,7 +239,7 @@ module adf 'br/amavm:res/data-factory/factory:0.2.0' = {
     tags: tags
     publicNetworkAccess: 'Disabled'
 
-    // Git — only in dev with explicit opt-in
+    // Git -- only in dev with explicit opt-in
     gitConfigureLater: !enableGitConfig
     gitconfiguration: enableGitConfig ? {
       gitRepoType: 'FactoryVSTSConfiguration'

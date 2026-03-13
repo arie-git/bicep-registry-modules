@@ -31,18 +31,18 @@ Each scenario runs nightly. The schedule is: scenario 1 at 1am (UTC), scenario 2
 
 ### Environments
 
-Environments are in `AM-CCC` application system (Sweden Central only — West Europe deprecated):
+Environments are in `AM-CCC` application system (Sweden Central only -- West Europe deprecated):
 
 | Environment | Address Space | Type | Region | Purpose |
 |---|---|---|---|---|
-| ENV23968 | 10.238.18.0/24 | DEV | Sweden Central | Less restrictive — dev iteration |
-| ENV23969 | 10.238.19.0/24 | DEV | Sweden Central | Less restrictive — dev iteration |
-| ENV23978 | 10.238.64.0/24 | TST | Sweden Central | Strict policies — production mirror |
-| ENV23979 | 10.238.65.0/24 | TST | Sweden Central | Strict policies — production mirror |
+| ENV23968 | 10.238.18.0/24 | DEV | Sweden Central | Less restrictive -- dev iteration |
+| ENV23969 | 10.238.19.0/24 | DEV | Sweden Central | Less restrictive -- dev iteration |
+| ENV23978 | 10.238.64.0/24 | TST | Sweden Central | Strict policies -- production mirror |
+| ENV23979 | 10.238.65.0/24 | TST | Sweden Central | Strict policies -- production mirror |
 
 > West Europe environments (ENV23148, ENV23684) are deprecated. No new deployments to West Europe.
 
-### Network Space — DEV (Sweden Central)
+### Network Space -- DEV (Sweden Central)
 
 | Scenario | CIDR | Size | Status |
 |---|---|---|---|
@@ -59,7 +59,7 @@ Environments are in `AM-CCC` application system (Sweden Central only — West Eu
 | 11 | 10.238.19.192/26 | /26 | Active |
 | 14-16 | TBD | /27-/26 | **Needs new address space** |
 
-### Network Space — TST (Sweden Central)
+### Network Space -- TST (Sweden Central)
 
 | Scenario | CIDR | Size | Status |
 |---|---|---|---|

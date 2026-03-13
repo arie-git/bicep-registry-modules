@@ -1,4 +1,4 @@
-// bicep code to create infra for scenario 14 — Event Hub + Function App + App Configuration (event-driven)
+// bicep code to create infra for scenario 14 -- Event Hub + Function App + App Configuration (event-driven)
 // Demonstrates: Event Hub namespace with inline hubs, App Configuration with feature flags, Function App consumer, VNet integration
 
 targetScope = 'subscription'

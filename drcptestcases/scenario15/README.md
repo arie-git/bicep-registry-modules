@@ -1,4 +1,4 @@
-# Scenario 15 — Cosmos DB (NoSQL) Standalone
+# Scenario 15 -- Cosmos DB (NoSQL) Standalone
 
 Cosmos DB account with inline SQL database and containers, Entra ID authentication, private endpoint, zone redundancy, and detailed diagnostics. Minimal scenario focused on the `document-db/database-account` AMAVM module with full DRCP compliance.
 

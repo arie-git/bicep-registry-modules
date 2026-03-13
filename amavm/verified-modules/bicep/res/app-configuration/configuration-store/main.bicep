@@ -3,7 +3,7 @@ metadata description = 'This module deploys an App Configuration Store.'
 metadata owner = 'AMCCC'
 metadata compliance = '''Compliant usage of App Configuration requires:
 - publicNetworkAccess: 'Disabled' (drcp-appcs-01)
-- disableLocalAuth: true — Entra ID auth enforced (drcp-appcs-02)
+- disableLocalAuth: true -- Entra ID auth enforced (drcp-appcs-02)
 - privateEndpoints with private DNS zones (drcp-appcs-03)
 '''
 metadata complianceVersion = '20260309'

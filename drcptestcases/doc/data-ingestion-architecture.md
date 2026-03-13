@@ -7,11 +7,11 @@
 
 ## Overview
 
-This architecture enables a team to ingest data from multiple on-premises sources — Jira (REST API), a file server (SMB/CIFS), and a SQL database — into Azure using Azure Data Factory with a Self-Hosted Integration Runtime (SHIR). The SHIR agent runs on an on-premises VM behind the corporate firewall, establishing an outbound HTTPS tunnel to Data Factory without requiring inbound firewall rules.
+This architecture enables a team to ingest data from multiple on-premises sources -- Jira (REST API), a file server (SMB/CIFS), and a SQL database -- into Azure using Azure Data Factory with a Self-Hosted Integration Runtime (SHIR). The SHIR agent runs on an on-premises VM behind the corporate firewall, establishing an outbound HTTPS tunnel to Data Factory without requiring inbound firewall rules.
 
 Data Factory orchestrates ETL pipelines that extract raw data from on-premises sources, apply transformations (data cleansing, schema mapping, deduplication), and load the results into Azure SQL Database (Flexible Server). Power BI connects to Azure SQL via a private endpoint-enabled gateway to deliver dashboards and reports to business users.
 
-All Azure PaaS services are locked down with private endpoints inside a Virtual Network, secrets are managed in Key Vault accessed via User-Assigned Managed Identity, and diagnostics from every resource flow to a central Log Analytics Workspace — meeting all DRCP non-negotiable requirements.
+All Azure PaaS services are locked down with private endpoints inside a Virtual Network, secrets are managed in Key Vault accessed via User-Assigned Managed Identity, and diagnostics from every resource flow to a central Log Analytics Workspace -- meeting all DRCP non-negotiable requirements.
 
 ## Resource Inventory
 
@@ -176,8 +176,8 @@ graph TB
 
 All Azure PaaS services (Data Factory, SQL Flexible Server, Key Vault) are accessed exclusively through **private endpoints** within `vnet-data-platform` (10.0.0.0/16). Public network access is disabled on every resource. Two subnets segment traffic:
 
-- **snet-data (10.0.1.0/24)**: Hosts private endpoints for ADF and SQL — the primary data path
-- **snet-security (10.0.2.0/24)**: Hosts the Key Vault private endpoint — isolated from data traffic
+- **snet-data (10.0.1.0/24)**: Hosts private endpoints for ADF and SQL -- the primary data path
+- **snet-security (10.0.2.0/24)**: Hosts the Key Vault private endpoint -- isolated from data traffic
 
 Each subnet is protected by a dedicated Network Security Group. Private DNS Zones ensure that all privatelink FQDNs resolve to the correct private IP addresses within the VNet.
 
@@ -187,9 +187,9 @@ Each subnet is protected by a dedicated Network Security Group. Private DNS Zone
 [On-Prem Sources] --> [SHIR VM] ==(HTTPS 443)==> [Azure Data Factory] ==> [Azure SQL Flexible Server] ==> [Power BI]
 ```
 
-1. **Extract**: The Self-Hosted Integration Runtime (SHIR) runs on an on-premises Windows VM. It connects locally to Jira (REST API), the file server (SMB), and the on-premises SQL database. No inbound firewall rules are required — SHIR initiates an **outbound HTTPS tunnel** (port 443) to Azure Data Factory's relay endpoint.
+1. **Extract**: The Self-Hosted Integration Runtime (SHIR) runs on an on-premises Windows VM. It connects locally to Jira (REST API), the file server (SMB), and the on-premises SQL database. No inbound firewall rules are required -- SHIR initiates an **outbound HTTPS tunnel** (port 443) to Azure Data Factory's relay endpoint.
 
-2. **Transform**: Data Factory pipelines apply transformations — schema normalization, data type mapping, deduplication, null handling, and business logic enrichment — using Data Flows or Mapping Data Flows.
+2. **Transform**: Data Factory pipelines apply transformations -- schema normalization, data type mapping, deduplication, null handling, and business logic enrichment -- using Data Flows or Mapping Data Flows.
 
 3. **Load**: Transformed data is written to Azure SQL Flexible Server via the private endpoint. ADF uses the User-Assigned Managed Identity for authentication (no SQL passwords stored).
 

@@ -1,4 +1,4 @@
-// DataPipeline5 — Medallion architecture: bronze → silver → gold
+// DataPipeline5 -- Medallion architecture: bronze → silver → gold
 // ADF orchestrates 3 sequential Databricks notebook activities for each layer.
 // Validates UC table writes across the full medallion chain.
 //
@@ -28,7 +28,7 @@ resource pipeline 'Microsoft.DataFactory/factories/pipelines@2018-06-01' = {
   properties: {
     description: 'Medallion architecture pipeline: ingests raw data into bronze, cleanses into silver, aggregates into gold. Each stage is a Databricks notebook using Unity Catalog tables.'
     activities: [
-      // Stage 1: Bronze — raw ingestion
+      // Stage 1: Bronze -- raw ingestion
       {
         name: 'Bronze Ingest'
         type: 'DatabricksNotebook'
@@ -50,7 +50,7 @@ resource pipeline 'Microsoft.DataFactory/factories/pipelines@2018-06-01' = {
           retryIntervalInSeconds: 60
         }
       }
-      // Stage 2: Silver — cleanse and conform (depends on Bronze)
+      // Stage 2: Silver -- cleanse and conform (depends on Bronze)
       {
         name: 'Silver Transform'
         type: 'DatabricksNotebook'
@@ -80,7 +80,7 @@ resource pipeline 'Microsoft.DataFactory/factories/pipelines@2018-06-01' = {
           retryIntervalInSeconds: 60
         }
       }
-      // Stage 3: Gold — business aggregates (depends on Silver)
+      // Stage 3: Gold -- business aggregates (depends on Silver)
       {
         name: 'Gold Aggregate'
         type: 'DatabricksNotebook'
