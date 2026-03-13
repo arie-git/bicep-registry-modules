@@ -3,7 +3,7 @@ metadata description = 'This component deploys an Application Insights instance.
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Application Insights requires:
-- disableLocalAuth: true — Entra ID auth enforced (drcp-appi-01)
+- disableLocalAuth: true -- Entra ID auth enforced (drcp-appi-01)
 - No Microsoft.Insights/webtests resources created (drcp-appi-03)
 - diagnosticSettings: must not enable disallowed log categories or allLogs category group (drcp-appi-04)
 - tags: must not contain hidden-link:Insights.Sourcemap.Storage (drcp-appi-05)

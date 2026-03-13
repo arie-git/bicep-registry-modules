@@ -4,11 +4,11 @@ metadata owner = 'AMCCC'
 metadata complianceVersion = '20250308'
 metadata compliance = '''Compliant usage of Azure Cache for Redis requires:
 - publicNetworkAccess: 'Disabled' (drcp-redis-02)
-- disableAccessKeyAuthentication: true — Entra ID auth enforced (drcp-redis-05)
-- enableNonSslPort: false — TLS access enforced (drcp-redis-07)
+- disableAccessKeyAuthentication: true -- Entra ID auth enforced (drcp-redis-05)
+- enableNonSslPort: false -- TLS access enforced (drcp-redis-07)
 - minimumTlsVersion: '1.2' (drcp-redis-08)
-- zoneRedundant: true — for production workloads (drcp-redis-09)
-- skuName: 'Premium' — required for PE and zone redundancy
+- zoneRedundant: true -- for production workloads (drcp-redis-09)
+- skuName: 'Premium' -- required for PE and zone redundancy
 - privateEndpoints with private DNS zones (drcp-redis-04)
 '''
 

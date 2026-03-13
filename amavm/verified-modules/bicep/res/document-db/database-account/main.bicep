@@ -6,11 +6,11 @@ metadata compliance = '''Compliant usage of Azure Cosmos DB requires:
 - publicNetworkAccess: 'Disabled' (drcp-cosmos-01)
 - disableLocalAuth: true (drcp-cosmos-02)
 - disableKeyBasedMetadataWriteAccess: true (drcp-cosmos-03)
-- Advanced Threat Protection enabled (drcp-cosmos-04) — subscription-level
+- Advanced Threat Protection enabled (drcp-cosmos-04) -- subscription-level
 - minimumTlsVersion: 'Tls12' (drcp-cosmos-05)
-- Only NoSQL capability — Mongo, Cassandra, Table, Gremlin disabled (drcp-cosmos-06)
+- Only NoSQL capability -- Mongo, Cassandra, Table, Gremlin disabled (drcp-cosmos-06)
 - privateEndpoints with private DNS zones (drcp-cosmos-07)
-- Microsoft Defender for Cloud enabled (drcp-cosmos-09) — subscription-level
+- Microsoft Defender for Cloud enabled (drcp-cosmos-09) -- subscription-level
 - locations[*].isZoneRedundant: true for production (drcp-cosmos-10)
 '''
 

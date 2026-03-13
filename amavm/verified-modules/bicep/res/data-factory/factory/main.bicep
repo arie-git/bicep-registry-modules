@@ -5,13 +5,13 @@ metadata complianceVersion = '20260309'
 metadata compliance = '''This module has been validated against DRCP policies: drcp-adf-01, drcp-adf-02, drcp-adf-04, drcp-adf-05, drcp-adf-06, drcp-adf-07.
 
 Compliant usage of Azure Data Factory requires:
-- managedVirtualNetworkName: empty — no managed VNet (drcp-adf-01)
-- managedPrivateEndpoints: empty array — no managed PEs (drcp-adf-01)
+- managedVirtualNetworkName: empty -- no managed VNet (drcp-adf-01)
+- managedPrivateEndpoints: empty array -- no managed PEs (drcp-adf-01)
 - publicNetworkAccess: 'Disabled' (drcp-adf-02)
 - linkedServices: secrets in Key Vault, no connection strings (drcp-adf-04)
 - linkedServices: only whitelisted types allowed (drcp-adf-05)
 - gitRepoType: 'FactoryVSTSConfiguration', gitAccountName: 'connectdrcpapg1' (drcp-adf-06)
-- purviewResourceId: empty — Purview integration not allowed (drcp-adf-07)
+- purviewResourceId: empty -- Purview integration not allowed (drcp-adf-07)
 '''
 
 @description('Required. The name of the Azure Factory to create. Must be globally unique.')

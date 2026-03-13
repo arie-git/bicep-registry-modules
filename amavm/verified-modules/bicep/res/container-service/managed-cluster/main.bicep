@@ -498,7 +498,7 @@ param diskEncryptionSetResourceId string?
 
 // @description('Optional. Settings and configurations for the flux extension.')
 // param fluxExtension extensionType?
-// NOTE: Flux extension is commented out — the kubernetes-configuration/extension module
+// NOTE: Flux extension is commented out -- the kubernetes-configuration/extension module
 // is not in the fork and not built in Azure DevOps. Re-enable when flux is supported.
 
 @description('Optional. Configurations for provisioning the cluster with HTTP proxy servers.')

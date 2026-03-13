@@ -71,7 +71,7 @@ module testDeployment '../../../main.bicep' = {
     zoneRedundant: true
     enableAutomaticFailover: true
 
-    // WAF: Disable local auth — use Entra ID only
+    // WAF: Disable local auth -- use Entra ID only
     disableLocalAuthentication: true
     disableKeyBasedMetadataWriteAccess: true
 

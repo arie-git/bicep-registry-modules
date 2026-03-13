@@ -3,14 +3,14 @@ metadata description = 'This module deploys Azure Container Registry.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Container Registry requires:
-- anonymousPullEnabled: false — no anonymous authentication (drcp-cr-01)
-- azureADAuthenticationAsArmPolicyStatus: 'enabled' — Azure AD auth as ARM policy (drcp-cr-01)
-- acrAdminUserEnabled: false — no local admin account (drcp-cr-03)
-- publicNetworkAccess: 'Disabled' — no public network access (drcp-cr-04)
-- networkRuleBypassOptions: 'AzureServices' — trusted Microsoft services (drcp-cr-04)
+- anonymousPullEnabled: false -- no anonymous authentication (drcp-cr-01)
+- azureADAuthenticationAsArmPolicyStatus: 'enabled' -- Azure AD auth as ARM policy (drcp-cr-01)
+- acrAdminUserEnabled: false -- no local admin account (drcp-cr-03)
+- publicNetworkAccess: 'Disabled' -- no public network access (drcp-cr-04)
+- networkRuleBypassOptions: 'AzureServices' -- trusted Microsoft services (drcp-cr-04)
 - networkRuleSet.defaultAction: 'Deny' when public access enabled (drcp-cr-04)
-- sku: 'Premium' — required for PE and network policies (drcp-cr-04)
-- tokens: disabled — no repository scoped access tokens (drcp-cr-05)
+- sku: 'Premium' -- required for PE and network policies (drcp-cr-04)
+- tokens: disabled -- no repository scoped access tokens (drcp-cr-05)
 - privateEndpoints with private DNS zones (drcp-cr-08)
 - connectedRegistries: disabled (drcp-cr-09)
 '''
