@@ -2,10 +2,12 @@ metadata name = 'Search Services'
 metadata description = 'This module deploys a Search Service.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
-metadata compliance = '''Compliant usage of this module requires the following parameter values:
-- disableLocalAuth: true
-- publicNetworkAccess: Disabled
-- disabledDataExfiltrationOptions: ['All']
+metadata compliance = '''This module has been validated against DRCP policies: drcp-srch-01, drcp-srch-02, drcp-srch-03, drcp-srch-04.
+Compliant usage of Azure AI Search requires:
+- disableLocalAuth: true — Entra ID auth enforced (drcp-srch-01)
+- publicNetworkAccess: 'Disabled', privateEndpoints configured (drcp-srch-02)
+- disabledDataExfiltrationOptions: ['All'] (drcp-srch-03)
+- API version must be in approved list (drcp-srch-04)
 '''
 // ============== //
 //   Parameters   //
@@ -222,6 +224,7 @@ resource avmTelemetry 'Microsoft.Resources/deployments@2024-07-01' = if (enableT
   }
 }
 
+// [Policy: drcp-srch-04] API version 2025-05-01 is in the approved list.
 resource searchService 'Microsoft.Search/searchServices@2025-05-01' = {
   location: location
   name: name

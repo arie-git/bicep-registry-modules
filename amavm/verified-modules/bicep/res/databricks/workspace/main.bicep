@@ -245,6 +245,7 @@ Available values for 'service' are: 'databricks_ui_api'.
 
 Default: 'databricks_ui_api' is used if  subnetResourceId is provided but 'service' is not specified.
 [Policy: drcp-sub-07]
+[Policy: drcp-adb-r05]
 ''')
 param privateEndpoints privateEndpointType
 

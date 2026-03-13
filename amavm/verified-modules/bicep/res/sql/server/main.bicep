@@ -2,12 +2,15 @@ metadata name = 'Azure SQL Server'
 metadata description = 'This module deploys an Azure SQL Server.'
 metadata owner = 'AMCCC'
 metadata compliance = '''Compliant usage of Azure SQL Server requires:
-- publicNetworkAccess: 'Disabled'
-- restrictOutboundNetworkAccess: 'Enabled'
-- minimalTlsVersion: 1.2 and higher
-- administrators.azureADOnlyAuthentication: not false
-- securityAlertPolicies.state: 'Enabled'
-- vulnerabilityAssessmentsClassic or vulnerabilityAssessmentsExpress are configured
+- publicNetworkAccess: 'Disabled', restrictOutboundNetworkAccess: 'Enabled' (drcp-sql-01)
+- administrators.azureADOnlyAuthentication: true (drcp-sql-02, drcp-sql-03)
+- transparentDataEncryption enabled on databases (drcp-sql-04)
+- minimalTlsVersion: '1.2' or higher (drcp-sql-05)
+- vulnerabilityAssessments configured (drcp-sql-06)
+- backup short-term retention: minimum 5 days (drcp-sql-07)
+- advancedThreatProtection: 'Enabled' (drcp-sql-08)
+- securityAlertPolicies.state: 'Enabled' (drcp-sql-09)
+- privateEndpoints with private DNS zones (drcp-sql-10)
 '''
 metadata complianceVersion = '20260309'
 

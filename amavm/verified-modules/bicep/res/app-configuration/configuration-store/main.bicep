@@ -2,8 +2,9 @@ metadata name = 'App Configuration Stores'
 metadata description = 'This module deploys an App Configuration Store.'
 metadata owner = 'AMCCC'
 metadata compliance = '''Compliant usage of App Configuration requires:
-- disableLocalAuth: true
-- publicNetworkAccess: 'Disabled'
+- publicNetworkAccess: 'Disabled' (drcp-appcs-01)
+- disableLocalAuth: true — Entra ID auth enforced (drcp-appcs-02)
+- privateEndpoints with private DNS zones (drcp-appcs-03)
 '''
 metadata complianceVersion = '20260309'
 
@@ -87,7 +88,7 @@ param dataPlaneProxy dataPlaneProxyType?
 @description('Optional. Enable/Disable usage telemetry for module.')
 param enableTelemetry bool = true
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-appcs-03, drcp-sub-07]')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-appcs-03]')
 param privateEndpoints privateEndpointType?
 
 var versionInfo = loadJsonContent('version.json')

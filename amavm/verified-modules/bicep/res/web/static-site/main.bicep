@@ -1,9 +1,12 @@
 metadata name = 'Static Web Apps (early preview)'
 metadata description = 'This module deploys a Static Web App.'
 metadata owner = 'AMCCC'
-metadata compliance = '''Compliant usage of Static Web App requires:
+metadata compliance = '''This module has been validated against DRCP policies: drcp-aps-01.
 
-- publicNetworkAccess: 'Disabled'
+Compliant usage of Static Web App requires:
+
+- [Policy: drcp-aps-01] publicNetworkAccess: 'Disabled'
+- [Policy: drcp-aps-01] sku: 'Standard' (required for private endpoint support)
 '''
 metadata complianceVersion = '20260309'
 
@@ -19,7 +22,7 @@ param name string
 ])
 @description('''Optional. The service tier and name of the resource SKU.
 
-Setting any other value than Standard will make the resource noncompliant.
+[Policy: drcp-aps-01] Setting any other value than Standard will make the resource noncompliant.
 ''')
 param sku string = 'Standard'
 
@@ -71,7 +74,7 @@ param managedIdentities managedIdentitiesType = {
 
 @description('''Optional. Property to enable or disable public traffic for the Static Web App.
 
-Setting this parameter to 'Enabled' will make the resource non-compliant.
+[Policy: drcp-aps-01] Setting this parameter to 'Enabled' will make the resource non-compliant.
 ''')
 @allowed([
   'Enabled'

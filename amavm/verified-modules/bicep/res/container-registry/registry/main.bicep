@@ -3,11 +3,16 @@ metadata description = 'This module deploys Azure Container Registry.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
 metadata compliance = '''Compliant usage of Azure Container Registry requires:
-- sku: 'premium'
-- acrAdminUserEnabled: false
-- publicNetworkAccess: 'Disabled'
-- azureADAuthenticationAsArmPolicyStatus: 'enabled'
-- anonymousPullEnabled: false
+- anonymousPullEnabled: false — no anonymous authentication (drcp-cr-01)
+- azureADAuthenticationAsArmPolicyStatus: 'enabled' — Azure AD auth as ARM policy (drcp-cr-01)
+- acrAdminUserEnabled: false — no local admin account (drcp-cr-03)
+- publicNetworkAccess: 'Disabled' — no public network access (drcp-cr-04)
+- networkRuleBypassOptions: 'AzureServices' — trusted Microsoft services (drcp-cr-04)
+- networkRuleSet.defaultAction: 'Deny' when public access enabled (drcp-cr-04)
+- sku: 'Premium' — required for PE and network policies (drcp-cr-04)
+- tokens: disabled — no repository scoped access tokens (drcp-cr-05)
+- privateEndpoints with private DNS zones (drcp-cr-08)
+- connectedRegistries: disabled (drcp-cr-09)
 '''
 
 @description('Required. Name of your Azure Container Registry.')
@@ -123,6 +128,7 @@ param networkAcls networkAclsType = {
 
 @description('''Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible.
 Note, requires the \'sku\' to be \'Premium\'.
+[Policy: drcp-cr-08] Private endpoints with private DNS zones required.
 [Policy: drcp-sub-07] Cross-subscription inbound private endpoint connections are denied by policy.''')
 param privateEndpoints privateEndpointType
 

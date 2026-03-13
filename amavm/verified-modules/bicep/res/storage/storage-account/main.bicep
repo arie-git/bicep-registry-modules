@@ -1,17 +1,19 @@
 metadata name = 'Storage Account'
 metadata description = 'This module deploys a Storage Account.'
 metadata owner = 'AMCCC'
-metadata compliance = '''Compliant usage of Storage account requires:
-- allowCrossTenantReplication: false
-- allowBlobPublicAccess: false
-- allowSharedKeyAccess: false
-- enableSftp: false
-- isLocalUserEnabled: false
-- localUsers: empty
-- minimumTlsVersion: TLS1_2
-- publicNetworkAccess: 'Disabled'
-- requireInfrastructureEncryption: true
-- supportsHttpsTrafficOnly: true
+metadata compliance = '''Compliant usage of Storage Account requires:
+- publicNetworkAccess: 'Disabled' (drcp-st-01)
+- allowBlobPublicAccess: false (drcp-st-02)
+- supportsHttpsTrafficOnly: true (drcp-st-03)
+- allowSharedKeyAccess: false — Entra ID auth enforced (drcp-st-04)
+- requireInfrastructureEncryption: true (drcp-st-05)
+- minimumTlsVersion: 'TLS1_2' (drcp-st-06)
+- allowCrossTenantReplication: false (drcp-st-07)
+- keyType: 'Account' — customer-managed keys (drcp-st-08)
+- enableSftp: false, isLocalUserEnabled: false (drcp-st-09)
+- privateEndpoints with private DNS zones (drcp-st-10)
+- Defender for Storage enabled at subscription level (drcp-st-14)
+- networkAcls.defaultAction: 'Deny' (drcp-st-15)
 '''
 metadata complianceVersion = '20260309'
 
@@ -103,7 +105,7 @@ Available values for 'service' are:
 - File (file, file_secondary)
 - Web (web, web_secondary)
 
-Default: 'blob' and 'dfs' are used if at least one subnetResourceId is provided but 'service' is not specified. [Policy: drcp-st-10, drcp-sub-07]
+Default: 'blob' and 'dfs' are used if at least one subnetResourceId is provided but 'service' is not specified. [Policy: drcp-st-10]
 ''')
 param privateEndpoints privateEndpointType
 

@@ -2,11 +2,12 @@ metadata name = 'Azure Key Vault'
 metadata description = 'This module deploys an Azure Key Vault.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
-metadata compliance = '''Compliant usage of Azure Key-Vault requires:
-- skuName: 'premium'
-- publicNetworkAccess: 'Disabled'
-- enablePurgeProtection: true
-- accessPolicies: none / empty
+metadata compliance = '''Compliant usage of Azure Key Vault requires:
+- publicNetworkAccess: 'Disabled' (drcp-kv-01)
+- enableRbacAuthorization: true (drcp-kv-02)
+- enablePurgeProtection: true (drcp-kv-04)
+- enableSoftDelete: true (drcp-kv-05)
+- privateEndpoints with private DNS zones (drcp-kv-11)
 '''
 
 // ================ //
@@ -106,7 +107,7 @@ param lock lockType
 @description('Optional. Array of role assignments to create.')
 param roleAssignments roleAssignmentType
 
-@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-sub-07] [Policy: drcp-kv-11]')
+@description('Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-kv-11]')
 param privateEndpoints privateEndpointType
 
 @description('Optional. Resource tags.')

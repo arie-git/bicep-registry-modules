@@ -1,22 +1,21 @@
 metadata name = 'App Service Plan Apps'
 metadata description = 'This module deploys apps on an App Service Plan. It supports Web App, Function App, API App, Logic App, and Containers.'
 metadata owner = 'AMCCC'
-metadata compliance = '''Compliant usage of this module requires:
-
-- publicNetworkAccess: 'Disabled'
-- httpsOnly: true
-- siteConfig.http20Enabled: true
-- siteConfig.minTlsVersion: '1.2'
-- siteConfig.cors: should be either null, or cors.allowedOrigins array not to contain a value of '*'
-- either a virtualNetworkSubnetId or a appServiceEnvironmentResourceId need to be provided
-- outboundVnetRouting: configured to route all traffic through the virtual network
-- siteConfig.ftpsState: 'Disabled' or 'FtpsOnly'
-- basicPublishingCredentialsPolicies: both ftp and scm must be allow=false
-- siteConfig.remoteDebuggingEnabled: false
-- config.linuxFxVersion: latest runtimes are used. IMPORTANT: This module does not ensure this control by default.
-- authSettingV2Configuration.enabled: true and authSettingV2Configuration.platform.enabled: true
-- authSettingV2Configuration: uses federated identity credentials (FIC) by default -- no client secrets
-- managedIdentities: not empty
+metadata compliance = '''Compliant usage of App Service requires:
+- publicNetworkAccess: 'Disabled' (drcp-aps-01)
+- httpsOnly: true (drcp-aps-02)
+- siteConfig.http20Enabled: true (drcp-aps-03)
+- siteConfig.minTlsVersion: '1.2' or higher (drcp-aps-04)
+- siteConfig.cors: no wildcard '*' in allowedOrigins (drcp-aps-07)
+- virtualNetworkSubnetId or appServiceEnvironmentResourceId provided (drcp-aps-08)
+- outboundVnetRouting: all traffic through VNet (drcp-aps-10)
+- siteConfig.ftpsState: 'Disabled' or 'FtpsOnly' (drcp-aps-11)
+- basicPublishingCredentialsPolicies: ftp and scm allow=false (drcp-aps-12)
+- siteConfig.minTlsCipherSuite: approved cipher suites only (drcp-aps-14)
+- siteConfig.remoteDebuggingEnabled: false (drcp-aps-16)
+- config.linuxFxVersion: latest runtimes (drcp-aps-17)
+- authSettingV2Configuration: platform.enabled=true, FIC by default (drcp-aps-18)
+- managedIdentities: not empty (drcp-aps-19)
 '''
 metadata complianceVersion = '20260309'
 
@@ -111,6 +110,7 @@ Select from the list of supported runtimes and versions or leave empty for the c
 See `az webapp list-runtimes --os linux --output table` for available runtimes, and replace ':' with '\|' symbol.
 
 For Docker containers use format 'DOCKER\|dockerRegistry/dockerRepositoryPath'
+[Policy: drcp-aps-17] Use the latest supported runtime version. This module does not enforce this control by default.
 ''')
 param linuxFxVersion string?
 
@@ -137,6 +137,7 @@ To maintain compliant state, the following values are required and configured by
 - [Policy: drcp-aps-11] ftpsState: 'Disabled' or 'FtpsOnly' (default: 'Disabled')
 - [Policy: drcp-aps-04] minTlsVersion: '1.3'
 - [Policy: drcp-aps-07] cors: must be either null, or cors.allowedOrigins contains an array of values other than '*' (default: null)
+- [Policy: drcp-aps-14] minTlsCipherSuite: use approved cipher suites only (set via siteConfiguration if needed)
 - [Policy: drcp-aps-16] remoteDebuggingEnabled: false
 ''')
 param siteConfiguration object = {

@@ -2,19 +2,13 @@ metadata name = 'Azure Kubernetes Service (AKS) Managed Cluster'
 metadata description = 'This module deploys an Azure Kubernetes Service (AKS) Managed Cluster.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
-metadata compliance = '''Compliant usage of this module requires the following parameter values:
-
-- aadProfile.enableAzureRBAC: true, and enableRBAC: true
-- addonAzurePolicy.enabled: true
-- apiServerAccessProfile.disableRunCommand: true
-- apiServerAccessProfile.enablePrivateCluster: true
-- diagnosticSettings: 'workspaceResourceId' is not empty and required 'categories' are provided (see parameter description for more details)
-- disableLocalAccounts: true
-- enableRBAC: true
-- kubernetesVersion: null (default) or one of supported versions [Microsoft Learn](https://learn.microsoft.com/en-us/azure/aks/supported-kubernetes-versions?tabs=azure-cli)
-- securityProfileDefender.securityMonitoring.enabled: true
-- publicNetworkAccess: 'Disabled'
-- networkOutboundType: not 'loadBalancer'
+metadata compliance = '''Compliant usage of Azure Kubernetes Service requires:
+- publicNetworkAccess: 'Disabled', enablePrivateCluster: true, enableNodePublicIP: false (drcp-aks-02)
+- disableLocalAccounts: true, enableRBAC: true, aadProfile.enableAzureRBAC: true (drcp-aks-03)
+- addonAzurePolicy.enabled: true (drcp-aks-11)
+- kubernetesVersion: supported version (drcp-aks-12)
+- apiServerAccessProfile.disableRunCommand: true (drcp-aks-16)
+- securityProfileDefender.securityMonitoring.enabled: true (drcp-aks-18)
 '''
 
 // ----- General parameters -----

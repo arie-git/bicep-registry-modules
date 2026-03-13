@@ -2,11 +2,15 @@ metadata name = 'Cognitive Services'
 metadata description = 'This module deploys a Cognitive Service.'
 metadata owner = 'AMCCC'
 metadata complianceVersion = '20260309'
-metadata compliance = '''Compliant usage of this module requires the following parameter values:
-- kind: 'AIServices', 'OpenAI', or 'TextAnalytics' (per drcp-ai-04)
-- disableLocalAuth: true
-- publicNetworkAccess: 'Disabled'
-- managedIdentities: not empty
+metadata compliance = '''Compliant usage of Cognitive Services requires:
+- disableLocalAuth: true — Entra ID auth enforced (drcp-ai-01)
+- managedIdentities: not empty (drcp-ai-02)
+- publicNetworkAccess: 'Disabled' (drcp-ai-03)
+- kind: 'AIServices', 'OpenAI', or 'TextAnalytics' (drcp-ai-04)
+- deployments: approved models only, no global deployment types (drcp-ai-o01)
+- networkAcls.bypass: 'None' — trusted services disabled (drcp-ai-o02)
+- deployments: no custom content filters (drcp-ai-o03)
+- deployments: approved model versions only (drcp-ai-o04)
 '''
 
 @description('Required. The name of Cognitive Services account.')
@@ -82,7 +86,7 @@ param publicNetworkAccess string = 'Disabled'
 @description('Conditional. Subdomain name used for token-based authentication. Required if \'networkAcls\' or \'privateEndpoints\' are set.')
 param customSubDomainName string?
 
-@description('''Optional. Networks ACLs, this value contains IPs to whitelist and/or Subnet information. If in use, bypass needs to be supplied. For security reasons, it is recommended to set the DefaultAction Deny. By default, bypass is 'None' and defaultAction is 'Deny'.
+@description('''Optional. Networks ACLs, this value contains IPs to whitelist and/or Subnet information. If in use, bypass needs to be supplied. For security reasons, it is recommended to set the DefaultAction Deny. By default, bypass is 'None' and defaultAction is 'Deny'. [Policy: drcp-ai-o02]
 
 Changing bypass to value other than 'None' will make the resource non-compliant.
 ''')
@@ -128,7 +132,7 @@ param restrictOutboundNetworkAccess bool = true
 @description('Optional. The storage accounts for this resource.')
 param userOwnedStorage array?
 
-@description('Optional. Array of deployments about cognitive service accounts to create.')
+@description('Optional. Array of deployments about cognitive service accounts to create. [Policy: drcp-ai-o01, drcp-ai-o03, drcp-ai-o04]')
 param deployments deploymentsType
 
 @description('''Optional. Configuration details for private endpoints. For security reasons, it is recommended to use private endpoints whenever possible. [Policy: drcp-ai-03, drcp-sub-07]
@@ -346,12 +350,19 @@ resource cognitiveService 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
     allowProjectManagement: allowProjectManagement
     customSubDomainName: customSubDomainName
     networkAcls: !empty(networkAcls ?? {})
-      ? {
-          defaultAction: networkAcls.?defaultAction
-          virtualNetworkRules: networkAcls.?virtualNetworkRules ?? []
-          ipRules: networkAcls.?ipRules ?? []
+      ? union(
+          {
+            defaultAction: networkAcls.?defaultAction ?? 'Deny'
+            virtualNetworkRules: networkAcls.?virtualNetworkRules ?? []
+            ipRules: networkAcls.?ipRules ?? []
+          },
+          (contains(networkAcls!, 'bypass') ? { bypass: networkAcls.?bypass } : {}) // setting `bypass` to `null` is not supported
+        )
+      : {
+          // Default: firewall enabled with no bypass (drcp-ai-o02)
+          bypass: 'None'
+          defaultAction: 'Deny'
         }
-      : null
     #disable-next-line BCP036
     networkInjections: !empty(networkInjections)
       ? [
