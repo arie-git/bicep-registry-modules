@@ -465,7 +465,7 @@ param logAnalyticsWorkspaceResourceId string? // TODO: think if to move to those
 Uses the ARM resource type schema for validation. When not specified, monitoring is handled via the OMS agent addon
 (controlled by addonOmsAgentEnabled parameter) which sends logs to the Log Analytics workspace.
 ''')
-param azureMonitorProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-01-02-preview'>.properties.azureMonitorProfile?
+param azureMonitorProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-09-01'>.properties.azureMonitorProfile?
 
 @description('''Optional. Specifies the configuration for Azure Key Vault secrets provider add-on.
 Default is enabled=true and config.enableSecretRotation=true.''')

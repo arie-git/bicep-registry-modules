@@ -80,3 +80,6 @@ Never use the em dash character anywhere -- commit messages, Bicep files, README
 
 ### 24. Never use placeholder module sources like 'dummy_skip'
 When scaffolding new scenario Bicep files, always use the real AMAVM registry references (e.g., `'br/amavm:res/network/network-security-group:0.1.0'`), never placeholders like `'dummy_skip'`. Placeholders break `bicep build` validation and are easy to miss during review. If you don't know the exact module path or version, look it up from another scenario or the AMAVM version.json before writing the module block. This bug was found in both S8 and S17.
+
+### 25. Match API versions for resourceInput<> types to the resource and upstream
+When using `resourceInput<>` typed parameters, always use the same API version as (1) the resource declaration in the same file, and (2) the upstream AVM module. Do not drift to preview API versions when a GA version is already in use. Check other `resourceInput<>` params in the same file for consistency before picking a version.
