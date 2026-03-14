@@ -1,4 +1,4 @@
-// bicep code to create infra for scenario 14 — Event Hub + Function App + App Configuration (event-driven)
+// bicep code to create infra for scenario 14 -- Event Hub + Function App + App Configuration (event-driven)
 // Demonstrates: Event Hub namespace with inline hubs, App Configuration with feature flags, Function App consumer, VNet integration
 
 targetScope = 'subscription'
@@ -326,7 +326,7 @@ module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.2.0' = {
         {
           principalId: functionApp.outputs.systemAssignedMIPrincipalId
           principalType: 'ServicePrincipal'
-          roleDefinitionIdOrName: 'Azure Event Hubs DataReceiver'
+          roleDefinitionIdOrName: 'Azure Event Hubs Data Receiver'
         }
       ]
     )
@@ -338,9 +338,6 @@ module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.2.0' = {
       }
     ]
   }
-  dependsOn: [
-    subnetOut
-  ]
 }
 
 // --------------------------------------------------
@@ -369,6 +366,10 @@ module appConfig 'br/amavm:res/app-configuration/configuration-store:0.1.0' = {
     disableLocalAuth: true
     enablePurgeProtection: false
     softDeleteRetentionInDays: 1
+    dataPlaneProxy: {
+      authenticationMode: 'Pass-through'
+      privateLinkDelegation: 'Enabled'
+    }
     managedIdentities: {
       systemAssigned: true
     }

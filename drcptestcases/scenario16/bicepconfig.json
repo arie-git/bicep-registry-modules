@@ -37,7 +37,7 @@
     "moduleAliases": {
         "br": {
             "amavm": {
-                "registry": "s2amavmprdsecacr.azurecr.io"
+                "registry": "s2amavmtstsecacr.azurecr.io"
             }
         }
     },

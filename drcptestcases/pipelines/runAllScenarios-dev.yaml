@@ -366,7 +366,7 @@ extends:
           networkAddressSpace: '10.238.19.0/26'
 
       # ──────────────────────────────────────────────
-      # S17 — ENV23969, /27
+      # S17 — ENV23715, /24 (West Europe -- SWA not available in Sweden Central)
       # ──────────────────────────────────────────────
       - template: /modules/pipelines/tpl/universalPipeline_tpl.yaml@self
         parameters:
@@ -382,7 +382,7 @@ extends:
             - main
           applicationInstanceCode: '1795'
           environmentType: 'dev'
-          location: 'swedencentral'
-          environmentSnowId: 'ENV23969'
+          location: 'westeurope'
+          environmentSnowId: 'ENV23715'
           engineersGroupObjectId: '227f4bee-de48-4a7a-9df3-05cd32fa722e'
-          networkAddressSpace: '10.238.19.0/27'
+          networkAddressSpace: '10.238.7.0/24'

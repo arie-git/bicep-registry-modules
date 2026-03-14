@@ -124,6 +124,8 @@ var namesArray = {
   'Microsoft.ManagedIdentity/userAssignedIdentities': '${rootName}id${uniqueSuffix}'
   'Microsoft.Network/firewallPolicies': '${rootName}waf${uniqueSuffix}'
   'Microsoft.Network/firewallPolicies/ruleGroups': '${rootName}wafrg${uniqueSuffix}'
+  // Cache
+  'Microsoft.Cache/redis': '${rootName}redis${uniqueSuffix}'
   // Storage
   'Microsoft.Storage/storageAccounts': '${rootName}sta${uniqueSuffix}'
   'Microsoft.Storage/storageAccounts/blobServices/containers': '${rootName}stbl${uniqueSuffix}'
