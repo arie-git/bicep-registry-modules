@@ -15,7 +15,6 @@ param tags object = {}
 param engineersContactEmail string = ''
 param systemCode string = ''
 param systemInstanceCode string = ''
-#disable-next-line no-unused-params
 param departmentCode string = 'c3'
 #disable-next-line no-unused-params
 param namePrefix string = ''
@@ -28,25 +27,24 @@ var mytags = union(tags, {
   deploymentPipelineId: deploymentId
 })
 
-// module ingestion 'br/amavm:ptn/data/ingestion:0.6.0' = {
-//   name: '${deployment().name}-data'
-//   scope: subscription()
-//   params: {
-//     applicationCode: applicationCode
-//     applicationInstanceCode: applicationInstanceCode
-//     applicationId: applicationId
-//     environmentId: environmentId
-//     environmentType: environmentType
-//     department: departmentCode
-//     location: location
-//     organizationCode: organizationCode
-//     networkAddressSpace: networkAddressSpace
-//     engineersGroupObjectId: engineersGroupObjectId
-//     tags: mytags
-//   }
-//}
+module ingestion 'br/amavm:ptn/data/ingestion:0.6.0' = {
+  name: '${deployment().name}-data'
+  scope: subscription()
+  params: {
+    applicationCode: applicationCode
+    applicationInstanceCode: applicationInstanceCode
+    applicationId: applicationId
+    environmentId: environmentId
+    environmentType: environmentType
+    department: departmentCode
+    location: location
+    organizationCode: organizationCode
+    networkAddressSpace: networkAddressSpace
+    engineersGroupObjectId: engineersGroupObjectId
+    tags: mytags
+  }
+}
 
-//naming convention implementation does not allow parallel deployment to same RG at the moment.
 module ntier 'br/amavm:ptn/ntier/sql:0.1.0' = {
   name: '${deployment().name}-ntier'
   scope: subscription()

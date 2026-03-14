@@ -148,7 +148,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 var nsgName = '${rootName}-nsg'
 module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
-  name: '${deployment().name}-nsg'
+  name: '${deployment().name}-data-nsg'
   params: {
     name: nsgName
     location: vNet.location
@@ -246,7 +246,7 @@ module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
 // Create Route table
 var udrname = '${rootName}-rt'
 module udr 'br/amavm:res/network/route-table:0.1.0' = {
-  name: '${deployment().name}-rt'
+  name: '${deployment().name}-data-rt'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
     name: udrname
@@ -259,7 +259,7 @@ module udr 'br/amavm:res/network/route-table:0.1.0' = {
 var laName = '${rootName}-la'
 module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0' = if (isLogAnalyticsEnabled) {
   scope: resourceGroup
-  name: '${deployment().name}-la'
+  name: '${deployment().name}-data-la'
   params: {
     location: resourceGroup.location
     name: laName
@@ -271,7 +271,7 @@ module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0'
 var subnet1Name = '${subnetsName}-01'
 module subnetIn 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
-  name: '${deployment().name}-subnet1'
+  name: '${deployment().name}-data-subnet1'
   params: {
     virtualNetworkName: vNet.name
     subnet: {
@@ -288,7 +288,7 @@ module subnetIn 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
 
 module publicSubnet 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
-  name: '${deployment().name}-subnet2'
+  name: '${deployment().name}-data-subnet2'
   params: {
     virtualNetworkName: vNet.name
     subnet: {
@@ -314,7 +314,7 @@ module publicSubnet 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
 }
 module privateSubnet 'br/amavm:res/network/virtual-network/subnet:0.2.0' = {
   scope: az.resourceGroup(vnetResourceGroupName)
-  name: '${deployment().name}-subnet3'
+  name: '${deployment().name}-data-subnet3'
   params: {
     virtualNetworkName: vNet.name
     subnet: {
@@ -348,7 +348,7 @@ var storageAccountName = toLower('${rootName}sa')
 
 module storageAccountUcMod 'br/amavm:res/storage/storage-account:0.2.0' = if (isDatabricksEnabled) {
   scope: resourceGroup
-  name: '${deployment().name}-${storageAccountName}'
+  name: '${deployment().name}-data-${storageAccountName}'
   params:{
     name: take(storageAccountName,23)
     privateEndpoints: [
@@ -492,7 +492,7 @@ module azureDataFactoryMod 'br/amavm:res/data-factory/factory:0.2.0' = if (isDat
 //Create a self-hosted integration runtime for the Azure Data Factory
 module adfIntegrationRuntimeMod 'br/amavm:res/data-factory/factory/integration-runtime:0.1.0' = if (isDataFactoryEnabled) {
   scope: resourceGroup
-  name: '${deployment().name}-adf-shir-mod'
+  name: '${deployment().name}-data-adf-shir'
   params:{
     name: '${rootName}-adf-shir-01'
     dataFactoryName: azureDataFactoryMod.outputs.name
@@ -537,7 +537,7 @@ module adfLinkedServiceAdlsMod 'br/amavm:res/data-factory/factory/linked-service
 var workspaceName = '${rootName}-ws'
 module workspaceMod 'br/amavm:res/databricks/workspace:0.3.0' = if (isDatabricksEnabled) {
   scope: resourceGroup
-  name: '${deployment().name}-databricks-ws'
+  name: '${deployment().name}-data-databricks-ws'
   params: {
     customPrivateSubnetName: privateSubnet.outputs.name
     customPublicSubnetName: publicSubnet.outputs.name
@@ -558,7 +558,7 @@ module workspaceMod 'br/amavm:res/databricks/workspace:0.3.0' = if (isDatabricks
 
 module accessConnectorMod 'br/amavm:res/databricks/access-connector:0.2.0' = {
   scope: resourceGroup
-  name: '${deployment().name}-databricks-ac'
+  name: '${deployment().name}-data-databricks-ac'
   params: {
     name: '${workspaceName}-ac'
     location: location

@@ -110,7 +110,7 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 var logAnalyticsWorkspaceName = '${rootName}-la'
 module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0' = {
   scope: resourceGroup
-  name: '${deployment().name}-la'
+  name: '${deployment().name}-sql-la'
   params: {
     name: logAnalyticsWorkspaceName
     location: location
@@ -121,7 +121,7 @@ module logAnalyticsWorkspace 'br/amavm:res/operational-insights/workspace:0.1.0'
 var applicationInsightsName = '${rootName}-appinsights'
 module applicationInsights 'br/amavm:res/insights/component:0.1.0' = {
   scope: resourceGroup
-  name: '${deployment().name}-insights'
+  name: '${deployment().name}-sql-insights'
   params: {
     location: location
     name: applicationInsightsName
@@ -140,7 +140,7 @@ resource vNet 'Microsoft.Network/virtualNetworks@2023-11-01' existing = {
 var effectiveNetworkSpace = (networkAddressSpace != '') ? networkAddressSpace : vNet.properties.addressSpace.addressPrefixes[0]
 
 module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
-  name: '${deployment().name}-nsg'
+  name: '${deployment().name}-sql-nsg'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
     name: '${rootName}-nsg'
@@ -154,7 +154,7 @@ module nsg 'br/amavm:res/network/network-security-group:0.1.0' = {
 }
 
 module udr 'br/amavm:res/network/route-table:0.1.0' = {
-  name: '${deployment().name}-rt'
+  name: '${deployment().name}-sql-rt'
   scope: az.resourceGroup(vnetResourceGroupName)
   params: {
     name: '${rootName}-rt'
@@ -188,7 +188,7 @@ var subnetsConfig = [
 @batchSize(1)
 module subnets 'br/amavm:res/network/virtual-network/subnet:0.2.0' = [for index in range(0, 2): {
   scope: az.resourceGroup(vnetResourceGroupName)
-  name: '${deployment().name}-sn-${index}'
+  name: '${deployment().name}-sql-sn-${index}'
   params: {
     virtualNetworkName: vnetName
     subnet: {
@@ -209,7 +209,7 @@ module subnets 'br/amavm:res/network/virtual-network/subnet:0.2.0' = [for index 
 var storageAccountName = toLower('${rootName}sa')
 module storageAccountMod 'br/amavm:res/storage/storage-account:0.2.0' = {
   scope: resourceGroup
-  name: '${deployment().name}-sa'
+  name: '${deployment().name}-sql-sa'
   params: {
     name: take(storageAccountName,23)
     location: location
@@ -246,7 +246,7 @@ var sqlServerName = toLower('${rootName}-sql')
 var sqlDatabaseName = '${rootName}-sqldb'
 module sqlServerMod 'br/amavm:res/sql/server:0.2.0' = {
   scope: resourceGroup
-  name: '${deployment().name}-sqlsrv'
+  name: '${deployment().name}-sql-sqlsrv'
   params: {
     name: sqlServerName
     administrators: {
