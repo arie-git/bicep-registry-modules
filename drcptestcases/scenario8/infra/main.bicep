@@ -333,7 +333,7 @@ module storageAccount 'br/amavm:res/storage/storage-account:0.2.0' = {
     ]
     tags: mytags
   }
-  dependsOn: [ subnetPg ]
+  dependsOn: [ keyVault ] // serialize PE creation on shared subnet to avoid race condition
 }
 
 // --------------------------------------------------
@@ -492,7 +492,7 @@ module serviceBusNamespace 'br/amavm:res/service-bus/namespace:0.1.0' = {
       }
     ]
   }
-  dependsOn: [ subnetPg ]
+  dependsOn: [ storageAccount ] // serialize PE creation on shared subnet to avoid race condition
 }
 
 // --------------------------------------------------
