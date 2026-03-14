@@ -53,8 +53,16 @@ function Get-RelativeBicepPath {
 function Replace-AcrReferences {
     Write-Host "Replacing ACR references with local paths under: $BicepRoot" -ForegroundColor Cyan
 
+    $manifestPath = Join-Path $BicepRoot '.localBuildHelper.swapped'
+    if (Test-Path $manifestPath) {
+        Write-Warning "Manifest already exists at $manifestPath -- previous swap may not have been restored."
+        Write-Warning "Run '-Action Restore' first, or delete the manifest to proceed."
+        return
+    }
+
     $bicepFiles = Get-ChildItem -Path $BicepRoot -Filter '*.bicep' -Recurse
     $totalReplacements = 0
+    $swappedFiles = [System.Collections.Generic.List[string]]::new()
 
     foreach ($file in $bicepFiles) {
         $content = Get-Content -Path $file.FullName -Raw
@@ -84,7 +92,13 @@ function Replace-AcrReferences {
 
         if ($content -ne $originalContent) {
             Set-Content -Path $file.FullName -Value $content -NoNewline
+            $swappedFiles.Add($file.FullName)
         }
+    }
+
+    # Write manifest of swapped files so Restore only touches these
+    if ($swappedFiles.Count -gt 0) {
+        $swappedFiles | Set-Content -Path $manifestPath
     }
 
     Write-Host "`nReplaced $totalReplacements ACR reference(s)." -ForegroundColor Cyan
@@ -94,21 +108,44 @@ function Replace-AcrReferences {
 function Restore-AcrReferences {
     Write-Host "Restoring ACR references via git checkout..." -ForegroundColor Cyan
 
-    # Use git to restore all .bicep files to their committed state
     $gitRoot = git -C $BicepRoot rev-parse --show-toplevel 2>$null
     if (-not $gitRoot) {
         Write-Error "Not in a git repository. Cannot auto-restore."
         return
     }
 
-    # Get relative path of BicepRoot from git root
-    $relBicepRoot = [System.IO.Path]::GetRelativePath($gitRoot, $BicepRoot) -replace '\\', '/'
+    $manifestPath = Join-Path $BicepRoot '.localBuildHelper.swapped'
 
-    git -C $gitRoot checkout -- "$relBicepRoot"
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Restored all .bicep files under $relBicepRoot to committed state." -ForegroundColor Green
+    if (Test-Path $manifestPath) {
+        # Restore only the files that were swapped
+        $swappedFiles = Get-Content -Path $manifestPath
+        $restoredCount = 0
+
+        foreach ($filePath in $swappedFiles) {
+            if (-not (Test-Path $filePath)) { continue }
+            $relPath = [System.IO.Path]::GetRelativePath($gitRoot, $filePath) -replace '\\', '/'
+            git -C $gitRoot checkout -- $relPath 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $restoredCount++
+            } else {
+                Write-Warning "Failed to restore: $relPath"
+            }
+        }
+
+        Remove-Item -Path $manifestPath -Force
+        Write-Host "Restored $restoredCount swapped file(s). Manifest cleaned up." -ForegroundColor Green
     } else {
-        Write-Error "git checkout failed. Please manually restore files."
+        # Fallback: no manifest found, restore entire directory (legacy behavior)
+        Write-Warning "No swap manifest found -- falling back to full directory restore."
+        Write-Warning "This will revert ALL uncommitted .bicep changes under $BicepRoot."
+
+        $relBicepRoot = [System.IO.Path]::GetRelativePath($gitRoot, $BicepRoot) -replace '\\', '/'
+        git -C $gitRoot checkout -- "$relBicepRoot"
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Restored all files under $relBicepRoot to committed state." -ForegroundColor Green
+        } else {
+            Write-Error "git checkout failed. Please manually restore files."
+        }
     }
 }
 
