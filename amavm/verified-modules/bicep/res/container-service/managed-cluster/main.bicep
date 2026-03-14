@@ -460,16 +460,12 @@ Not used for: diagnostic settings.
 ''')
 param logAnalyticsWorkspaceResourceId string? // TODO: think if to move to those two parameters?
 
-@description('''Optional. Configures Azure Monitor profile, including Container Insights, Prometheus and Graphana.
+@description('''Optional. Configures Azure Monitor profile, including Container Insights, Prometheus and Application Monitoring.
 
-By default, Container Insights are enabled to the Log Analytics workspace specified in logAnalyticsWorkspaceResourceId.
+Uses the ARM resource type schema for validation. When not specified, monitoring is handled via the OMS agent addon
+(controlled by addonOmsAgentEnabled parameter) which sends logs to the Log Analytics workspace.
 ''')
-param azureMonitorProfile azureMonitorProfileType = {
-  containerInsights: {
-    enabled: true
-    logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceResourceId
-  }
-}
+param azureMonitorProfile resourceInput<'Microsoft.ContainerService/managedClusters@2025-01-02-preview'>.properties.azureMonitorProfile?
 
 @description('''Optional. Specifies the configuration for Azure Key Vault secrets provider add-on.
 Default is enabled=true and config.enableSecretRotation=true.''')
@@ -1359,65 +1355,3 @@ type maintenanceConfigurationsType = {
   maintenanceConfiguration: maintenanceConfigurationType
 }[]
 
-@description('Addon profile for monitoring the container service cluster.')
-type azureMonitorProfileType = {
-
-  @description('''Optional. Application Monitoring Profile for Kubernetes Application Container. Collects application logs,
-  metrics and traces through auto-instrumentation of the application using Azure Monitor OpenTelemetry based SDKs.
-  See aka.ms/AzureMonitorApplicationMonitoring for an overview.''')
-  appMonitoring: {
-    @description('''Optional. Application Monitoring Auto Instrumentation for Kubernetes Application Container.
-    Deploys web hook to auto-instrument Azure Monitor OpenTelemetry based SDKs to collect OpenTelemetry metrics,
-    logs and traces of the application. See aka.ms/AzureMonitorApplicationMonitoring for an overview.''')
-    autoInstrumentation: {
-      @description('Required. Indicates if Application Monitoring Auto Instrumentation is enabled or not.')
-      enabled: bool
-    }?
-    @description('''Optional. Application Monitoring Open Telemetry Metrics Profile for Kubernetes Application Container Logs and Traces.
-    Collects OpenTelemetry logs and traces of the application using Azure Monitor OpenTelemetry based SDKs. See aka.ms/AzureMonitorApplicationMonitoring for an overview.''')
-    openTelemetryLogs: {
-      @description('Optional. Indicates if Application Monitoring Open Telemetry Logs and traces is enabled or not.')
-      enabled: bool
-      @description('Optional. The Open Telemetry host port for Open Telemetry logs and traces. If not specified, the default port is 28331.')
-      port: int?
-    }?
-    @description('''Optional. Application Monitoring Open Telemetry Metrics Profile for Kubernetes Application Container Metrics.
-    Collects OpenTelemetry metrics of the application using Azure Monitor OpenTelemetry based SDKs. See aka.ms/AzureMonitorApplicationMonitoring for an overview.''')
-    openTelemetryMetrics: {
-      @description('Required. Indicates if Application Monitoring Open Telemetry Metrics is enabled or not.')
-      enabled: bool
-      @description('Optional. The Open Telemetry host port for Open Telemetry metrics. If not specified, the default port is 28333.')
-      port: int?
-    }?
-  }?
-
-  @description('''Optional. Azure Monitor Container Insights Profile for Kubernetes Events, Inventory and Container stdout & stderr logs etc.
-  See aka.ms/AzureMonitorContainerInsights for an overview.''')
-  containerInsights: {
-    @description('''Optional. Indicates whether custom metrics collection has to be disabled or not. If not specified the default is false.
-    No custom metrics will be emitted if this field is false but the container insights enabled field is false''')
-    disableCustomMetrics: bool?
-    @description('''Optional. Indicates whether prometheus metrics scraping is disabled or not. If not specified the default is false.
-    No prometheus metrics will be emitted if this field is false but the container insights enabled field is false''')
-    disablePrometheusMetricsScraping: bool?
-    @description('Required. Indicates if Azure Monitor Container Insights Logs Addon is enabled or not.')
-    enabled: bool
-    @description('Optional. Fully Qualified ARM Resource Id of Azure Log Analytics Workspace for storing Azure Monitor Container Insights Logs.')
-    logAnalyticsWorkspaceResourceId: string?
-    @description('Optional. The syslog host port. If not specified, the default port is 28330.')
-    syslogPort: int?
-  }?
-
-  @description('Optional. Metrics profile for the prometheus service addon')
-  metrics: {
-    @description('Required. Whether to enable the Prometheus collector')
-    enabled: bool
-    @description('Optional. Kube State Metrics for prometheus addon profile for the container service cluster')
-    kubeStateMetrics: {
-      @description('Required. Comma-separated list of additional Kubernetes label keys that will be used in the resource\'s labels metric.')
-      metricAnnotationsAllowList: string
-      @description('Required. Comma-separated list of Kubernetes annotations keys that will be used in the resource\'s labels metric.')
-      metricLabelsAllowlist: string
-    }?
-  }?
-}

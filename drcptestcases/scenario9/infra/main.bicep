@@ -638,7 +638,6 @@ module aksMod 'br/amavm:res/container-service/managed-cluster:0.3.0' = {
       keyId: enableAksKms ? keyvaultKeyMod.outputs.keyUriWithVersion : ''
     } : null
     logAnalyticsWorkspaceResourceId: logAnalyticsWorkspaceMod.outputs.resourceId
-    azureMonitorProfile: {} // containerInsights not yet supported in this region -- use OMS agent addon instead
     primaryAgentPoolSubnetResourceId: subnetNodePool1Mod.outputs.resourceId
     autoUpgradeProfile : {
       upgradeChannel: 'rapid'
