@@ -1,3 +1,14 @@
+{
+  "code": "InvalidTemplateDeployment",
+  "message": "The template deployment '353238main-aks' is not valid according to the validation procedure. The tracking id is 'a899781a-9a24-4627-8beb-57f184194d1d'. See inner errors for details.",
+  "details": [
+    {
+      "code": "K8sVersionNotSupported",
+      "message": "Preflight validation check for resource(s) for container service s2c3drcptst0995devsecaks in resource group drcptst0995-dev-swedencentral-rg failed. Message: Managed cluster s2c3drcptst0995devsecaks is on version 1.30.2, which is only available for Long-Term Support (LTS). If you intend to onboard to LTS, please ensure the cluster is in Premium tier and LTS support plan (see https://aka.ms/aks/enable-lts). Otherwise, use [az aks get-versions] command to get the supported version list in this region. For more information, please check https://aka.ms/supported-version-list. Details: "
+    }
+  ]
+}
+
 Bicep CLI version 0.41.2 (3e403ea7c1)
 
 [14/03/2026 12:20:34] Running pipeline id 353238.
