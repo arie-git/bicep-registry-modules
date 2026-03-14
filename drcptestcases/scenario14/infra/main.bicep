@@ -288,9 +288,6 @@ module eventHubNamespace 'br/amavm:res/event-hub/namespace:0.2.0' = {
     location: vNet.location
     tags: mytags
     skuName: 'Standard'
-    networkRuleSets: {
-      trustedServiceAccessEnabled: false
-    }
     skuCapacity: 1
     isAutoInflateEnabled: true
     maximumThroughputUnits: 10
