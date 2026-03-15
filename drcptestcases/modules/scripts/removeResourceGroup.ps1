@@ -64,16 +64,16 @@ try {
             }
         }
     }
-    # APIM
-    $results = (az apim deletedservice list --query "[?contains(name, '$resourceFilter')].name") | ConvertFrom-Json
+    # App Configuration
+    $results = (az appconfig list-deleted --query "[?contains(name, '$resourceFilter')].name") 2>$null | ConvertFrom-Json
     if ($LastExitCode -gt 0) {
-        Write-Output "Error looking for APIM resources."
+        Write-Output "Error looking for App Configuration resources."
     } else {
-        Write-Output "Found $($results.Count) APIM resources containing '$resourceFilter'"
+        Write-Output "Found $($results.Count) App Configuration resources containing '$resourceFilter'"
         foreach ($name in $results) {
-            Write-Output "Removing  apim $name "
+            Write-Output "Removing App Configuration $name "
             if($whatIf -eq '') {
-                az apim deletedservice purge --service-name $name --location 'Sweden Central' # hard coded for now
+                az appconfig purge --name $name --location 'Sweden Central' --yes 2>$null # hard coded for now
                 if ($LastExitCode -gt 0) {
                     Write-Error "Unable to remove $name. Exiting ..."
                     Exit 1

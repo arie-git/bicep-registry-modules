@@ -493,9 +493,6 @@ module functionApp 'br/amavm:res/web/site:0.2.0' = { //'../../modules/infra/comp
         WEBSITE_RUN_FROM_PACKAGE: 1
         EventHubConnection__fullyQualifiedNamespace: '${eventHubNamespaceName}.servicebus.windows.net'
       }
-      msDeployConfiguration: {
-        packageUri: ''
-      }
       tags:tags
   }
 }
