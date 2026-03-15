@@ -585,11 +585,6 @@ module storageAccount2 'br/amavm:res/storage/storage-account:0.2.0' = {
         }
       ]
     }
-    diagnosticSettings:[
-      {
-        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-      }
-    ]
     roleAssignments: [for role in storageAccountBackendRoles: {
       principalId: adf.outputs.systemAssignedMIPrincipalId
       principalType: 'ServicePrincipal'
@@ -677,11 +672,6 @@ module storageAccountUc 'br/amavm:res/storage/storage-account:0.2.0' = {
         }
       ]
     }
-    diagnosticSettings: [
-      {
-        workspaceResourceId: logAnalyticsWorkspace.outputs.resourceId
-      }
-    ]
     roleAssignments: [
       {
         principalId: accessConnectorMod.outputs.systemAssignedMIPrincipalId
