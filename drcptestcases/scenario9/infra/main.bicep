@@ -62,7 +62,7 @@ param extraConfig extraConfigType  = {
   enableAksKms: false
   // enableAksApiVnetIntegrations: false
   enablePrivateClusterPublicFQDN: (environmentType == 'dev')
-  kubernetesVersion: '1.30.2'
+  kubernetesVersion: '1.34'
   privateDNSZone: (environmentType == 'dev') ? 'none' : '/subscriptions/44fc7c46-cf47-4a29-aaa4-3e30f9e4e14b/resourceGroups/h01-p1-infrastructure-azuredns/providers/Microsoft.Network/privateDnsZones/privatelink.swedencentral.azmk8s.io'
   aksNetwork: 'azureOverlay'
   aksNetworkDataPlane: 'cilium'
